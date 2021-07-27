@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "59547700838",
+    "project_id": "track-wealth",
+    "storage_bucket": "track-wealth.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:59547700838:android:b8b6d1390c65dcbe90a7a7",
+        "android_client_info": {
+          "package_name": "com.example.track_wealth"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "59547700838-hlq8onlrapcn74qj2gqhkbufru7ius3p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.track_wealth",
+            "certificate_hash": "ad82ee86df20177b7ddc352f09565e15a5f256e1"
+          }
+        },
+        {
+          "client_id": "59547700838-csj135e1vjnn263psvrvuluqnnoah2j6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCz2RZfoUwBHvVNBh5tKmP43CKnRqqLYQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "59547700838-csj135e1vjnn263psvrvuluqnnoah2j6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

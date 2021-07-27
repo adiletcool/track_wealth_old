@@ -1,0 +1,59 @@
+name: track_wealth
+description: A new Flutter project.
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  firebase_core: ^1.4.0
+  firebase_auth: ^3.0.1
+  cloud_firestore: ^2.4.0
+
+  google_sign_in: ^5.0.5
+  # flutter_facebook_auth: ^3.5.0
+  # flutter_twitter_login: ^1.1.0
+  
+  cupertino_icons: ^1.0.3
+  provider: ^5.0.0
+  intl: ^0.17.0
+  flutter_bloc: ^7.0.1
+  dio: ^4.0.0
+  flutter_typeahead: ^3.2.0
+  data_table_2: ^2.0.4
+  flutter_masked_text: ^0.8.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+
+  assets:
+    - assets/images/auth/
+
+  fonts:
+    - family: Sinaloa
+      fonts:
+        - asset: assets/fonts/Sinaloa_Regular.ttf
+    - family: Rubik
+      fonts:
+        - asset: assets/fonts/Rubik-Regular.ttf
+        - asset: assets/fonts/Rubik-Italic.ttf
+          style: italic
+        - asset: assets/fonts/Rubik-Bold.ttf
+          weight: 700
+    - family: RussoOne
+      fonts:
+        - asset: assets/fonts/RussoOne-Regular.ttf
+  
