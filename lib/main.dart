@@ -66,8 +66,7 @@ class AuthenticationWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // same as "final firebaseUser = context.watch<User>();"
-    final User firebaseUser = Provider.of<User>(context, listen: true);
+    final firebaseUser = context.watch<User>();
 
     if (firebaseUser != null) {
       return PageWrapper();
