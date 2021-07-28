@@ -43,7 +43,7 @@ class _PortfolioState extends State<Portfolio> {
 
   @override
   Widget build(BuildContext context) {
-    sortedColumn = Provider.of<PortfolioState>(context, listen: false).sortedColumn;
+    sortedColumn = context.read<PortfolioState>().sortedColumn;
 
     if ((sortedColumn['title'] != null)) {
       sortedColumnIndex = myColumns.map((e) => e['title']).toList().indexOf(sortedColumn['title']);

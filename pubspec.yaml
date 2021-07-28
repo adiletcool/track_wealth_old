@@ -19,8 +19,8 @@ dependencies:
   cloud_firestore: ^2.4.0
 
   google_sign_in: ^5.0.5
-  # flutter_facebook_auth: ^3.5.0
-  # flutter_twitter_login: ^1.1.0
+  flutter_facebook_auth: ^3.5.0
+  flutter_twitter_login: ^1.1.0
   
   cupertino_icons: ^1.0.3
   provider: ^5.0.0

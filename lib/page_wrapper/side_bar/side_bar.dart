@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:track_wealth/auth_service.dart';
+import 'package:track_wealth/common/auth_service.dart';
 import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/drawer_state.dart';
@@ -24,7 +24,7 @@ class _SideBarState extends State<SideBar> {
     if (!AppResponsive.isDesktop(context)) Navigator.pop(context);
   }
 
-  List<Map<String, dynamic>> getDrawerItems(String userName) {
+  List<Map<String, dynamic>> getDrawerItems() {
     return [
       {'title': "Портфель", 'icon': Icons.pie_chart_rounded, 'onTap': changePage},
       {'title': "Анализ", 'icon': Icons.assessment, 'onTap': changePage},
@@ -70,7 +70,7 @@ class _SideBarState extends State<SideBar> {
     if ((firebaseUser != null) && (userName == '')) {
       userName = firebaseUser.displayName ?? firebaseUser.email.split('@').first;
     }
-    drawerItems = getDrawerItems(userName);
+    drawerItems = getDrawerItems();
 
     selectedItem = context.read<DrawerState>().selectedItem;
 

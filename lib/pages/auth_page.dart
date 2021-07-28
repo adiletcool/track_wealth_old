@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'auth_service.dart';
-import 'common/constants.dart';
+import 'package:track_wealth/common/auth_service.dart';
+import 'package:track_wealth/common/constants.dart';
 
 class AuthPage extends StatefulWidget {
   @override
@@ -165,6 +165,7 @@ class _AuthPageState extends State<AuthPage> {
           controller: controller,
           maxLines: 1,
           textAlignVertical: TextAlignVertical.center,
+          keyboardType: !isPassword ? TextInputType.emailAddress : null,
           onSubmitted: isPassword
               ? canAuth
                   ? (value) => authenticate()
@@ -261,10 +262,14 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> socialAuthenticate(String method) async {
-    if (method == 'google') {
-      await context.read<AuthenticationService>().signInWithGoogle();
-    } else {
-      print('Auth method $method is not recognized');
+    switch (method) {
+      case 'google':
+        return await context.read<AuthenticationService>().signInWithGoogle();
+
+      case 'facebook':
+        return await context.read<AuthenticationService>().signInWithFacebook();
+      default:
+        print('Auth method $method is not recognized');
     }
   }
 }

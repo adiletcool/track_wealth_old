@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'auth_page.dart';
+import 'pages/auth_page.dart';
 import 'common/drawer_state.dart';
 import 'common/portfolio_state.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:track_wealth/auth_service.dart';
+import 'package:track_wealth/common/auth_service.dart';
 
 import 'page_wrapper/page_wrapper.dart';
 

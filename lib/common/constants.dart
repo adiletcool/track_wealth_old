@@ -108,7 +108,7 @@ BoxDecoration roundedBoxDecoration = BoxDecoration(
 String getSignInErrorMessage(String errorCode) {
   switch (errorCode) {
     case 'wrong-password':
-      return 'Неправильная почта или пароль.';
+      return 'Неверный пароль, либо пользователь с такой почтой использует вход через соц. сети.';
     case 'user-not-found':
       return 'Пользователь с такой почтой не найден.';
     case 'too-many-requests':

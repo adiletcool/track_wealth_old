@@ -1,27 +1,28 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-// import 'package:flutter_twitter_login/flutter_twitter_login.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:flutter_twitter_login/flutter_twitter_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-import 'common/constants.dart';
+import 'constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AuthenticationService {
   final FirebaseAuth _firebaseAuth;
 
+  // Initialize GoogleSignIn with the scopes you want:
+  final GoogleSignIn googleSignIn = GoogleSignIn(
+    signInOption: SignInOption.standard,
+    scopes: [
+      'email',
+      // 'https://www.googleapis.com/auth/contacts.readonly',
+    ],
+  );
+  final FacebookAuth facebookSignIn = FacebookAuth.instance;
+
   AuthenticationService(this._firebaseAuth);
 
   Stream<User> get authStateChanges => _firebaseAuth.authStateChanges();
-
-  Future<String> signIn({@required String email, @required String password}) async {
-    try {
-      await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
-      return "";
-    } on FirebaseAuthException catch (e) {
-      return getSignInErrorMessage(e.code);
-    }
-  }
 
   Future<String> signUp({@required String email, @required String password}) async {
     try {
@@ -32,8 +33,13 @@ class AuthenticationService {
     }
   }
 
-  Future<void> signOut() async {
-    await _firebaseAuth.signOut();
+  Future<String> signIn({@required String email, @required String password}) async {
+    try {
+      await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+      return "";
+    } on FirebaseAuthException catch (e) {
+      return getSignInErrorMessage(e.code);
+    }
   }
 
   Future<void> signInWithGoogle() async {
@@ -51,16 +57,7 @@ class AuthenticationService {
       // Or use signInWithRedirect
       // await _firebaseAuth.signInWithRedirect(googleProvider);
     } else {
-      // Initialize GoogleSignIn with the scopes you want:
-      GoogleSignIn _googleSignIn = GoogleSignIn(
-        scopes: [
-          'email',
-          // 'https://www.googleapis.com/auth/contacts.readonly',
-        ],
-      );
-
-      final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
-      print(googleUser == null);
+      final GoogleSignInAccount googleUser = await googleSignIn.signIn();
       // Trigger the authentication flow
 
       if (googleUser != null) {
@@ -79,7 +76,6 @@ class AuthenticationService {
     }
   }
 
-/*
   Future<void> signInWithFacebook() async {
     if (kIsWeb) {
       // Create a new provider
@@ -97,13 +93,14 @@ class AuthenticationService {
       // return await _firebaseAuth.signInWithRedirect(facebookProvider);
     } else {
       // Trigger the sign-in flow
-      final LoginResult result = await FacebookAuth.instance.login();
+      final LoginResult result = await facebookSignIn.login();
 
-      // Create a credential from the access token
-      final facebookAuthCredential = FacebookAuthProvider.credential(result.accessToken.token);
-
-      // Once signed in, return the UserCredential
-      await _firebaseAuth.signInWithCredential(facebookAuthCredential);
+      if (result.status == LoginStatus.success) {
+        // Create a credential from the access token
+        final facebookAuthCredential = FacebookAuthProvider.credential(result.accessToken.token);
+        // Once signed in, return the UserCredential
+        await _firebaseAuth.signInWithCredential(facebookAuthCredential);
+      }
     }
   }
 
@@ -120,7 +117,7 @@ class AuthenticationService {
     } else {
       // Create a TwitterLogin instance
       final TwitterLogin twitterLogin = new TwitterLogin(
-        consumerKey: '<your consumer key>', // TODO check firebase flutter dev
+        consumerKey: '<your consumer key>',
         consumerSecret: ' <your consumer secret>',
       );
 
@@ -139,5 +136,11 @@ class AuthenticationService {
       // Once signed in, return the UserCredential
       await _firebaseAuth.signInWithCredential(twitterAuthCredential);
     }
-  } */
+  }
+
+  Future<void> signOut() async {
+    await facebookSignIn.logOut();
+    await googleSignIn.disconnect();
+    await _firebaseAuth.signOut();
+  }
 }
