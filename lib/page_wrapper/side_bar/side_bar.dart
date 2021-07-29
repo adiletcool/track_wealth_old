@@ -51,7 +51,7 @@ class _SideBarState extends State<SideBar> {
               onPressed: () {
                 Navigator.pop(context);
                 context.read<DrawerState>().changeSelectedItem('Портфель');
-                context.read<AuthenticationService>().signOut();
+                context.read<AuthenticationService>().signOut(firebaseUser);
               },
             ),
             TextButton(
