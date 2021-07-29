@@ -268,6 +268,8 @@ class _AuthPageState extends State<AuthPage> {
 
       case 'facebook':
         return await context.read<AuthenticationService>().signInWithFacebook();
+      // case 'vkontakte':
+      //   return await context.read<AuthenticationService>().signInWithVk();
       default:
         print('Auth method $method is not recognized');
     }
