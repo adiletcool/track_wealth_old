@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/auth_service.dart';
 import 'package:track_wealth/common/constants.dart';
+import 'package:track_wealth/pages/auth/phone_auth.dart';
 
 class AuthPage extends StatefulWidget {
   @override
@@ -17,6 +19,16 @@ class _AuthPageState extends State<AuthPage> {
   bool isLogin = true;
   String authResult = '';
   ScrollController scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,9 +56,9 @@ class _AuthPageState extends State<AuthPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       socialAuthButton(
-                        'vkontakte',
-                        color: Color(0xff2787F5),
-                        onTap: () => socialAuthenticate('vkontakte'),
+                        'google',
+                        color: Color(0xffFF5941),
+                        onTap: () => socialAuthenticate('google'),
                       ),
                       SizedBox(width: 5),
                       socialAuthButton(
@@ -61,15 +73,15 @@ class _AuthPageState extends State<AuthPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       socialAuthButton(
-                        'twitter',
-                        color: Color(0xff009DF7),
-                        onTap: () => socialAuthenticate('twitter'),
+                        'vkontakte',
+                        color: Color(0xff2787F5),
+                        onTap: () => socialAuthenticate('vkontakte'),
                       ),
                       SizedBox(width: 5),
                       socialAuthButton(
-                        'google',
-                        color: Color(0xffFF5941),
-                        onTap: () => socialAuthenticate('google'),
+                        'phone',
+                        color: Color(0xff0c2233),
+                        onTap: () => socialAuthenticate('phone'),
                       ),
                     ],
                   ),
@@ -268,8 +280,11 @@ class _AuthPageState extends State<AuthPage> {
 
       case 'facebook':
         return await context.read<AuthenticationService>().signInWithFacebook();
-      // case 'vkontakte':
-      //   return await context.read<AuthenticationService>().signInWithVk();
+      case 'vkontakte':
+        return await context.read<AuthenticationService>().signInWithVk();
+      case 'phone':
+        Navigator.push(context, MaterialPageRoute(builder: (ctx) => PhoneAuthPage()));
+        break;
       default:
         print('Auth method $method is not recognized');
     }

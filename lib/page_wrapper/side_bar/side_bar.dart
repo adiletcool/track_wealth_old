@@ -68,7 +68,11 @@ class _SideBarState extends State<SideBar> {
   Widget build(BuildContext context) {
     firebaseUser = context.read<User>();
     if ((firebaseUser != null) && (userName == '')) {
-      userName = firebaseUser.displayName ?? firebaseUser.email.split('@').first;
+      if (firebaseUser.displayName != null)
+        userName = firebaseUser.displayName;
+      else if (firebaseUser.email != null)
+        userName = firebaseUser.email.split('@').first;
+      else if (firebaseUser.phoneNumber != null) userName = firebaseUser.phoneNumber;
     }
     drawerItems = getDrawerItems();
 

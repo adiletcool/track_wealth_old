@@ -113,7 +113,8 @@ String getSignInErrorMessage(String errorCode) {
       return 'Пользователь с такой почтой не найден.';
     case 'too-many-requests':
       return 'Превышено количество попыток входа. Пожалуйста, попробуйте позже.';
-
+    case 'invalid-verification-code':
+      return 'Неверный код';
     default:
       return errorCode;
   }

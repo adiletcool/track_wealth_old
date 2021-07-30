@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'pages/auth_page.dart';
+import 'package:track_wealth/pages/auth/phone_auth.dart';
+import 'pages/auth/auth_page.dart';
 import 'common/drawer_state.dart';
 import 'common/portfolio_state.dart';
 

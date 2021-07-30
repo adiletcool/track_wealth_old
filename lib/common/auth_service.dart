@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_login_vk/flutter_login_vk.dart';
-import 'package:flutter_twitter_login/flutter_twitter_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'constants.dart';
@@ -109,40 +108,6 @@ class AuthenticationService {
     }
   }
 
-  Future<void> signInWithTwitter() async {
-    if (kIsWeb) {
-      // Create a new provider
-      TwitterAuthProvider twitterProvider = TwitterAuthProvider();
-
-      // Once signed in, return the UserCredential
-      await _firebaseAuth.signInWithPopup(twitterProvider);
-
-      // Or use signInWithRedirect
-      //  await _firebaseAuth.signInWithRedirect(twitterProvider);
-    } else {
-      // Create a TwitterLogin instance
-      final TwitterLogin twitterLogin = new TwitterLogin(
-        consumerKey: '<your consumer key>',
-        consumerSecret: ' <your consumer secret>',
-      );
-
-      // Trigger the sign-in flow
-      final TwitterLoginResult loginResult = await twitterLogin.authorize();
-
-      // Get the Logged In session
-      final TwitterSession twitterSession = loginResult.session;
-
-      // Create a credential from the access token
-      final twitterAuthCredential = TwitterAuthProvider.credential(
-        accessToken: twitterSession.token,
-        secret: twitterSession.secret,
-      );
-
-      // Once signed in, return the UserCredential
-      await _firebaseAuth.signInWithCredential(twitterAuthCredential);
-    }
-  }
-
   Future<void> signInWithVk() async {
     await vkSignIn.initSdk('7913884'); //* инициализируем с app id
 
@@ -159,13 +124,15 @@ class AuthenticationService {
         if (accessToken != null) {
           // final profileRes = await vkSignIn.getUserProfile(); // Получаем данные профиля
           // final email = await vkSignIn.getUserEmail();
-          final vkAuthCredential = OAuthCredential(
-            providerId: 'vk.com',
-            signInMethod: 'vk.com',
-            accessToken: accessToken.token,
-          );
+          // final vkAuthCredential = OAuthCredential(
+          //   providerId: 'vk.com',
+          //   signInMethod: 'vk.com',
+          //   accessToken: accessToken.token,
+          // );
+          // await _firebaseAuth.signInWithCredential(vkAuthCredential);
           // * TODO wait till firebase supports vk auth :(
-          await _firebaseAuth.signInWithCredential(vkAuthCredential);
+          // or
+          // _firebaseAuth.signInWithCustomToken(accessToken.token);
         }
 
         // profileRes.asValue.value.firstName;
@@ -175,6 +142,38 @@ class AuthenticationService {
       }
     } else {
       print('Ошибка при входе: ${res.asError.error}');
+    }
+  }
+
+  Future<void> signInWithPhoneNumber({
+    @required String phoneNumber,
+    @required void Function(String verificationId, int forceResendingToken) codeSent,
+  }) async {
+    await _firebaseAuth.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+      timeout: const Duration(seconds: 119),
+      verificationCompleted: (AuthCredential creds) async {
+        await _firebaseAuth.signInWithCredential(creds);
+      },
+      verificationFailed: (FirebaseAuthException exception) {
+        print(exception);
+      },
+      codeSent: codeSent,
+      codeAutoRetrievalTimeout: (String verificationId) {},
+    );
+    print('sent code to $phoneNumber');
+  }
+
+  Future<ConfirmationResult> webSignInWithPhoneNumber(phoneNumber) async {
+    return await _firebaseAuth.signInWithPhoneNumber(phoneNumber);
+  }
+
+  Future<String> signInWithCreds(AuthCredential credential) async {
+    try {
+      await _firebaseAuth.signInWithCredential(credential);
+      return 'Signed in';
+    } on FirebaseAuthException catch (e) {
+      return e.code;
     }
   }
 
