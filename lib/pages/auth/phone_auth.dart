@@ -26,7 +26,8 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
   FocusNode codeFocusNode = FocusNode();
 
   Timer sendCodeAgainTimer;
-  int sendCodeAgainSecondsLeft = 119;
+  final int resendTimeout = 119;
+  int sendCodeAgainSecondsLeft;
   bool canSendAgain = false;
 
   String phoneVerificationId;
@@ -41,6 +42,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
+    sendCodeAgainSecondsLeft = resendTimeout;
   }
 
   @override
@@ -230,7 +232,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
   void restartSendAgainTimer() {
     setState(() {
       canSendAgain = false;
-      sendCodeAgainSecondsLeft = 119;
+      sendCodeAgainSecondsLeft = resendTimeout;
       startSendAgainTimer();
     });
   }
@@ -249,6 +251,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
       });
     } else {
       await context.read<AuthenticationService>().signInWithPhoneNumber(
+            context: context,
             phoneNumber: phoneNumber,
             codeSent: (String verificationId, int forceResendingToken) {
               setState(() => phoneVerificationId = verificationId);
@@ -272,7 +275,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
         smsCode: codeController.text,
       );
       String res = await context.read<AuthenticationService>().signInWithCreds(creds);
-      if (res == 'Signed in')
+      if ((res == 'Signed in') || (res == 'session-expired'))
         Navigator.pop(context);
       else
         codeErrorUpdate(res);

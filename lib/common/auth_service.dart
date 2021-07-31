@@ -146,6 +146,7 @@ class AuthenticationService {
   }
 
   Future<void> signInWithPhoneNumber({
+    @required BuildContext context,
     @required String phoneNumber,
     @required void Function(String verificationId, int forceResendingToken) codeSent,
   }) async {
@@ -154,6 +155,7 @@ class AuthenticationService {
       timeout: const Duration(seconds: 119),
       verificationCompleted: (AuthCredential creds) async {
         await _firebaseAuth.signInWithCredential(creds);
+        Navigator.of(context).pop();
       },
       verificationFailed: (FirebaseAuthException exception) {
         print(exception);

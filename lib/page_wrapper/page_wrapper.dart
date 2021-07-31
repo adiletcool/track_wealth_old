@@ -45,25 +45,31 @@ class _PageWrapperState extends State<PageWrapper> {
   Widget build(BuildContext context) {
     selectedItem = context.watch<DrawerState>().selectedItem;
 
-    return Scaffold(
-      key: context.read<DrawerState>().scaffoldKey,
-      drawer: !AppResponsive.isDesktop(context) ? SideBar() : null,
-      backgroundColor: AppColor.sidebar,
-      body: SafeArea(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ! Side Navigation Menu
-            if (AppResponsive.isDesktop(context))
+    return WillPopScope(
+      onWillPop: () {
+        SystemNavigator.pop();
+        return;
+      },
+      child: Scaffold(
+        key: context.read<DrawerState>().scaffoldKey,
+        drawer: !AppResponsive.isDesktop(context) ? SideBar() : null,
+        backgroundColor: AppColor.sidebar,
+        body: SafeArea(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ! Side Navigation Menu
+              if (AppResponsive.isDesktop(context))
+                Expanded(
+                  flex: 3,
+                  child: SideBar(),
+                ),
               Expanded(
-                flex: 3,
-                child: SideBar(),
+                flex: 11,
+                child: getPage(selectedItem),
               ),
-            Expanded(
-              flex: 11,
-              child: getPage(selectedItem),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
