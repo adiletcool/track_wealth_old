@@ -7,8 +7,8 @@ class DrawerState extends ChangeNotifier {
   GlobalKey<ScaffoldState> get scaffoldKey => _globalKey;
 
   void controlMenu() {
-    if (!_globalKey.currentState.isDrawerOpen) {
-      _globalKey.currentState.openDrawer();
+    if (!_globalKey.currentState!.isDrawerOpen) {
+      _globalKey.currentState!.openDrawer();
     }
   }
 

@@ -10,7 +10,7 @@ class ColumnFilterIcon extends StatefulWidget {
 }
 
 class _ColumnFilterIconState extends State<ColumnFilterIcon> {
-  Map<String, bool> colFilter;
+  late Map<String, bool> colFilter;
 
   List<PopupMenuItem> getPopUpMenuItems() {
     return colFilter.keys
@@ -20,7 +20,7 @@ class _ColumnFilterIconState extends State<ColumnFilterIcon> {
               builder: (_context, _setState) => SwitchListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
                 title: Text(column, style: TextStyle(fontSize: 14)),
-                value: colFilter[column],
+                value: colFilter[column]!,
                 onChanged: (bool newValue) => filterColumn(column, newValue, _setState),
                 dense: true,
               ),

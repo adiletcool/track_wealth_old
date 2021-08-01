@@ -50,7 +50,7 @@ InputDecoration myInputDecoration = InputDecoration(
 class DecimalTextInputFormatter extends TextInputFormatter {
   DecimalTextInputFormatter({this.decimalRange}) : assert(decimalRange == null || decimalRange > 0);
 
-  final int decimalRange;
+  final int? decimalRange;
 
   @override
   TextEditingValue formatEditUpdate(
@@ -78,7 +78,7 @@ class DecimalTextInputFormatter extends TextInputFormatter {
       } else if ((value.isNotEmpty) && (double.tryParse(value) == null)) {
         truncated = oldValue.text;
         newSelection = oldValue.selection;
-      } else if (value.contains(".") && value.substring(value.indexOf(".") + 1).length > decimalRange) {
+      } else if (value.contains(".") && value.substring(value.indexOf(".") + 1).length > decimalRange!) {
         truncated = oldValue.text;
         newSelection = oldValue.selection;
       }

@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class Asset {
   final int id;
   final String secId;
@@ -18,27 +16,27 @@ class Asset {
   final String primaryBoardId;
   final String marketPriceBoardId;
 
-  num price;
-  int priceDecimals;
-  int lotSize;
+  num? price;
+  int? priceDecimals;
+  int? lotSize;
 
   Asset({
-    @required this.id, // 2700
-    @required this.secId, // "AFLT"
-    @required this.shortName, // "Аэрофлот"
-    @required this.regNumber, // "1-01-00010-A"
-    @required this.name, // "Аэрофлот-росс.авиалин(ПАО)ао"
-    @required this.isin, // "RU0009062285"
-    @required this.isTraded, // 1
-    @required this.emitentId, // 1300
-    @required this.emitentTitle, // "публичное акционерное общество \"Аэрофлот – российские авиалинии\""
-    @required this.emitentInn, // "7712040126"
-    @required this.emitentOkpo, // "29063984"
-    @required this.gosreg, // "1-01-00010-A"
-    @required this.type, // "common_share"
-    @required this.group, // "stock_shares"
-    @required this.primaryBoardId, // "TQBR"
-    @required this.marketPriceBoardId, // "TQBR"
+    required this.id, // 2700
+    required this.secId, // "AFLT"
+    required this.shortName, // "Аэрофлот"
+    required this.regNumber, // "1-01-00010-A"
+    required this.name, // "Аэрофлот-росс.авиалин(ПАО)ао"
+    required this.isin, // "RU0009062285"
+    required this.isTraded, // 1
+    required this.emitentId, // 1300
+    required this.emitentTitle, // "публичное акционерное общество \"Аэрофлот – российские авиалинии\""
+    required this.emitentInn, // "7712040126"
+    required this.emitentOkpo, // "29063984"
+    required this.gosreg, // "1-01-00010-A"
+    required this.type, // "common_share"
+    required this.group, // "stock_shares"
+    required this.primaryBoardId, // "TQBR"
+    required this.marketPriceBoardId, // "TQBR"
     this.price,
     this.priceDecimals,
     this.lotSize,

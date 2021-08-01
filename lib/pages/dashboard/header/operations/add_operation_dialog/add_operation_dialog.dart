@@ -18,11 +18,11 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
     'Деньги': ["Внести", "Вывести", "Доход", "Расход"],
   };
 
-  /*late*/ String actionType; // Акции / Деньги
-  /*late*/ List<String> /*!*/ selectedActions; // ['Купить', 'Продать'] / ["Внести", "Вывести", "Доход", "Расход"]
-  /*late*/ String action; // Купить / Внести
+  late String actionType; // Акции / Деньги
+  late List<String> selectedActions; // ['Купить', 'Продать'] / ["Внести", "Вывести", "Доход", "Расход"]
+  late String action; // Купить / Внести
 
-  Asset selectedAsset; // Н-р, Asset("sber:moex", Сбербанк)
+  Asset? selectedAsset; // Н-р, Asset("sber:moex", Сбербанк)
 
   DateTime selectedDate = DateTime.now();
   TimeOfDay selectedTime = TimeOfDay.now();
@@ -41,7 +41,7 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
     super.initState();
     initializeDateFormatting('ru_RU');
     actionType = actions.keys.first; // Акции / Деньги
-    selectedActions = actions[actionType]; // ['Купить', 'Продать'] / ["Внести", "Вывести", "Доход", "Расход"]
+    selectedActions = actions[actionType]!; // ['Купить', 'Продать'] / ["Внести", "Вывести", "Доход", "Расход"]
     action = selectedActions.first;
   }
 
@@ -53,7 +53,7 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
     if (actionType != newActionType)
       setState(() {
         actionType = newActionType;
-        selectedActions = actions[actionType];
+        selectedActions = actions[actionType]!;
         action = selectedActions.first;
       });
   }
@@ -64,9 +64,9 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
       setState(() {
         selectedAsset = newSelectedAsset;
         // TODO await price, lotSize, priceDecimals
-        selectedAsset.price = 100.125;
-        selectedAsset.lotSize = 10;
-        selectedAsset.priceDecimals = 3;
+        selectedAsset!.price = 100.125;
+        selectedAsset!.lotSize = 10;
+        selectedAsset!.priceDecimals = 3;
         priceController.text = newSelectedAsset.price.toString();
       });
   }
@@ -180,7 +180,7 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
                           initialDate: DateTime.now(),
                           firstDate: DateTime(2015),
                           lastDate: DateTime(2030),
-                        ).then((DateTime newDate) {
+                        ).then((DateTime? newDate) {
                           if (newDate != null) {
                             setState(() => selectedDate = newDate);
                           }
@@ -197,7 +197,7 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
                         showTimePicker(
                           context: context,
                           initialTime: selectedTime,
-                        ).then((TimeOfDay newTime) {
+                        ).then((TimeOfDay? newTime) {
                           if (newTime != null) {
                             setState(() => selectedTime = newTime);
                           }
@@ -218,7 +218,7 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
     );
   }
 
-  Container buttonsRow({@required Iterable<String> buttons, @required String selectedValue, @required Function(String value) onTap}) {
+  Container buttonsRow({required Iterable<String> buttons, required String selectedValue, required Function(String value) onTap}) {
     return Container(
       decoration: BoxDecoration(
         color: AppColor.grey,
@@ -255,10 +255,10 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
   }
 
   Widget myTextField({
-    @required Key formKey,
-    @required TextEditingController controller,
+    required Key formKey,
+    required TextEditingController controller,
     double width = 150,
-    @required String label,
+    required String label,
     bool onlyInteger = false,
     String suffixText: '',
     String counterText = '',

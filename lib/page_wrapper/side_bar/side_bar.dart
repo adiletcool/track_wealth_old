@@ -8,10 +8,10 @@ import 'package:track_wealth/common/drawer_state.dart';
 
 class SideBar extends StatefulWidget {
   final String userName;
-  final User firebaseUser;
+  final User? firebaseUser;
   final String selectedItem;
 
-  const SideBar({@required this.selectedItem, @required this.userName, @required this.firebaseUser});
+  const SideBar({required this.selectedItem, required this.userName, required this.firebaseUser});
 
   @override
   _SideBarState createState() => _SideBarState();
@@ -121,12 +121,12 @@ class _SideBarState extends State<SideBar> {
 }
 
 class DrawerListTile extends StatelessWidget {
-  final String /*!*/ title;
-  final IconData /*!*/ icon;
+  final String title;
+  final IconData icon;
   final void Function() onTapFunc;
   final bool isSelected;
 
-  const DrawerListTile({@required this.title, @required this.icon, @required this.onTapFunc, @required this.isSelected});
+  const DrawerListTile({required this.title, required this.icon, required this.onTapFunc, required this.isSelected});
 
   @override
   Widget build(BuildContext context) {

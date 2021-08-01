@@ -11,12 +11,12 @@ class Portfolio extends StatefulWidget {
 }
 
 class _PortfolioState extends State<Portfolio> {
-  Map<String, bool> /*!*/ colFilter;
-  Map<String, dynamic> sortedColumn;
-  int sortedColumnIndex;
-  List<Map<String, dynamic>> myColumns;
+  late Map<String, bool> colFilter;
+  late Map<String, dynamic> sortedColumn;
+  int? sortedColumnIndex;
+  late List<Map<String, dynamic>> myColumns;
   ScrollController tableScrollController = ScrollController();
-  List<PortfolioAsset> /*!*/ portfolioAssets;
+  late List<PortfolioAsset> portfolioAssets;
 
   @override
   void didChangeDependencies() {
@@ -153,27 +153,27 @@ class PortfolioAsset {
 
   PortfolioAsset(this.name, this.quantity, this.meanPrice, this.profit, this.profitPercent, this.share, this.worth);
 
-  dynamic getParam(int index, {@required Map<String, bool> filter}) {
+  dynamic getParam(int index, {required Map<String, bool> filter}) {
     // return "non-nullable dynamic"
     return [
       name,
-      if (filter['Количество']) quantity,
-      if (filter['Ср. Цена, ₽']) meanPrice,
-      if (filter['Прибыль, ₽']) profit,
-      if (filter['Прибыль, %']) profitPercent,
-      if (filter['Доля, %']) share,
+      if (filter['Количество']!) quantity,
+      if (filter['Ср. Цена, ₽']!) meanPrice,
+      if (filter['Прибыль, ₽']!) profit,
+      if (filter['Прибыль, %']!) profitPercent,
+      if (filter['Доля, %']!) share,
       worth,
     ][index];
   }
 
-  List<dynamic> getValues({@required Map<String, bool> filter}) {
+  List<dynamic> getValues({required Map<String, bool> filter}) {
     return [
       name,
-      if (filter['Количество']) MyFormatter.intFormat(quantity),
-      if (filter['Ср. Цена, ₽']) meanPrice,
-      if (filter['Прибыль, ₽']) profit,
-      if (filter['Прибыль, %']) profitPercent,
-      if (filter['Доля, %']) share,
+      if (filter['Количество']!) MyFormatter.intFormat(quantity),
+      if (filter['Ср. Цена, ₽']!) meanPrice,
+      if (filter['Прибыль, ₽']!) profit,
+      if (filter['Прибыль, %']!) profitPercent,
+      if (filter['Доля, %']!) share,
       worth,
     ];
   }

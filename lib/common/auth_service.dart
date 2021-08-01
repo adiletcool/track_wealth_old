@@ -26,9 +26,9 @@ class AuthenticationService {
 
   AuthenticationService(this._firebaseAuth);
 
-  Stream<User> get authStateChanges => _firebaseAuth.authStateChanges();
+  Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
-  Future<String> signUp({@required String email, @required String password}) async {
+  Future<String> signUp({required String email, required String password}) async {
     try {
       await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
       return "";
@@ -37,7 +37,7 @@ class AuthenticationService {
     }
   }
 
-  Future<String> signIn({@required String email, @required String password}) async {
+  Future<String> signIn({required String email, required String password}) async {
     try {
       await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
       return "";
@@ -61,7 +61,7 @@ class AuthenticationService {
       // Or use signInWithRedirect
       // await _firebaseAuth.signInWithRedirect(googleProvider);
     } else {
-      final GoogleSignInAccount googleUser = await googleSignIn.signIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       // Trigger the authentication flow
 
       if (googleUser != null) {
@@ -101,7 +101,7 @@ class AuthenticationService {
 
       if (result.status == LoginStatus.success) {
         // Create a credential from the access token
-        final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(result.accessToken.token);
+        final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(result.accessToken!.token);
         // Once signed in, return the UserCredential
         await _firebaseAuth.signInWithCredential(facebookAuthCredential);
       }
@@ -117,9 +117,9 @@ class AuthenticationService {
     if (res.isValue) {
       // Ошибки нет, но мы еще не знаем, вошел пользователь или нет
       // Он мог отменить вход. Нужно проверить свойство isCanceled:
-      final VKLoginResult loginResult = res.asValue.value;
+      final VKLoginResult loginResult = res.asValue!.value;
       if (!loginResult.isCanceled) {
-        final VKAccessToken accessToken = loginResult.accessToken;
+        final VKAccessToken? accessToken = loginResult.accessToken;
 
         if (accessToken != null) {
           // final profileRes = await vkSignIn.getUserProfile(); // Получаем данные профиля
@@ -141,14 +141,14 @@ class AuthenticationService {
         print('VK sign in cancelled');
       }
     } else {
-      print('Ошибка при входе: ${res.asError.error}');
+      print('Ошибка при входе: ${res.asError!.error}');
     }
   }
 
   Future<void> signInWithPhoneNumber({
-    @required BuildContext context,
-    @required String phoneNumber,
-    @required void Function(String verificationId, int forceResendingToken) codeSent,
+    required BuildContext context,
+    required String phoneNumber,
+    required void Function(String verificationId, int? forceResendingToken) codeSent,
   }) async {
     await _firebaseAuth.verifyPhoneNumber(
       phoneNumber: phoneNumber,
@@ -179,7 +179,8 @@ class AuthenticationService {
     }
   }
 
-  Future<void> signOut(User firebaseUser) async {
+  Future<void> signOut(User? firebaseUser) async {
+    if (firebaseUser == null) return;
     List<UserInfo> providerData = firebaseUser.providerData;
     String providerId = providerData.first.providerId;
 

@@ -25,13 +25,13 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
   TextEditingController codeController = TextEditingController();
   FocusNode codeFocusNode = FocusNode();
 
-  Timer sendCodeAgainTimer;
+  Timer? sendCodeAgainTimer;
   final int resendTimeout = 119;
-  /*late*/ int sendCodeAgainSecondsLeft;
+  late int sendCodeAgainSecondsLeft;
   bool canSendAgain = false;
 
-  String phoneVerificationId;
-  ConfirmationResult webAuthResult;
+  late String phoneVerificationId;
+  late ConfirmationResult webAuthResult;
 
   bool isError = false;
   String errorMsg = '';
@@ -48,7 +48,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
   @override
   void dispose() {
     super.dispose();
-    if ((sendCodeAgainTimer != null) && sendCodeAgainTimer.isActive) sendCodeAgainTimer.cancel();
+    if ((sendCodeAgainTimer != null) && sendCodeAgainTimer!.isActive) sendCodeAgainTimer!.cancel();
   }
 
   @override
@@ -180,9 +180,9 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
   }
 
   Widget sampleButton({
-    @required String title,
+    required String title,
     bool canTap = true,
-    @required void Function() onTap,
+    required void Function() onTap,
   }) {
     return InkWell(
       child: Container(
@@ -205,7 +205,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
       phoneNumberController.text = '';
       isCodeSent = false;
       validPhone = validCode = false;
-      if (sendCodeAgainTimer.isActive) sendCodeAgainTimer.cancel();
+      if (sendCodeAgainTimer!.isActive) sendCodeAgainTimer!.cancel();
     });
     Future.delayed(const Duration(milliseconds: 300)).then((value) => phoneNumberFocusNode.requestFocus());
   }
@@ -253,7 +253,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
       await context.read<AuthenticationService>().signInWithPhoneNumber(
             context: context,
             phoneNumber: phoneNumber,
-            codeSent: (String verificationId, int forceResendingToken) {
+            codeSent: (String verificationId, int? forceResendingToken) {
               setState(() => phoneVerificationId = verificationId);
             },
           );

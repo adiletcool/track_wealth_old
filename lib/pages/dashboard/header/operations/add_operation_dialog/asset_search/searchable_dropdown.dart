@@ -9,8 +9,8 @@ import "asset_model.dart";
 
 class AssetSearchField extends StatefulWidget {
   final void Function(Asset selectedAsset) selectedAssetCallback;
-  final Asset preSelectedAsset;
-  AssetSearchField({@required this.selectedAssetCallback, this.preSelectedAsset});
+  final Asset? preSelectedAsset;
+  AssetSearchField({required this.selectedAssetCallback, this.preSelectedAsset});
 
   @override
   _AssetSearchFieldState createState() => _AssetSearchFieldState();
@@ -23,7 +23,7 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
   @override
   void initState() {
     super.initState();
-    if (widget.preSelectedAsset != null) typeAheadController.text = widget.preSelectedAsset.secId;
+    if (widget.preSelectedAsset != null) typeAheadController.text = widget.preSelectedAsset!.secId;
   }
 
   @override
@@ -35,7 +35,7 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
     );
   }
 
-  Widget assetTypeAhead({@required Key formKey, @required TextEditingController controller}) {
+  Widget assetTypeAhead({required Key formKey, required TextEditingController controller}) {
     return Form(
       key: formKey,
       child: TypeAheadField<Asset>(

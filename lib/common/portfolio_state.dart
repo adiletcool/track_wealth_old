@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:track_wealth/pages/dashboard/portfolio/portfolio.dart';
 
 class PortfolioState extends ChangeNotifier {
-  List<PortfolioAsset> portfolioAssets;
+  List<PortfolioAsset>? portfolioAssets;
 
   Map<String, dynamic> sortedColumn = {'title': null, 'ascending': false};
 
@@ -34,12 +34,12 @@ class PortfolioState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateSortedColumn(String/*!*/ columnName, bool isAscending) {
+  void updateSortedColumn(String columnName, bool isAscending) {
     sortedColumn.update('title', (value) => columnName);
     sortedColumn.update('ascending', (value) => isAscending);
   }
 
-  Future<List<PortfolioAsset>/*!*/> getPortfolioAssets() async {
+  Future<List<PortfolioAsset>> getPortfolioAssets() async {
     if ((portfolioAssets == null)) {
       await Future.delayed(const Duration(seconds: 1));
       // await data from server...
@@ -65,11 +65,11 @@ class PortfolioState extends ChangeNotifier {
       ];
       portfolioAssets = assetData.map((e) => PortfolioAsset(e[0], e[1], e[2], e[3], e[4], e[5], e[6])).toList();
     }
-    return portfolioAssets;
+    return portfolioAssets!;
   }
 
   void sortPortfolio(int index, bool ascending, Map<String, bool> colFilter) {
-    portfolioAssets.sort((asset1, asset2) {
+    portfolioAssets!.sort((asset1, asset2) {
       return ascending
           ? asset1.getParam(index, filter: colFilter).compareTo(asset2.getParam(index, filter: colFilter))
           : asset2.getParam(index, filter: colFilter).compareTo(asset1.getParam(index, filter: colFilter));

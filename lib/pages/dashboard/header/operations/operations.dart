@@ -45,8 +45,8 @@ class _OperationsState extends State<Operations> {
 
 class OperationButton extends StatelessWidget {
   final Widget child;
-  final void Function() onTap;
-  const OperationButton({@required this.child, this.onTap});
+  final void Function()? onTap;
+  const OperationButton({required this.child, this.onTap});
 
   @override
   Widget build(BuildContext context) {

@@ -114,7 +114,7 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 
-  Widget socialAuthButton(String title, {Color color = Colors.white, @required void Function() onTap}) {
+  Widget socialAuthButton(String title, {Color color = Colors.white, required void Function() onTap}) {
     return InkWell(
       child: Container(
         color: color,
@@ -154,7 +154,7 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 
-  Widget customTextField(TextEditingController controller, {@required String labelText, bool isPassword = false}) {
+  Widget customTextField(TextEditingController controller, {required String labelText, bool isPassword = false}) {
     return Flexible(
       child: Center(
         child: TextField(

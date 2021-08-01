@@ -16,9 +16,9 @@ class PageWrapper extends StatefulWidget {
 }
 
 class _PageWrapperState extends State<PageWrapper> {
-  /*late*/ String /*!*/ userName;
-  /*late*/ User firebaseUser;
-  /*late*/ String selectedItem;
+  String userName = 'Default';
+  User? firebaseUser;
+  late String selectedItem;
 
   Map<String, Widget> getAllPages() => {
         'Профиль': ProfilePage(userName),
@@ -26,10 +26,10 @@ class _PageWrapperState extends State<PageWrapper> {
       };
 
   // В зависимости от выбранного айтема меняется отображаемый виджет
-  Widget /*!*/ getPage(String newSelectedItem) {
+  Widget getPage(String newSelectedItem) {
     Map<String, Widget> allPages = getAllPages();
     if (allPages.containsKey(newSelectedItem)) {
-      return allPages[newSelectedItem];
+      return allPages[newSelectedItem]!;
     } else {
       return Dashboard();
     }
@@ -43,26 +43,37 @@ class _PageWrapperState extends State<PageWrapper> {
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
-    firebaseUser = context.read<User>();
+  }
 
-    if (firebaseUser.displayName != null)
-      userName = firebaseUser.displayName;
-    else if (firebaseUser.email != null)
-      userName = firebaseUser.email.split('@').first;
-    else if (firebaseUser.phoneNumber != null)
-      userName = firebaseUser.phoneNumber;
-    else
+  void setUserName() {
+    if (firebaseUser == null)
       userName = 'Default name';
+    else {
+      if (!["", null].contains(firebaseUser!.displayName))
+        userName = firebaseUser!.displayName!;
+      else if (!["", null].contains(firebaseUser!.email))
+        userName = firebaseUser!.email!.split('@').first;
+      else if (!["", null].contains(firebaseUser!.phoneNumber)) userName = firebaseUser!.phoneNumber!;
+    }
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    firebaseUser = context.watch<User?>();
+    setUserName();
     selectedItem = context.watch<DrawerState>().selectedItem;
 
     return WillPopScope(
       onWillPop: () async {
-        SystemNavigator.pop();
-        return true;
+        if (context.read<DrawerState>().scaffoldKey.currentState!.isDrawerOpen) {
+          Navigator.pop(context);
+        } else if (selectedItem != 'Портфель') {
+          context.read<DrawerState>().changeSelectedItem('Портфель');
+        } else {
+          SystemNavigator.pop();
+        }
+        return false;
       },
       child: Scaffold(
         key: context.read<DrawerState>().scaffoldKey,
