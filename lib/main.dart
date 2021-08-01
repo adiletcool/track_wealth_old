@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
         Provider<AuthenticationService>(
           create: (ctx) => AuthenticationService(FirebaseAuth.instance),
         ),
-        StreamProvider<User? >(
+        StreamProvider<User?>(
           initialData: null,
           create: (ctx) => ctx.read<AuthenticationService>().authStateChanges,
         ),
@@ -64,11 +64,17 @@ class MyApp extends StatelessWidget {
 class AuthenticationWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final User? firebaseUser = context.watch<User? >();
-    if (firebaseUser != null) {
-      return PageWrapper();
-    } else {
-      return AuthPage();
-    }
+    return StreamBuilder(
+      stream: context.read<AuthenticationService>().authStateChanges,
+      builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasData) {
+          return PageWrapper();
+        } else {
+          return AuthPage();
+        }
+      },
+    );
   }
 }
