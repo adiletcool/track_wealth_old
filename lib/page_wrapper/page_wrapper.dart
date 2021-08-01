@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -15,17 +16,20 @@ class PageWrapper extends StatefulWidget {
 }
 
 class _PageWrapperState extends State<PageWrapper> {
-  String selectedItem;
+  /*late*/ String /*!*/ userName;
+  /*late*/ User firebaseUser;
+  /*late*/ String selectedItem;
 
-  Map<String, Widget> pages = {
-    'Профиль': ProfilePage(),
-    'Портфель': Dashboard(),
-  };
+  Map<String, Widget> getAllPages() => {
+        'Профиль': ProfilePage(userName),
+        'Портфель': Dashboard(),
+      };
 
   // В зависимости от выбранного айтема меняется отображаемый виджет
-  Widget getPage(String selectedItem) {
-    if (pages.containsKey(selectedItem)) {
-      return pages[selectedItem];
+  Widget /*!*/ getPage(String newSelectedItem) {
+    Map<String, Widget> allPages = getAllPages();
+    if (allPages.containsKey(newSelectedItem)) {
+      return allPages[newSelectedItem];
     } else {
       return Dashboard();
     }
@@ -39,6 +43,16 @@ class _PageWrapperState extends State<PageWrapper> {
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
+    firebaseUser = context.read<User>();
+
+    if (firebaseUser.displayName != null)
+      userName = firebaseUser.displayName;
+    else if (firebaseUser.email != null)
+      userName = firebaseUser.email.split('@').first;
+    else if (firebaseUser.phoneNumber != null)
+      userName = firebaseUser.phoneNumber;
+    else
+      userName = 'Default name';
   }
 
   @override
@@ -46,13 +60,19 @@ class _PageWrapperState extends State<PageWrapper> {
     selectedItem = context.watch<DrawerState>().selectedItem;
 
     return WillPopScope(
-      onWillPop: () {
+      onWillPop: () async {
         SystemNavigator.pop();
-        return;
+        return true;
       },
       child: Scaffold(
         key: context.read<DrawerState>().scaffoldKey,
-        drawer: !AppResponsive.isDesktop(context) ? SideBar() : null,
+        drawer: !AppResponsive.isDesktop(context)
+            ? SideBar(
+                selectedItem: selectedItem,
+                firebaseUser: firebaseUser,
+                userName: userName,
+              )
+            : null,
         backgroundColor: AppColor.sidebar,
         body: SafeArea(
           child: Row(
@@ -62,7 +82,11 @@ class _PageWrapperState extends State<PageWrapper> {
               if (AppResponsive.isDesktop(context))
                 Expanded(
                   flex: 3,
-                  child: SideBar(),
+                  child: SideBar(
+                    selectedItem: selectedItem,
+                    firebaseUser: firebaseUser,
+                    userName: userName,
+                  ),
                 ),
               Expanded(
                 flex: 11,

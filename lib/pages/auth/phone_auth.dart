@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
+import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:pinput/pin_put/pin_put.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/auth_service.dart';
@@ -27,7 +27,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
 
   Timer sendCodeAgainTimer;
   final int resendTimeout = 119;
-  int sendCodeAgainSecondsLeft;
+  /*late*/ int sendCodeAgainSecondsLeft;
   bool canSendAgain = false;
 
   String phoneVerificationId;
@@ -182,7 +182,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
   Widget sampleButton({
     @required String title,
     bool canTap = true,
-    @required Function onTap,
+    @required void Function() onTap,
   }) {
     return InkWell(
       child: Container(

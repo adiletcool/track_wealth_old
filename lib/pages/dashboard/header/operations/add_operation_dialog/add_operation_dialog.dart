@@ -18,14 +18,11 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
     'Деньги': ["Внести", "Вывести", "Доход", "Расход"],
   };
 
-  String actionType; // Акции / Деньги
-  List<String> selectedActions; // ['Купить', 'Продать'] / ["Внести", "Вывести", "Доход", "Расход"]
-  String action; // Купить / Внести
+  /*late*/ String actionType; // Акции / Деньги
+  /*late*/ List<String> /*!*/ selectedActions; // ['Купить', 'Продать'] / ["Внести", "Вывести", "Доход", "Расход"]
+  /*late*/ String action; // Купить / Внести
 
   Asset selectedAsset; // Н-р, Asset("sber:moex", Сбербанк)
-  num selectedAssetPrice;
-  int selectedAssetPriceDecimals = 6;
-  int selectedAssetLotSize;
 
   DateTime selectedDate = DateTime.now();
   TimeOfDay selectedTime = TimeOfDay.now();
@@ -66,11 +63,11 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
     if (selectedAsset != newSelectedAsset)
       setState(() {
         selectedAsset = newSelectedAsset;
-        // TODO await цену и lotSize на выбранный Asset
-        // selectedAssePrice = ...
-        // selectedAssetLotSize = ...
-        // selectedAssetPriceDecimals = ...
-        // priceController.text = newSelectedAsset.price.toString();
+        // TODO await price, lotSize, priceDecimals
+        selectedAsset.price = 100.125;
+        selectedAsset.lotSize = 10;
+        selectedAsset.priceDecimals = 3;
+        priceController.text = newSelectedAsset.price.toString();
       });
   }
 
@@ -118,9 +115,9 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
                 runSpacing: 20,
                 children: [
                   //! actionType Акции / Деньги
-                  buttonsRow(buttons: actions.keys, compareTo: actionType, onTap: changeActionType),
+                  buttonsRow(buttons: actions.keys, selectedValue: actionType, onTap: changeActionType),
                   //! actions ['Купить', 'Продать'] / ["Внести", "Вывести", "Доход", "Расход"]
-                  buttonsRow(buttons: selectedActions, compareTo: action, onTap: changeAction),
+                  buttonsRow(buttons: selectedActions, selectedValue: action, onTap: changeAction),
                   //!
                   if (actionType == actions.keys.first) //! search for assets
                     SizedBox(
@@ -142,7 +139,7 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
                       controller: priceController,
                       label: "Цена",
                       suffixText: '₽',
-                      decimalRange: selectedAssetPriceDecimals,
+                      decimalRange: selectedAsset?.priceDecimals ?? 6,
                     ),
                     Tooltip(
                       message: 'Размер лота * Количество лотов',
@@ -155,7 +152,7 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
                         label: "Количество",
                         suffixText: 'шт',
                         onlyInteger: true,
-                        counterText: selectedAssetLotSize == null ? '' : "1 лот = $selectedAssetLotSize шт.",
+                        counterText: selectedAsset?.lotSize == null ? '' : "1 лот = ${selectedAsset?.lotSize} шт.",
                       ),
                     ),
                     myTextField(
@@ -221,7 +218,7 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
     );
   }
 
-  Container buttonsRow({Iterable<String> buttons, String compareTo, Function(String) onTap}) {
+  Container buttonsRow({@required Iterable<String> buttons, @required String selectedValue, @required Function(String value) onTap}) {
     return Container(
       decoration: BoxDecoration(
         color: AppColor.grey,
@@ -242,9 +239,12 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
                         : e == buttons.last
                             ? BorderRadius.only(bottomRight: Radius.circular(10), topRight: Radius.circular(10))
                             : null,
-                    color: e == compareTo ? AppColor.selectedDrawerItem : AppColor.grey,
+                    color: e == selectedValue ? AppColor.selectedDrawerItem : AppColor.grey,
                   ),
-                  child: Text(e, style: TextStyle(color: compareTo == e ? AppColor.white : AppColor.selectedDrawerItem)),
+                  child: Text(
+                    e,
+                    style: TextStyle(color: selectedValue == e ? AppColor.white : AppColor.selectedDrawerItem),
+                  ),
                 ),
                 onTap: () => onTap(e),
               ),

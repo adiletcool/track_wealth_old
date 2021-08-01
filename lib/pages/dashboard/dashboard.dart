@@ -5,8 +5,6 @@ import 'package:track_wealth/common/constants.dart';
 
 import 'header/header.dart';
 import 'portfolio/portfolio.dart';
-// import 'package:track_wealth/pages/dashboard/header/header.dart';
-// import 'package:track_wealth/pages/dashboard/portfolio/portfolio.dart';
 
 class Dashboard extends StatefulWidget {
   @override
@@ -14,11 +12,6 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
   final ScrollController scrollController = ScrollController();
 
   @override

@@ -15,7 +15,7 @@ class Header extends StatefulWidget {
 class _HeaderState extends State<Header> {
   final TextStyle headerStyle = TextStyle(fontWeight: FontWeight.w600, color: AppColor.black, fontSize: 22);
 
-  num portfolioTotal;
+  /*late*/ num portfolioTotal;
   List<num> todayChange;
   List<num> allTimeChange;
 
@@ -111,10 +111,9 @@ class _HeaderState extends State<Header> {
 
 class AmountRow extends StatelessWidget {
   const AmountRow({
-    Key key,
     @required this.headerStyle,
     @required this.portfolioTotal,
-  }) : super(key: key);
+  });
 
   final TextStyle headerStyle;
   final num portfolioTotal;

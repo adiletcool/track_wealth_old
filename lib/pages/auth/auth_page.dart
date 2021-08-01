@@ -44,7 +44,7 @@ class _AuthPageState extends State<AuthPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    "WEALTHTRACK",
+                    "TRACKWEALTH",
                     style: TextStyle(color: AppColor.selectedDrawerItem, fontSize: 44, fontFamily: 'RussoOne'),
                   ),
                   SizedBox(height: 20),
@@ -114,7 +114,7 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 
-  Widget socialAuthButton(String title, {Color color = Colors.white, @required Function onTap}) {
+  Widget socialAuthButton(String title, {Color color = Colors.white, @required void Function() onTap}) {
     return InkWell(
       child: Container(
         color: color,

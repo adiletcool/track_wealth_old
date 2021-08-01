@@ -25,11 +25,10 @@ dependencies:
   cupertino_icons: ^1.0.3
   provider: ^5.0.0
   intl: ^0.17.0
-  flutter_bloc: ^7.0.1
   dio: ^4.0.0
   flutter_typeahead: ^3.2.0
-  data_table_2: ^2.0.4
-  flutter_masked_text: ^0.8.0
+  data_table_2: ^2.1.0
+  flutter_masked_text2: ^0.9.1
   pinput: ^1.2.0
 
 dev_dependencies:

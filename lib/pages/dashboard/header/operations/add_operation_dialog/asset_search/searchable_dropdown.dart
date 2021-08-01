@@ -10,7 +10,7 @@ import "asset_model.dart";
 class AssetSearchField extends StatefulWidget {
   final void Function(Asset selectedAsset) selectedAssetCallback;
   final Asset preSelectedAsset;
-  AssetSearchField({Key key, @required this.selectedAssetCallback, this.preSelectedAsset}) : super(key: key);
+  AssetSearchField({@required this.selectedAssetCallback, this.preSelectedAsset});
 
   @override
   _AssetSearchFieldState createState() => _AssetSearchFieldState();
@@ -23,7 +23,7 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
   @override
   void initState() {
     super.initState();
-    if (widget.preSelectedAsset != null) typeAheadController.text = widget.preSelectedAsset.secid;
+    if (widget.preSelectedAsset != null) typeAheadController.text = widget.preSelectedAsset.secId;
   }
 
   @override
@@ -35,7 +35,7 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
     );
   }
 
-  Widget assetTypeAhead({Key formKey, TextEditingController controller}) {
+  Widget assetTypeAhead({@required Key formKey, @required TextEditingController controller}) {
     return Form(
       key: formKey,
       child: TypeAheadField<Asset>(
@@ -63,7 +63,7 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
 
   Widget searchItemBuilder(BuildContext context, Asset asset) {
     return ListTile(
-      title: Text(asset.shortname),
+      title: Text(asset.shortName),
       subtitle: Text(
         "${asset.name})",
         maxLines: 2,
@@ -73,7 +73,7 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
   }
 
   void onSuggesionSelected(Asset newAsset) {
-    typeAheadController.text = newAsset.secid;
+    typeAheadController.text = newAsset.secId;
     widget.selectedAssetCallback(newAsset);
   }
 

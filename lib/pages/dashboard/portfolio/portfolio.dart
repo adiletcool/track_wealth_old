@@ -11,12 +11,12 @@ class Portfolio extends StatefulWidget {
 }
 
 class _PortfolioState extends State<Portfolio> {
-  Map<String, bool> colFilter;
+  Map<String, bool> /*!*/ colFilter;
   Map<String, dynamic> sortedColumn;
   int sortedColumnIndex;
   List<Map<String, dynamic>> myColumns;
   ScrollController tableScrollController = ScrollController();
-  List<PortfolioAsset> portfolioAssets;
+  List<PortfolioAsset> /*!*/ portfolioAssets;
 
   @override
   void didChangeDependencies() {
@@ -147,19 +147,20 @@ class PortfolioAsset {
   final num quantity; // Количество штук (размер лота * количество лотов)
   final num meanPrice; // Средняя цена покупки
   final num profit; // Доход (Руб) с момента покупки
-  final num yield; // Доход (%) с момента покупки
+  final num profitPercent; // Доход (%) с момента покупки
   final num share; // Доля в портфеле
   final num worth; // Текущая рыночная стоимость
 
-  PortfolioAsset(this.name, this.quantity, this.meanPrice, this.profit, this.yield, this.share, this.worth);
+  PortfolioAsset(this.name, this.quantity, this.meanPrice, this.profit, this.profitPercent, this.share, this.worth);
 
   dynamic getParam(int index, {@required Map<String, bool> filter}) {
+    // return "non-nullable dynamic"
     return [
       name,
       if (filter['Количество']) quantity,
       if (filter['Ср. Цена, ₽']) meanPrice,
       if (filter['Прибыль, ₽']) profit,
-      if (filter['Прибыль, %']) yield,
+      if (filter['Прибыль, %']) profitPercent,
       if (filter['Доля, %']) share,
       worth,
     ][index];
@@ -171,7 +172,7 @@ class PortfolioAsset {
       if (filter['Количество']) MyFormatter.intFormat(quantity),
       if (filter['Ср. Цена, ₽']) meanPrice,
       if (filter['Прибыль, ₽']) profit,
-      if (filter['Прибыль, %']) yield,
+      if (filter['Прибыль, %']) profitPercent,
       if (filter['Доля, %']) share,
       worth,
     ];
@@ -179,6 +180,6 @@ class PortfolioAsset {
 
   @override
   String toString() {
-    return "PortfolioAsset($name, $quantity, $meanPrice, $profit, $yield, $share, $worth)";
+    return "PortfolioAsset($name, $quantity, $meanPrice, $profit, $profitPercent, $share, $worth)";
   }
 }

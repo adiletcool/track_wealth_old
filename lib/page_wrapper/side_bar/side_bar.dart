@@ -7,18 +7,21 @@ import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/drawer_state.dart';
 
 class SideBar extends StatefulWidget {
+  final String userName;
+  final User firebaseUser;
+  final String selectedItem;
+
+  const SideBar({@required this.selectedItem, @required this.userName, @required this.firebaseUser});
+
   @override
   _SideBarState createState() => _SideBarState();
 }
 
 class _SideBarState extends State<SideBar> {
-  String selectedItem;
   List<Map<String, dynamic>> drawerItems = [];
-  User firebaseUser;
-  String userName = '';
 
   void changePage(String newSelectedItem) {
-    if (selectedItem != newSelectedItem) {
+    if (widget.selectedItem != newSelectedItem) {
       context.read<DrawerState>().changeSelectedItem(newSelectedItem);
     }
     if (!AppResponsive.isDesktop(context)) Navigator.pop(context);
@@ -51,7 +54,7 @@ class _SideBarState extends State<SideBar> {
               onPressed: () {
                 Navigator.pop(context);
                 context.read<DrawerState>().changeSelectedItem('Портфель');
-                context.read<AuthenticationService>().signOut(firebaseUser);
+                context.read<AuthenticationService>().signOut(widget.firebaseUser);
               },
             ),
             TextButton(
@@ -66,17 +69,7 @@ class _SideBarState extends State<SideBar> {
 
   @override
   Widget build(BuildContext context) {
-    firebaseUser = context.read<User>();
-    if ((firebaseUser != null) && (userName == '')) {
-      if (firebaseUser.displayName != null)
-        userName = firebaseUser.displayName;
-      else if (firebaseUser.email != null)
-        userName = firebaseUser.email.split('@').first;
-      else if (firebaseUser.phoneNumber != null) userName = firebaseUser.phoneNumber;
-    }
     drawerItems = getDrawerItems();
-
-    selectedItem = context.read<DrawerState>().selectedItem;
 
     return Drawer(
       elevation: 0,
@@ -90,7 +83,7 @@ class _SideBarState extends State<SideBar> {
               Container(
                 margin: const EdgeInsets.all(20),
                 child: Text(
-                  "WEALTHTRACK",
+                  "TRACKWEALTH",
                   style: TextStyle(
                     color: AppColor.selectedDrawerItem,
                     fontSize: 25,
@@ -99,17 +92,17 @@ class _SideBarState extends State<SideBar> {
                 ),
               ),
               DrawerListTile(
-                title: userName,
+                title: widget.userName,
                 icon: Icons.person_rounded,
                 onTapFunc: () => changePage('Профиль'),
-                isSelected: selectedItem == 'Профиль',
+                isSelected: widget.selectedItem == 'Профиль',
               ),
               ...drawerItems
                   .map((e) => DrawerListTile(
                         title: e['title'],
                         icon: e['icon'],
                         onTapFunc: () => e['onTap'](e['title']),
-                        isSelected: selectedItem == e['title'],
+                        isSelected: widget.selectedItem == e['title'],
                       ))
                   .toList(),
               Divider(),
@@ -128,9 +121,9 @@ class _SideBarState extends State<SideBar> {
 }
 
 class DrawerListTile extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Function onTapFunc;
+  final String /*!*/ title;
+  final IconData /*!*/ icon;
+  final void Function() onTapFunc;
   final bool isSelected;
 
   const DrawerListTile({@required this.title, @required this.icon, @required this.onTapFunc, @required this.isSelected});

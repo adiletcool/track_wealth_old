@@ -34,12 +34,12 @@ class PortfolioState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateSortedColumn(String columnName, bool isAscending) {
+  void updateSortedColumn(String/*!*/ columnName, bool isAscending) {
     sortedColumn.update('title', (value) => columnName);
     sortedColumn.update('ascending', (value) => isAscending);
   }
 
-  Future<List<PortfolioAsset>> getPortfolioAssets() async {
+  Future<List<PortfolioAsset>/*!*/> getPortfolioAssets() async {
     if ((portfolioAssets == null)) {
       await Future.delayed(const Duration(seconds: 1));
       // await data from server...
