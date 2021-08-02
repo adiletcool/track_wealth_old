@@ -90,7 +90,7 @@ class _HeaderState extends State<Header> {
 
   num calculateTotal() {
     // ! round to 2 decimal
-    return 154880.20;
+    return 1154880.20;
   }
 
   List<num> calculateTodayChange() {
@@ -98,7 +98,7 @@ class _HeaderState extends State<Header> {
   }
 
   List<num> calculalteAllTimeChange() {
-    return [22854, 12.3];
+    return [122854, 12.3];
   }
 
   TextStyle changeTextStyle(num change) {

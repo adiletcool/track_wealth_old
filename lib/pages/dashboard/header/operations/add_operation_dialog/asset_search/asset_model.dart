@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:dio/dio.dart';
+
 class Asset {
   final int id;
   final String secId;
@@ -22,7 +25,7 @@ class Asset {
 
   Asset({
     required this.id, // 2700
-    required this.secId, // "AFLT"
+    required this.secId, // "AFLT"  -- тикер
     required this.shortName, // "Аэрофлот"
     required this.regNumber, // "1-01-00010-A"
     required this.name, // "Аэрофлот-росс.авиалин(ПАО)ао"
@@ -69,8 +72,33 @@ class Asset {
     var onlyStocks = listOfLists.where((e) {
       return ["stock_shares", "stock_dr"].contains(e[13]); // только акции или деп расписки
     }).toList();
-    print(onlyStocks.runtimeType);
     return onlyStocks.map((item) => Asset.fromList(item)).toList();
+  }
+
+  Future<void> getStockData() async {
+    String securityName = "${this.primaryBoardId}:${this.secId}";
+
+    String url = "https://iss.moex.com/iss/engines/stock/markets/shares/securities.jsonp";
+    Map<String, String> params = {
+      'iss.meta': 'off',
+      'iss.only': 'securities,marketdata',
+      'securities': securityName,
+      'lang': 'ru',
+    };
+
+    var response = await Dio().get(url, queryParameters: params);
+
+    Map<String, dynamic> result = Map<String, dynamic>.from(json.decode(response.data));
+    Map<String, dynamic> marketdata = result['marketdata']!;
+    Map<String, dynamic> securities = result['securities']!;
+
+    if (marketdata['data']!.length != 0) {
+      Map marketdataAsMap = Map.fromIterables(marketdata['columns']!, marketdata['data']!.first);
+      Map seceurities = Map.fromIterables(securities['columns']!, securities['data']!.first);
+      this.price = marketdataAsMap['LAST'] ?? marketdataAsMap['MARKETPRICE'];
+      this.lotSize = seceurities['LOTSIZE'];
+      this.priceDecimals = seceurities['DECIMALS'];
+    }
   }
 
   @override

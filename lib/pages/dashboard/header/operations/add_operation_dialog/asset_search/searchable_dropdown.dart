@@ -10,6 +10,7 @@ import "asset_model.dart";
 class AssetSearchField extends StatefulWidget {
   final void Function(Asset selectedAsset) selectedAssetCallback;
   final Asset? preSelectedAsset;
+
   AssetSearchField({required this.selectedAssetCallback, this.preSelectedAsset});
 
   @override
@@ -29,7 +30,7 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: AppResponsive.isMobile(context) ? 300 : 400,
+      width: AppResponsive.isMobile(context) ? 320 : 400,
       height: 42.5,
       child: assetTypeAhead(formKey: formKey, controller: typeAheadController),
     );
@@ -49,7 +50,7 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
         ),
         suggestionsCallback: (String query) async => getSearchSuggestion(query),
         itemBuilder: (BuildContext context, Asset asset) => searchItemBuilder(context, asset),
-        onSuggestionSelected: (Asset selectedAsset) => onSuggesionSelected(selectedAsset),
+        onSuggestionSelected: onSuggesionSelected,
         hideOnEmpty: true,
         noItemsFoundBuilder: (BuildContext context) => Container(),
         suggestionsBoxDecoration: SuggestionsBoxDecoration(
@@ -72,15 +73,16 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
     );
   }
 
-  void onSuggesionSelected(Asset newAsset) {
-    typeAheadController.text = newAsset.secId;
-    widget.selectedAssetCallback(newAsset);
+  Future<void> onSuggesionSelected(Asset selectedAsset) async {
+    typeAheadController.text = selectedAsset.secId;
+    await selectedAsset.getStockData();
+    widget.selectedAssetCallback(selectedAsset);
   }
 
   Future<List<Asset>> getSearchSuggestion(String query) async {
     if (query.length >= 2) {
       var url = "https://iss.moex.com/iss/securities.json";
-      Map<String, dynamic> params = {"q": query, "iss.meta": "off"};
+      Map<String, String> params = {"q": query, "iss.meta": "off"};
 
       var response = await Dio().get(url, queryParameters: params);
 

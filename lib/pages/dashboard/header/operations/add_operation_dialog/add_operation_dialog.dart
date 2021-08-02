@@ -59,15 +59,10 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
   }
 
   void changeSelectedAsset(Asset newSelectedAsset) {
-    // Future<void> ... async
     if (selectedAsset != newSelectedAsset)
       setState(() {
         selectedAsset = newSelectedAsset;
-        // TODO await price, lotSize, priceDecimals
-        selectedAsset!.price = 100.125;
-        selectedAsset!.lotSize = 10;
-        selectedAsset!.priceDecimals = 3;
-        priceController.text = newSelectedAsset.price.toString();
+        priceController.text = selectedAsset!.price?.toString() ?? '';
       });
   }
 
@@ -139,6 +134,7 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
                       controller: priceController,
                       label: "Цена",
                       suffixText: '₽',
+                      onlyInteger: selectedAsset?.priceDecimals == 0 ? true : false,
                       decimalRange: selectedAsset?.priceDecimals ?? 6,
                     ),
                     Tooltip(
