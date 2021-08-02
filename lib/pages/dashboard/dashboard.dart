@@ -16,10 +16,12 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
+    Color bgColor = Theme.of(context).brightness == Brightness.dark ? Colors.black : AppColor.white;
+
     return Container(
       margin: EdgeInsets.only(top: AppResponsive.isMobile(context) ? 0 : 10),
       // padding: EdgeInsets.only(top: AppResponsive.isMobile(context) ? 0 : 10),
-      color: AppColor.sidebar,
+      color: bgColor,
       child: CustomScrollView(
         controller: scrollController,
         slivers: [

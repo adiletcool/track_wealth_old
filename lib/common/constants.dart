@@ -19,10 +19,10 @@ class AppColor {
   static Color black = Colors.black;
   static Color grey = Color(0xffF5F5F5);
   static Color darkGrey = Color(0xff8a8a8a);
-  static Color sidebar = Colors.white;
   static Color white = Colors.white;
   static Color green = Color(0xff34A853);
   static Color red = Color(0xffCD4932);
+  static Color bgDark = Color(0xFF1A1A1A);
 }
 
 class MyFormatter {

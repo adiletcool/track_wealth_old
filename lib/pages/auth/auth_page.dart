@@ -136,18 +136,19 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Widget loginPasswordTextFields() {
+    Color borderColor = (Theme.of(context).brightness == Brightness.dark ? AppColor.grey : Colors.black).withOpacity(.3);
     return Container(
       height: 150,
       width: 385,
       decoration: roundedBoxDecoration.copyWith(
-        border: Border.all(color: Colors.black, width: 1),
+        border: Border.all(color: borderColor, width: 1),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           customTextField(emailController, labelText: 'Почта'),
-          Divider(color: Colors.black, thickness: 1, height: 1),
+          Divider(color: borderColor, thickness: 1, height: 1),
           customTextField(passwordController, labelText: 'Пароль', isPassword: true),
         ],
       ),

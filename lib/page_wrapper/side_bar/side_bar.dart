@@ -70,11 +70,12 @@ class _SideBarState extends State<SideBar> {
   @override
   Widget build(BuildContext context) {
     drawerItems = getDrawerItems();
+    Color bgColor = Theme.of(context).brightness == Brightness.dark ? AppColor.bgDark : AppColor.grey;
 
     return Drawer(
       elevation: 0,
       child: Container(
-        color: AppColor.grey,
+        color: bgColor,
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,7 +131,9 @@ class DrawerListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color itemColor = isSelected ? AppColor.selectedDrawerItem : AppColor.black;
+    Color textColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : AppColor.black;
+
+    Color itemColor = isSelected ? AppColor.selectedDrawerItem : textColor;
     return ListTile(
       onTap: onTapFunc,
       horizontalTitleGap: 0.0,

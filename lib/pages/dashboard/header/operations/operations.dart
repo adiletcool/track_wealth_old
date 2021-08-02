@@ -12,11 +12,13 @@ class Operations extends StatefulWidget {
 class _OperationsState extends State<Operations> {
   @override
   Widget build(BuildContext context) {
+    Color bgColor = Theme.of(context).brightness == Brightness.dark ? AppColor.bgDark : AppColor.grey;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        color: AppColor.grey,
+        color: bgColor,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,

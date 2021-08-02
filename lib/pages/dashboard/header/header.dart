@@ -13,7 +13,7 @@ class Header extends StatefulWidget {
 }
 
 class _HeaderState extends State<Header> {
-  final TextStyle headerStyle = TextStyle(fontWeight: FontWeight.w600, color: AppColor.black, fontSize: 22);
+  final TextStyle headerStyle = TextStyle(fontWeight: FontWeight.w600, fontSize: 22);
 
   late num portfolioTotal;
   late List<num> todayChange;
@@ -59,10 +59,12 @@ class _HeaderState extends State<Header> {
   }
 
   Container amountChangedCard(BuildContext context) {
+    Color bgColor = Theme.of(context).brightness == Brightness.dark ? AppColor.bgDark : AppColor.grey;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
       decoration: BoxDecoration(
-        color: AppColor.grey,
+        color: bgColor,
         borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
@@ -77,10 +79,12 @@ class _HeaderState extends State<Header> {
   }
 
   Widget changeCardColumn(String title, List<num> value) {
+    Color textColor = Theme.of(context).brightness == Brightness.dark ? Colors.grey : AppColor.darkGrey;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: TextStyle(color: AppColor.darkGrey, fontSize: 17)),
+        Text(title, style: TextStyle(color: textColor, fontSize: 17)),
         SizedBox(height: 10),
         Text("${MyFormatter.numFormat(value[0])} ₽", style: changeTextStyle(value[0])),
         Text("${value[1]}%", style: changeTextStyle(value[1])),

@@ -40,9 +40,17 @@ class MyApp extends StatelessWidget {
         supportedLocales: [
           const Locale('ru'),
         ],
+        themeMode: ThemeMode.system,
+        darkTheme: ThemeData(
+          brightness: Brightness.dark,
+          fontFamily: 'Rubik',
+        ),
+        theme: ThemeData(
+          brightness: Brightness.light,
+          fontFamily: 'Rubik',
+        ),
         title: 'TrackWealth',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(brightness: Brightness.light, fontFamily: 'Rubik'),
         home: FutureBuilder(
           future: _initialization,
           builder: (context, snapshot) {

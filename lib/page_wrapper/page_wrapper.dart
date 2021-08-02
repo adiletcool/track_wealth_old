@@ -84,7 +84,6 @@ class _PageWrapperState extends State<PageWrapper> {
                 userName: userName,
               )
             : null,
-        backgroundColor: AppColor.sidebar,
         body: SafeArea(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,

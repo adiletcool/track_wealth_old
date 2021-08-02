@@ -40,12 +40,12 @@ class _ColumnFilterIconState extends State<ColumnFilterIcon> {
     colFilter = AppResponsive.isMobile(context) ? context.watch<PortfolioState>().mobileColumnFilter : context.watch<PortfolioState>().columnFilter;
 
     return PopupMenuButton(
-      icon: Icon(Icons.view_week_rounded, color: Colors.black87),
+      icon: Icon(Icons.view_week_rounded),
       itemBuilder: (BuildContext context) => getPopUpMenuItems(),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       padding: const EdgeInsets.all(0),
       tooltip: 'Фильтр',
-      color: AppColor.grey,
+      // color: AppColor.grey,
       offset: Offset(0, 40),
     );
   }

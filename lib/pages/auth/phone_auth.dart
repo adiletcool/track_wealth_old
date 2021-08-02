@@ -135,12 +135,13 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
     BoxDecoration eachFieldDecoration = BoxDecoration(
       border: Border(bottom: BorderSide(color: AppColor.selectedDrawerItem)),
     );
+    Color textColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
     return Column(
       children: [
         Text(
           isError ? errorMsg : 'Введите код из СМС',
           textAlign: TextAlign.center,
-          style: TextStyle(color: isError ? Colors.red : Colors.black),
+          style: TextStyle(color: isError ? Colors.red : textColor),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20),

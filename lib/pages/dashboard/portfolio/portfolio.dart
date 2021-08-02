@@ -54,6 +54,8 @@ class _PortfolioState extends State<Portfolio> {
       sortedColumnIndex = null;
     }
 
+    Color bgColor = Theme.of(context).brightness == Brightness.dark ? AppColor.bgDark : AppColor.grey;
+
     return FutureBuilder(
       future: getPortfolioAssets(),
       builder: (BuildContext context, AsyncSnapshot<List<PortfolioAsset>> snapshot) {
@@ -70,7 +72,7 @@ class _PortfolioState extends State<Portfolio> {
           margin: const EdgeInsets.all(10),
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: AppColor.grey,
+            color: bgColor,
             borderRadius: BorderRadius.circular(10),
           ),
           child: buildTable(),

@@ -14,12 +14,14 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
+    Color bgColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.menu_rounded, color: Colors.black),
+          icon: Icon(Icons.menu_rounded, color: bgColor),
           onPressed: context.read<DrawerState>().controlMenu,
         ),
       ),

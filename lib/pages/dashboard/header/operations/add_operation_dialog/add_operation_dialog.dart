@@ -70,6 +70,9 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
   Widget build(BuildContext context) {
     //TODO: Валидатор для selectedAsset(а не значение поля) и selectedDate
     //TODO: Валидатор для значения полей цены и количества
+
+    Color bgColor = Theme.of(context).brightness == Brightness.dark ? AppColor.bgDark : AppColor.white;
+
     return AlertDialog(
       insetPadding: const EdgeInsets.all(0),
       backgroundColor: Colors.transparent,
@@ -78,7 +81,7 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
         height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: AppColor.white,
+          color: bgColor,
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -95,7 +98,6 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
                   IconButton(
                     icon: Icon(Icons.close),
                     iconSize: 28,
-                    color: AppColor.selectedDrawerItem,
                     hoverColor: Colors.transparent,
                     highlightColor: Colors.transparent,
                     onPressed: () => Navigator.pop(context),
@@ -217,7 +219,6 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
   Container buttonsRow({required Iterable<String> buttons, required String selectedValue, required Function(String value) onTap}) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColor.grey,
         border: Border.all(width: 1, color: AppColor.selectedDrawerItem),
         borderRadius: BorderRadius.circular(10),
       ),
