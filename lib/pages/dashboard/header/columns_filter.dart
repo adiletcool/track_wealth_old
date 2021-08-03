@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/app_responsive.dart';
-import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/portfolio_state.dart';
 
 class ColumnFilterIcon extends StatefulWidget {
@@ -11,6 +10,26 @@ class ColumnFilterIcon extends StatefulWidget {
 
 class _ColumnFilterIconState extends State<ColumnFilterIcon> {
   late Map<String, bool> colFilter;
+
+  @override
+  Widget build(BuildContext context) {
+    colFilter = AppResponsive.isMobile(context) ? context.read<PortfolioState>().mobileColumnFilter : context.read<PortfolioState>().columnFilter;
+
+    return PopupMenuButton(
+      icon: Icon(Icons.view_week_rounded),
+      itemBuilder: (BuildContext context) => getPopUpMenuItems(),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      padding: const EdgeInsets.all(0),
+      tooltip: 'Фильтр',
+      // color: AppColor.grey,
+      offset: Offset(0, 40),
+    );
+  }
+
+  void filterColumn(String columnName, bool newValue, Function _setState) {
+    context.read<PortfolioState>().updateFilter(columnName, newValue, AppResponsive.isMobile(context));
+    _setState(() {});
+  }
 
   List<PopupMenuItem> getPopUpMenuItems() {
     return colFilter.keys
@@ -28,25 +47,5 @@ class _ColumnFilterIconState extends State<ColumnFilterIcon> {
           ),
         )
         .toList();
-  }
-
-  void filterColumn(String columnName, bool newValue, Function _setState) {
-    context.read<PortfolioState>().updateFilter(columnName, newValue, AppResponsive.isMobile(context));
-    _setState(() => colFilter[columnName] = newValue);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    colFilter = AppResponsive.isMobile(context) ? context.watch<PortfolioState>().mobileColumnFilter : context.watch<PortfolioState>().columnFilter;
-
-    return PopupMenuButton(
-      icon: Icon(Icons.view_week_rounded),
-      itemBuilder: (BuildContext context) => getPopUpMenuItems(),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      padding: const EdgeInsets.all(0),
-      tooltip: 'Фильтр',
-      // color: AppColor.grey,
-      offset: Offset(0, 40),
-    );
   }
 }

@@ -1,107 +1,41 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/app_responsive.dart';
-import 'package:track_wealth/common/drawer_state.dart';
-import 'package:track_wealth/pages/dashboard/dashboard.dart';
-import 'package:track_wealth/pages/profile/profile.dart';
+import 'package:track_wealth/pages/side_bar/side_bar.dart';
 
-import 'side_bar/side_bar.dart';
+class PageWrapper extends StatelessWidget {
+  final String routeName;
+  final GlobalKey<ScaffoldState> drawerKey;
+  final PreferredSizeWidget? appBar;
+  final Widget body;
 
-class PageWrapper extends StatefulWidget {
-  @override
-  _PageWrapperState createState() => _PageWrapperState();
-}
-
-class _PageWrapperState extends State<PageWrapper> {
-  String userName = 'Default';
-  User? firebaseUser;
-  late String selectedItem;
-
-  Map<String, Widget> getAllPages() => {
-        'Профиль': ProfilePage(userName),
-        'Портфель': Dashboard(),
-      };
-
-  // В зависимости от выбранного айтема меняется отображаемый виджет
-  Widget getPage(String newSelectedItem) {
-    Map<String, Widget> allPages = getAllPages();
-    if (allPages.containsKey(newSelectedItem)) {
-      return allPages[newSelectedItem]!;
-    } else {
-      return Dashboard();
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-    ]);
-  }
-
-  void setUserName() {
-    if (firebaseUser == null)
-      userName = 'Default name';
-    else {
-      if (!["", null].contains(firebaseUser!.displayName))
-        userName = firebaseUser!.displayName!;
-      else if (!["", null].contains(firebaseUser!.email))
-        userName = firebaseUser!.email!.split('@').first;
-      else if (!["", null].contains(firebaseUser!.phoneNumber)) userName = firebaseUser!.phoneNumber!;
-    }
-    setState(() {});
-  }
+  PageWrapper({required this.routeName, required this.drawerKey, required this.body, this.appBar});
 
   @override
   Widget build(BuildContext context) {
-    firebaseUser = context.watch<User?>();
-    setUserName();
-    selectedItem = context.watch<DrawerState>().selectedItem;
-
     return WillPopScope(
       onWillPop: () async {
-        if (context.read<DrawerState>().scaffoldKey.currentState!.isDrawerOpen) {
-          Navigator.pop(context);
-        } else if (selectedItem != 'Портфель') {
-          context.read<DrawerState>().changeSelectedItem('Портфель');
-        } else {
+        if (routeName == '/dashboard')
           SystemNavigator.pop();
-        }
+        else
+          Navigator.pushNamed(context, '/dashboard');
         return false;
       },
       child: Scaffold(
-        key: context.read<DrawerState>().scaffoldKey,
-        drawer: !AppResponsive.isDesktop(context)
-            ? SideBar(
-                selectedItem: selectedItem,
-                firebaseUser: firebaseUser,
-                userName: userName,
-              )
-            : null,
+        key: drawerKey,
+        drawer: !AppResponsive.isDesktop(context) ? SideBar(selectedRouteName: routeName) : null,
+        appBar: appBar,
         body: SafeArea(
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ! Side Navigation Menu
               if (AppResponsive.isDesktop(context))
-                Expanded(
-                  flex: 3,
+                SizedBox(
+                  width: 300,
                   child: SideBar(
-                    selectedItem: selectedItem,
-                    firebaseUser: firebaseUser,
-                    userName: userName,
+                    selectedRouteName: routeName,
                   ),
                 ),
-              Expanded(
-                flex: 11,
-                child: getPage(selectedItem),
-              ),
+              Expanded(flex: 11, child: body),
             ],
           ),
         ),

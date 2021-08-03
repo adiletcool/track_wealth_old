@@ -277,7 +277,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
       );
       String res = await context.read<AuthenticationService>().signInWithCreds(creds);
       if ((res == 'Signed in') || (res == 'session-expired'))
-        Navigator.pop(context);
+        Navigator.pushNamed(context, '/dashboard');
       else
         codeErrorUpdate(res);
     }

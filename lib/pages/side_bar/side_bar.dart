@@ -2,16 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/auth_service.dart';
-import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/constants.dart';
-import 'package:track_wealth/common/drawer_state.dart';
 
 class SideBar extends StatefulWidget {
-  final String userName;
-  final User? firebaseUser;
-  final String selectedItem;
-
-  const SideBar({required this.selectedItem, required this.userName, required this.firebaseUser});
+  final String selectedRouteName;
+  const SideBar({required this.selectedRouteName});
 
   @override
   _SideBarState createState() => _SideBarState();
@@ -20,26 +15,32 @@ class SideBar extends StatefulWidget {
 class _SideBarState extends State<SideBar> {
   List<Map<String, dynamic>> drawerItems = [];
 
-  void changePage(String newSelectedItem) {
-    if (widget.selectedItem != newSelectedItem) {
-      context.read<DrawerState>().changeSelectedItem(newSelectedItem);
+  void changePage(String? route) {
+    if (route != null) {
+      if (ModalRoute.of(context)!.settings.name == route) {
+        Navigator.pop(context);
+      } else {
+        Navigator.pushNamed(context, route);
+      }
     }
-    if (!AppResponsive.isDesktop(context)) Navigator.pop(context);
   }
 
   List<Map<String, dynamic>> getDrawerItems() {
     return [
-      {'title': "Портфель", 'icon': Icons.pie_chart_rounded, 'onTap': changePage},
-      {'title': "Анализ", 'icon': Icons.assessment, 'onTap': changePage},
-      {'title': "Сделки", 'icon': Icons.history, 'onTap': changePage},
-      {'title': "Календарь", 'icon': Icons.event, 'onTap': changePage},
-      {'title': "Тренды", 'icon': Icons.explore, 'onTap': changePage},
-      {'title': "Настройки", 'icon': Icons.settings, 'onTap': changePage},
+      {'title': 'Профиль', 'icon': Icons.person_rounded, 'route': '/profile'},
+      {'title': "Портфель", 'icon': Icons.pie_chart_rounded, 'route': '/dashboard'},
+      {'title': "Анализ", 'icon': Icons.assessment},
+      {'title': "Сделки", 'icon': Icons.history},
+      {'title': "Календарь", 'icon': Icons.event},
+      {'title': "Тренды", 'icon': Icons.explore},
+      {'title': "Настройки", 'icon': Icons.settings},
     ];
   }
 
   // оставить параметр item
   void logout() {
+    User? firebaseUser = context.read<User?>();
+
     showDialog(
       context: context,
       builder: (context) {
@@ -51,10 +52,10 @@ class _SideBarState extends State<SideBar> {
                 'Да',
                 style: TextStyle(color: Colors.red),
               ),
-              onPressed: () {
-                Navigator.pop(context);
-                context.read<DrawerState>().changeSelectedItem('Портфель');
-                context.read<AuthenticationService>().signOut(widget.firebaseUser);
+              onPressed: () async {
+                // Navigator.pop(context);
+                await context.read<AuthenticationService>().signOut(firebaseUser);
+                Navigator.pushNamed(context, '/');
               },
             ),
             TextButton(
@@ -92,18 +93,12 @@ class _SideBarState extends State<SideBar> {
                   ),
                 ),
               ),
-              DrawerListTile(
-                title: widget.userName,
-                icon: Icons.person_rounded,
-                onTapFunc: () => changePage('Профиль'),
-                isSelected: widget.selectedItem == 'Профиль',
-              ),
               ...drawerItems
                   .map((e) => DrawerListTile(
                         title: e['title'],
                         icon: e['icon'],
-                        onTapFunc: () => e['onTap'](e['title']),
-                        isSelected: widget.selectedItem == e['title'],
+                        onTapFunc: () => changePage(e['route']),
+                        isSelected: widget.selectedRouteName == e['title'],
                       ))
                   .toList(),
               Divider(),

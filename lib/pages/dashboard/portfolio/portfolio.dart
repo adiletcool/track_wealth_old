@@ -3,46 +3,37 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/constants.dart';
+import 'package:track_wealth/common/models/portfolio_asset.dart';
 import 'package:track_wealth/common/portfolio_state.dart';
 
 class Portfolio extends StatefulWidget {
+  final List<PortfolioAsset> portfolioAssets;
+  const Portfolio({required this.portfolioAssets});
+
   @override
-  _PortfolioState createState() => _PortfolioState();
+  _PortfolioState createState() => _PortfolioState(portfolioAssets);
 }
 
 class _PortfolioState extends State<Portfolio> {
+  final List<PortfolioAsset> portfolioAssets;
+
   late Map<String, bool> colFilter;
+
+  late List<Map<String, dynamic>> myColumns;
   late Map<String, dynamic> sortedColumn;
   int? sortedColumnIndex;
-  late List<Map<String, dynamic>> myColumns;
+
   ScrollController tableScrollController = ScrollController();
-  late List<PortfolioAsset> portfolioAssets;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  _PortfolioState(this.portfolioAssets);
 
-    colFilter = AppResponsive.isMobile(context) ? context.watch<PortfolioState>().mobileColumnFilter : context.watch<PortfolioState>().columnFilter;
-    myColumns = getFilteredColumns();
-  }
-
-  final List<Map<String, dynamic>> allColumns = [
-    {'title': 'Актив', 'type': String},
-    {'title': 'Количество', 'type': num, 'tooltip': 'Размер лота * Количество лотов'},
-    {'title': 'Ср. Цена, ₽', 'type': num, 'tooltip': 'Средняя цена открытой позиции'},
-    {'title': 'Прибыль, ₽', 'type': num, 'tooltip': 'Суммарная прибыль по инструменту за все время, включающая дивиденды и комиссию'},
-    {'title': 'Прибыль, %', 'type': num, 'tooltip': 'Средневзвешенная процентная прибыль по инструменту за все время, включающая дивиденды и комиссию'},
-    {'title': 'Доля, %', 'type': num, 'tooltip': 'Доля инструмента, относительно стоимость портфеля'},
-    {'title': 'Стоимость, ₽', 'type': num, 'tooltip': 'Рыночная стоимость позиции по инструменту в портфеле'}
-  ];
-
-  Future<List<PortfolioAsset>> getPortfolioAssets() async {
-    portfolioAssets = await context.read<PortfolioState>().getPortfolioAssets();
-    return portfolioAssets;
-  }
+  final List<Map<String, dynamic>> allColumns = ColumnFilter.getAllColumns();
 
   @override
   Widget build(BuildContext context) {
+    colFilter = AppResponsive.isMobile(context) ? context.watch<PortfolioState>().mobileColumnFilter : context.watch<PortfolioState>().columnFilter;
+
+    myColumns = getFilteredColumns();
     sortedColumn = context.read<PortfolioState>().sortedColumn;
 
     if ((sortedColumn['title'] != null)) {
@@ -56,28 +47,14 @@ class _PortfolioState extends State<Portfolio> {
 
     Color bgColor = Theme.of(context).brightness == Brightness.dark ? AppColor.bgDark : AppColor.grey;
 
-    return FutureBuilder(
-      future: getPortfolioAssets(),
-      builder: (BuildContext context, AsyncSnapshot<List<PortfolioAsset>> snapshot) {
-        // Если данные не были загружены и еще загружаются
-        if (!snapshot.hasData) {
-          return Container(
-            height: 400,
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-        return Container(
-          margin: const EdgeInsets.all(10),
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: buildTable(),
-        );
-      },
+    return Container(
+      margin: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: buildTable(),
     );
   }
 
@@ -141,47 +118,5 @@ class _PortfolioState extends State<Portfolio> {
     context.read<PortfolioState>().sortPortfolio(index, ascending, colFilter);
     context.read<PortfolioState>().updateSortedColumn(myColumns[index]['title'], ascending);
     setState(() {});
-  }
-}
-
-class PortfolioAsset {
-  final String name; // Актив
-  final num quantity; // Количество штук (размер лота * количество лотов)
-  final num meanPrice; // Средняя цена покупки
-  final num profit; // Доход (Руб) с момента покупки
-  final num profitPercent; // Доход (%) с момента покупки
-  final num share; // Доля в портфеле
-  final num worth; // Текущая рыночная стоимость
-
-  PortfolioAsset(this.name, this.quantity, this.meanPrice, this.profit, this.profitPercent, this.share, this.worth);
-
-  dynamic getParam(int index, {required Map<String, bool> filter}) {
-    // return "non-nullable dynamic"
-    return [
-      name,
-      if (filter['Количество']!) quantity,
-      if (filter['Ср. Цена, ₽']!) meanPrice,
-      if (filter['Прибыль, ₽']!) profit,
-      if (filter['Прибыль, %']!) profitPercent,
-      if (filter['Доля, %']!) share,
-      worth,
-    ][index];
-  }
-
-  List<dynamic> getValues({required Map<String, bool> filter}) {
-    return [
-      name,
-      if (filter['Количество']!) MyFormatter.intFormat(quantity),
-      if (filter['Ср. Цена, ₽']!) meanPrice,
-      if (filter['Прибыль, ₽']!) profit,
-      if (filter['Прибыль, %']!) profitPercent,
-      if (filter['Доля, %']!) share,
-      worth,
-    ];
-  }
-
-  @override
-  String toString() {
-    return "PortfolioAsset($name, $quantity, $meanPrice, $profit, $profitPercent, $share, $worth)";
   }
 }

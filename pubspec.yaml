@@ -30,7 +30,8 @@ dependencies:
   data_table_2: ^2.1.0
   flutter_masked_text2: ^0.9.1
   pinput: ^1.2.0
-
+  auto_size_text_pk: ^3.0.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

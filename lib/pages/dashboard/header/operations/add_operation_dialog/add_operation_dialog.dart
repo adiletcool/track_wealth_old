@@ -4,7 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:track_wealth/common/constants.dart';
 
-import 'asset_search/asset_model.dart';
+import '../../../../../common/models/search_asset_model.dart';
 import 'asset_search/searchable_dropdown.dart';
 
 class AddOperationDialog extends StatefulWidget {

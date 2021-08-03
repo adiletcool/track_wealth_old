@@ -155,7 +155,7 @@ class AuthenticationService {
       timeout: const Duration(seconds: 119),
       verificationCompleted: (AuthCredential creds) async {
         await _firebaseAuth.signInWithCredential(creds);
-        Navigator.of(context).pop();
+        Navigator.pushNamed(context, '/dashboard');
       },
       verificationFailed: (FirebaseAuthException exception) {
         print(exception);

@@ -1,31 +1,36 @@
+import 'package:auto_size_text_pk/auto_size_text_pk.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/app_responsive.dart';
-import 'package:track_wealth/common/drawer_state.dart';
-
 import 'columns_filter.dart';
 import 'operations/operations.dart';
 
 class Header extends StatefulWidget {
+  final GlobalKey<ScaffoldState> drawerKey;
+  final num portfolioTotal;
+
+  const Header({required this.drawerKey, required this.portfolioTotal});
+
   @override
   _HeaderState createState() => _HeaderState();
 }
 
 class _HeaderState extends State<Header> {
-  final TextStyle headerStyle = TextStyle(fontWeight: FontWeight.w600, fontSize: 22);
-
-  late num portfolioTotal;
   late List<num> todayChange;
   late List<num> allTimeChange;
 
   @override
   void initState() {
     super.initState();
-    portfolioTotal = calculateTotal();
-    todayChange = calculateTodayChange();
+    todayChange = getTodayChange();
     allTimeChange = calculalteAllTimeChange();
   }
+
+  List<num> getTodayChange() {
+    return [-5387, -0.5];
+  }
+
+  void openDrawer() => widget.drawerKey.currentState!.openDrawer();
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +45,10 @@ class _HeaderState extends State<Header> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              AmountRow(headerStyle: headerStyle, portfolioTotal: portfolioTotal),
+              if (!AppResponsive.isDesktop(context)) drawerIcon(),
+              Expanded(
+                child: AmountRow(portfolioTotal: widget.portfolioTotal),
+              ),
               Operations(),
             ],
           ),
@@ -55,6 +63,16 @@ class _HeaderState extends State<Header> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget drawerIcon() {
+    return IconButton(
+      icon: Icon(Icons.menu),
+      hoverColor: Colors.transparent,
+      focusColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      onPressed: openDrawer,
     );
   }
 
@@ -92,15 +110,6 @@ class _HeaderState extends State<Header> {
     );
   }
 
-  num calculateTotal() {
-    // ! round to 2 decimal
-    return 1154880.20;
-  }
-
-  List<num> calculateTodayChange() {
-    return [-5387, -0.5];
-  }
-
   List<num> calculalteAllTimeChange() {
     return [122854, 12.3];
   }
@@ -114,36 +123,19 @@ class _HeaderState extends State<Header> {
 }
 
 class AmountRow extends StatelessWidget {
-  const AmountRow({
-    required this.headerStyle,
-    required this.portfolioTotal,
-  });
+  const AmountRow({required this.portfolioTotal});
 
-  final TextStyle headerStyle;
   final num portfolioTotal;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        if (!AppResponsive.isDesktop(context))
-          IconButton(
-            icon: Icon(Icons.menu),
-            hoverColor: Colors.transparent,
-            focusColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            onPressed: context.read<DrawerState>().controlMenu,
-          ),
-        if (!AppResponsive.isMobile(context)) ...{
-          Text('Стоимость портфеля:', style: headerStyle),
-          SizedBox(width: 20),
-        },
-        Text(
-          "${MyFormatter.numFormat(portfolioTotal)} ₽",
-          textAlign: TextAlign.end,
-          style: headerStyle,
-        ),
-      ],
+    return Container(
+      child: AutoSizeText(
+        "${!AppResponsive.isMobile(context) ? 'Стоимость портфеля:    ' : ''}" + "${MyFormatter.numFormat(portfolioTotal)} ₽",
+        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 200),
+        maxLines: 1,
+        maxFontSize: 23,
+      ),
     );
   }
 }

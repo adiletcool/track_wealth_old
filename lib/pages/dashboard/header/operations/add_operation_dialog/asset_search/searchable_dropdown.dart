@@ -5,7 +5,7 @@ import "package:flutter/material.dart";
 import "package:flutter_typeahead/flutter_typeahead.dart";
 import "package:track_wealth/common/app_responsive.dart";
 import "package:track_wealth/common/constants.dart";
-import "asset_model.dart";
+import '../../../../../../common/models/search_asset_model.dart';
 
 class AssetSearchField extends StatefulWidget {
   final void Function(Asset selectedAsset) selectedAssetCallback;
