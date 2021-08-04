@@ -26,15 +26,18 @@ class AppColor {
 }
 
 class MyFormatter {
-  static NumberFormat numFormatter = NumberFormat('#,###.00');
+  static NumberFormat numFormatter = NumberFormat('#,##0.00');
   static NumberFormat intFormatter = NumberFormat('#,###');
-
   static String numFormat(num number) {
     return numFormatter.format(number).replaceAll(',', ' ');
   }
 
   static String intFormat(num number) {
     return intFormatter.format(number).replaceAll(',', ' ');
+  }
+
+  static String currencyFormat(num number, String locale, String symbol) {
+    return NumberFormat.currency(locale: locale, decimalDigits: 2, symbol: symbol).format(number);
   }
 }
 

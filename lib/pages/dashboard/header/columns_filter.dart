@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/app_responsive.dart';
-import 'package:track_wealth/common/portfolio_state.dart';
+import 'package:track_wealth/common/dashboard_state.dart';
 
 class ColumnFilterIcon extends StatefulWidget {
   @override
@@ -13,7 +13,7 @@ class _ColumnFilterIconState extends State<ColumnFilterIcon> {
 
   @override
   Widget build(BuildContext context) {
-    colFilter = AppResponsive.isMobile(context) ? context.read<PortfolioState>().mobileColumnFilter : context.read<PortfolioState>().columnFilter;
+    colFilter = AppResponsive.isMobile(context) ? context.read<DashboardState>().mobileColumnFilter : context.read<DashboardState>().columnFilter;
 
     return PopupMenuButton(
       icon: Icon(Icons.view_week_rounded),
@@ -27,7 +27,7 @@ class _ColumnFilterIconState extends State<ColumnFilterIcon> {
   }
 
   void filterColumn(String columnName, bool newValue, Function _setState) {
-    context.read<PortfolioState>().updateFilter(columnName, newValue, AppResponsive.isMobile(context));
+    context.read<DashboardState>().updateFilter(columnName, newValue, AppResponsive.isMobile(context));
     _setState(() {});
   }
 

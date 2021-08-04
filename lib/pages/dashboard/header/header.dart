@@ -8,27 +8,43 @@ import 'operations/operations.dart';
 class Header extends StatefulWidget {
   final GlobalKey<ScaffoldState> drawerKey;
   final num portfolioTotal;
+  final num portfolioTodayChange;
+  final num portfolioAllTimeChange;
 
-  const Header({required this.drawerKey, required this.portfolioTotal});
+  const Header({
+    required this.drawerKey,
+    required this.portfolioTotal,
+    required this.portfolioTodayChange,
+    required this.portfolioAllTimeChange,
+  });
 
   @override
   _HeaderState createState() => _HeaderState();
 }
 
 class _HeaderState extends State<Header> {
-  late List<num> todayChange;
-  late List<num> allTimeChange;
+  late num portfolioTotal;
+
+  late num todayChange;
+  late num todayChangePercent;
+  late num allTimeChange;
+  late num allTimeChangePercent;
 
   @override
   void initState() {
     super.initState();
-    todayChange = getTodayChange();
-    allTimeChange = calculalteAllTimeChange();
+    portfolioTotal = widget.portfolioTotal;
+
+    todayChange = widget.portfolioTodayChange;
+    todayChangePercent = getTodayChangePercent();
+
+    allTimeChange = widget.portfolioAllTimeChange;
+    allTimeChangePercent = getAllTimeChangePercent();
   }
 
-  List<num> getTodayChange() {
-    return [-5387, -0.5];
-  }
+  num getTodayChangePercent() => todayChange * 100 / (portfolioTotal - todayChange);
+
+  num getAllTimeChangePercent() => allTimeChange * 100 / (portfolioTotal - allTimeChange);
 
   void openDrawer() => widget.drawerKey.currentState!.openDrawer();
 
@@ -47,7 +63,7 @@ class _HeaderState extends State<Header> {
             children: [
               if (!AppResponsive.isDesktop(context)) drawerIcon(),
               Expanded(
-                child: AmountRow(portfolioTotal: widget.portfolioTotal),
+                child: AmountRow(portfolioTotal: portfolioTotal),
               ),
               Operations(),
             ],
@@ -88,15 +104,15 @@ class _HeaderState extends State<Header> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          changeCardColumn('Cегодня: ', todayChange),
+          changeCardColumn('Cегодня: ', todayChange, todayChangePercent),
           SizedBox(width: AppResponsive.isMobile(context) ? 20 : 85),
-          changeCardColumn('За все время: ', allTimeChange),
+          changeCardColumn('За все время: ', allTimeChange, allTimeChangePercent),
         ],
       ),
     );
   }
 
-  Widget changeCardColumn(String title, List<num> value) {
+  Widget changeCardColumn(String title, num todayChange, num todayChangePercent) {
     Color textColor = Theme.of(context).brightness == Brightness.dark ? Colors.grey : AppColor.darkGrey;
 
     return Column(
@@ -104,14 +120,10 @@ class _HeaderState extends State<Header> {
       children: [
         Text(title, style: TextStyle(color: textColor, fontSize: 17)),
         SizedBox(height: 10),
-        Text("${MyFormatter.numFormat(value[0])} ₽", style: changeTextStyle(value[0])),
-        Text("${value[1]}%", style: changeTextStyle(value[1])),
+        Text("${MyFormatter.numFormat(todayChange)} ₽", style: changeTextStyle(todayChange)),
+        Text("${MyFormatter.numFormat(todayChangePercent)}%", style: changeTextStyle(todayChangePercent)),
       ],
     );
-  }
-
-  List<num> calculalteAllTimeChange() {
-    return [122854, 12.3];
   }
 
   TextStyle changeTextStyle(num change) {

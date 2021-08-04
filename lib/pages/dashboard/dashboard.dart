@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/models/portfolio_asset.dart';
-import 'package:track_wealth/common/portfolio_state.dart';
+import 'package:track_wealth/common/dashboard_state.dart';
 import 'package:track_wealth/page_wrapper/page_wrapper.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
@@ -23,12 +23,13 @@ class _DashboardState extends State<Dashboard> {
   final ScrollController scrollController = ScrollController();
   final GlobalKey<ScaffoldState> drawerKey = GlobalKey<ScaffoldState>();
 
-  num getPortfolioTotal(List<PortfolioAsset> data) {
-    return data.map((asset) => asset.worth).sum;
-  }
+  num getPortfolioTotal(List<PortfolioAsset> data) => data.map((asset) => asset.worth).sum;
 
-  List<num> getTodayChange() {
-    return [-5387, -0.5];
+  // стоимость покупок. Нужно, чтобы посчитать суммарную прибыль/убыток по открытым позициям
+  num getPortfolioAllTimeChange(List<PortfolioAsset> data) => data.map((asset) => asset.profit).sum;
+
+  num getPortfolioTodayChange(List<PortfolioAsset> data) {
+    return data.map((asset) => asset.worth - asset.worth / (1 + asset.todayPriceChange / 100)).sum;
   }
 
   @override
@@ -39,8 +40,11 @@ class _DashboardState extends State<Dashboard> {
       routeName: routeName,
       drawerKey: drawerKey,
       body: FutureBuilder(
-        future: context.read<PortfolioState>().getPortfolioAssets(),
-        builder: (BuildContext context, AsyncSnapshot<List<PortfolioAsset>> snapshot) {
+        future: Future.wait([
+          context.read<DashboardState>().getPortfolioAssets(),
+          context.read<DashboardState>().getCurrencies(),
+        ]),
+        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
           if (!snapshot.hasData) {
             return Container(
               height: 400,
@@ -60,20 +64,25 @@ class _DashboardState extends State<Dashboard> {
                   SliverToBoxAdapter(
                     child: Header(
                       drawerKey: drawerKey,
-                      portfolioTotal: getPortfolioTotal(snapshot.data!),
+                      portfolioTotal: getPortfolioTotal(snapshot.data![0]),
+                      portfolioTodayChange: getPortfolioTodayChange(snapshot.data![0]),
+                      portfolioAllTimeChange: getPortfolioAllTimeChange(snapshot.data![0]),
                     ),
                   ),
 
                   //! Portfolio
-                  SliverToBoxAdapter(child: Portfolio(portfolioAssets: snapshot.data!)),
+                  SliverToBoxAdapter(
+                    child: Portfolio(
+                      portfolioAssets: snapshot.data![0],
+                      currencies: snapshot.data![1],
+                    ),
+                  ),
 
                   /* Если нужно, чтобы скролилась таблица
-                 SliverFillRemaining(
-                  child: Portfolio(),
-                ),
-                Этот вариант хуже, поскольку нет возможности настроить физику скролла так,
-                чтобы при скролле таблицы, сначала скролился CustomScrollView до конца
-                */
+                  SliverFillRemaining(child: Portfolio(...)),
+                  Этот вариант хуже, поскольку нет возможности настроить физику скролла так,
+                  чтобы при скролле таблицы, сначала скролился CustomScrollView до конца
+                  */
                 ],
               ),
             );

@@ -4,18 +4,20 @@ import 'package:provider/provider.dart';
 import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/models/portfolio_asset.dart';
-import 'package:track_wealth/common/portfolio_state.dart';
+import 'package:track_wealth/common/dashboard_state.dart';
 
 class Portfolio extends StatefulWidget {
   final List<PortfolioAsset> portfolioAssets;
-  const Portfolio({required this.portfolioAssets});
+  final List<Map<String, dynamic>> currencies;
+  const Portfolio({required this.portfolioAssets, required this.currencies});
 
   @override
-  _PortfolioState createState() => _PortfolioState(portfolioAssets);
+  _PortfolioState createState() => _PortfolioState(portfolioAssets, currencies);
 }
 
 class _PortfolioState extends State<Portfolio> {
   final List<PortfolioAsset> portfolioAssets;
+  final List<Map<String, dynamic>> currencies;
 
   late Map<String, bool> colFilter;
 
@@ -25,16 +27,16 @@ class _PortfolioState extends State<Portfolio> {
 
   ScrollController tableScrollController = ScrollController();
 
-  _PortfolioState(this.portfolioAssets);
+  _PortfolioState(this.portfolioAssets, this.currencies);
 
   final List<Map<String, dynamic>> allColumns = ColumnFilter.getAllColumns();
 
   @override
   Widget build(BuildContext context) {
-    colFilter = AppResponsive.isMobile(context) ? context.watch<PortfolioState>().mobileColumnFilter : context.watch<PortfolioState>().columnFilter;
+    colFilter = AppResponsive.isMobile(context) ? context.watch<DashboardState>().mobileColumnFilter : context.watch<DashboardState>().columnFilter;
 
     myColumns = getFilteredColumns();
-    sortedColumn = context.read<PortfolioState>().sortedColumn;
+    sortedColumn = context.read<DashboardState>().sortedColumn;
 
     if ((sortedColumn['title'] != null)) {
       sortedColumnIndex = myColumns.map((e) => e['title']).toList().indexOf(sortedColumn['title']);
@@ -54,7 +56,12 @@ class _PortfolioState extends State<Portfolio> {
         color: bgColor,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: buildTable(),
+      child: Column(
+        children: [
+          buildTable(),
+          ...getCurrencyRows(),
+        ],
+      ),
     );
   }
 
@@ -65,9 +72,10 @@ class _PortfolioState extends State<Portfolio> {
       sortColumnIndex: sortedColumnIndex,
       columns: getColumns(myColumns),
       rows: getRows(),
-      minWidth: (myColumns.length / 7) * 800,
+      minWidth: myColumns.length * 800 / 7,
       columnSpacing: 10,
       horizontalMargin: AppResponsive.isMobile(context) ? 5 : null,
+      showBottomBorder: true,
     );
   }
 
@@ -90,7 +98,7 @@ class _PortfolioState extends State<Portfolio> {
 
   List<DataRow> getRows() {
     return portfolioAssets.map((asset) {
-      final cells = asset.getValues(filter: colFilter);
+      final cells = asset.getColumnValues(filter: colFilter);
       return DataRow2(
         cells: getCells(cells),
         onTap: () {
@@ -115,8 +123,25 @@ class _PortfolioState extends State<Portfolio> {
   void sortColumn(int index, bool ascending) {
     print("sorted ${ascending ? 'as' : 'des'}cending by ${myColumns[index]['title']}");
 
-    context.read<PortfolioState>().sortPortfolio(index, ascending, colFilter);
-    context.read<PortfolioState>().updateSortedColumn(myColumns[index]['title'], ascending);
+    context.read<DashboardState>().sortPortfolio(index, ascending, colFilter);
+    context.read<DashboardState>().updateSortedColumn(myColumns[index]['title'], ascending);
     setState(() {});
+  }
+
+  List<Widget> getCurrencyRows() {
+    return currencies
+        .map(
+          (e) => Container(
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(e['name']),
+                Text(MyFormatter.currencyFormat(e['value'], e['locale'], e['symbol'])),
+              ],
+            ),
+          ),
+        )
+        .toList();
   }
 }

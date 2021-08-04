@@ -15,7 +15,6 @@ class _OperationsState extends State<Operations> {
     Color bgColor = Theme.of(context).brightness == Brightness.dark ? AppColor.bgDark : AppColor.grey;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
         color: bgColor,
@@ -25,11 +24,11 @@ class _OperationsState extends State<Operations> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           OperationButton(
-            child: Text('+', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+            child: Icon(Icons.add_circle_rounded, size: 28),
             onTap: addOperation,
           ),
-          SizedBox(width: 20),
-          OperationButton(child: Icon(Icons.mode_edit)),
+          SizedBox(width: 10),
+          OperationButton(child: Icon(Icons.mode_edit, size: 28)),
         ],
       ),
     );
@@ -48,13 +47,17 @@ class _OperationsState extends State<Operations> {
 class OperationButton extends StatelessWidget {
   final Widget child;
   final void Function()? onTap;
+  // final
   const OperationButton({required this.child, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      child: child,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+        child: child,
+      ),
     );
   }
 }
