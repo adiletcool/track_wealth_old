@@ -5,6 +5,7 @@ import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/models/portfolio_asset.dart';
 import 'package:track_wealth/common/dashboard_state.dart';
+import 'package:track_wealth/pages/dashboard/header/operations/add_operation_dialog/add_operation_dialog.dart';
 
 class Portfolio extends StatefulWidget {
   final List<PortfolioAsset> portfolioAssets;
@@ -58,8 +59,8 @@ class _PortfolioState extends State<Portfolio> {
       ),
       child: Column(
         children: [
-          buildTable(),
-          ...getCurrencyRows(),
+          portfolioAssets.length != 0 ? buildTable() : emptyPortfolioInfo(),
+          if (currencies.length > 0) ...getCurrencyRows(),
         ],
       ),
     );
@@ -143,5 +144,35 @@ class _PortfolioState extends State<Portfolio> {
           ),
         )
         .toList();
+  }
+
+  Widget emptyPortfolioInfo() {
+    return Column(
+      children: [
+        SizedBox(height: 5),
+        Text('В портфеле нет акций', style: TextStyle(fontSize: 20)),
+        SizedBox(height: 40),
+        InkWell(
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: roundedBoxDecoration.copyWith(
+              color: Theme.of(context).iconTheme.color,
+            ),
+            child: Text('Добавить сделку', style: TextStyle(fontSize: 20, color: Theme.of(context).buttonColor)),
+          ),
+          onTap: addOperation,
+        ),
+        SizedBox(height: 40),
+      ],
+    );
+  }
+
+  void addOperation() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AddOperationDialog();
+      },
+    );
   }
 }

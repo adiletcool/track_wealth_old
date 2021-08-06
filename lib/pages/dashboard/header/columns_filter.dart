@@ -3,12 +3,12 @@ import 'package:provider/provider.dart';
 import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/dashboard_state.dart';
 
-class ColumnFilterIcon extends StatefulWidget {
+class ColumnFilterButton extends StatefulWidget {
   @override
-  _ColumnFilterIconState createState() => _ColumnFilterIconState();
+  _ColumnFilterButtonState createState() => _ColumnFilterButtonState();
 }
 
-class _ColumnFilterIconState extends State<ColumnFilterIcon> {
+class _ColumnFilterButtonState extends State<ColumnFilterButton> {
   late Map<String, bool> colFilter;
 
   @override

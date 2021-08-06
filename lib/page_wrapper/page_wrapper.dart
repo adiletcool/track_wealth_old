@@ -15,7 +15,7 @@ class PageWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        if (routeName == '/dashboard')
+        if (routeName == 'Портфель')
           SystemNavigator.pop();
         else
           Navigator.pushNamed(context, '/dashboard');
