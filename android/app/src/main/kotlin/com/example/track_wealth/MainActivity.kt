@@ -1,4 +1,4 @@
-package com.example.track_wealth
+package com.adiletcool.track_wealth
 
 import io.flutter.embedding.android.FlutterActivity
 

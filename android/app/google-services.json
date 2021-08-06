@@ -7,6 +7,35 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:59547700838:android:de33972e44dee8c490a7a7",
+        "android_client_info": {
+          "package_name": "com.adiletcool.track_wealth"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "59547700838-csj135e1vjnn263psvrvuluqnnoah2j6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCz2RZfoUwBHvVNBh5tKmP43CKnRqqLYQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "59547700838-csj135e1vjnn263psvrvuluqnnoah2j6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:59547700838:android:b8b6d1390c65dcbe90a7a7",
         "android_client_info": {
           "package_name": "com.example.track_wealth"
