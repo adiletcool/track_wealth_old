@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:track_wealth/common/auth_service.dart';
+import 'package:track_wealth/common/services/auth.dart';
 import 'package:track_wealth/common/constants.dart';
 
 class SideBar extends StatefulWidget {
@@ -54,7 +54,7 @@ class _SideBarState extends State<SideBar> {
               ),
               onPressed: () async {
                 // Navigator.pop(context);
-                await context.read<AuthenticationService>().signOut(firebaseUser);
+                await context.read<AuthService>().signOut(firebaseUser);
                 Navigator.pushNamed(context, '/');
               },
             ),
@@ -87,7 +87,7 @@ class _SideBarState extends State<SideBar> {
                 child: Text(
                   "TRACKWEALTH",
                   style: TextStyle(
-                    color: AppColor.selectedDrawerItem,
+                    color: AppColor.selected,
                     fontSize: 25,
                     fontFamily: 'RussoOne',
                   ),
@@ -128,7 +128,7 @@ class DrawerListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     Color textColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : AppColor.black;
 
-    Color itemColor = isSelected ? AppColor.selectedDrawerItem : textColor;
+    Color itemColor = isSelected ? AppColor.selected : textColor;
     return ListTile(
       onTap: onTapFunc,
       horizontalTitleGap: 0.0,

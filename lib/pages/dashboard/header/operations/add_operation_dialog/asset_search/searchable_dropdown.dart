@@ -30,7 +30,7 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: AppResponsive.isMobile(context) ? 320 : 400,
+      width: AppResponsive.isMobile(context) ? 325 : 400,
       height: 42.5,
       child: assetTypeAhead(formKey: formKey, controller: typeAheadController),
     );

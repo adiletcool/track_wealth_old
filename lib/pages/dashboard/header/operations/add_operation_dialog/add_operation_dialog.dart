@@ -91,7 +91,7 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
                   Expanded(
                     child: Text(
                       'Добавить операцию',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 19),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -140,7 +140,7 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
                       decimalRange: selectedAsset?.priceDecimals ?? 6,
                     ),
                     Tooltip(
-                      message: 'Размер лота * Количество лотов',
+                      message: tooltips['Количество']!,
                       textStyle: TextStyle(color: Colors.black87),
                       padding: const EdgeInsets.all(8.0),
                       decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColor.grey),
@@ -166,44 +166,7 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
                 spacing: 20,
                 runSpacing: 20,
                 alignment: WrapAlignment.center,
-                children: [
-                  SizedBox(
-                    height: 42.5,
-                    child: TextButton.icon(
-                      icon: Icon(Icons.calendar_today_rounded),
-                      label: Text(DateFormat.yMMMd('ru').format(selectedDate)),
-                      onPressed: () {
-                        showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2015),
-                          lastDate: DateTime(2030),
-                        ).then((DateTime? newDate) {
-                          if (newDate != null) {
-                            setState(() => selectedDate = newDate);
-                          }
-                        });
-                      },
-                    ),
-                  ),
-                  SizedBox(
-                    height: 42.5,
-                    child: TextButton.icon(
-                      icon: Icon(Icons.schedule_rounded),
-                      label: Text(selectedTime.format(context)),
-                      onPressed: () {
-                        showTimePicker(
-                          context: context,
-                          initialTime: selectedTime,
-                        ).then((TimeOfDay? newTime) {
-                          if (newTime != null) {
-                            setState(() => selectedTime = newTime);
-                          }
-                        });
-                      },
-                    ),
-                  )
-                ],
+                children: [datePicker(), timePicker()],
               ),
               SizedBox(height: 50),
               Text('Заметка'),
@@ -216,34 +179,33 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
     );
   }
 
-  Container buttonsRow({required Iterable<String> buttons, required String selectedValue, required Function(String value) onTap}) {
+  Widget buttonsRow({required Iterable<String> buttons, required String selectedValue, required Function(String value) onTap}) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(width: 1, color: AppColor.selectedDrawerItem),
-        borderRadius: BorderRadius.circular(10),
+        border: Border.all(width: 1, color: Color(0xff255980)),
+        borderRadius: BorderRadius.circular(11.0),
+        color: Colors.white,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: buttons
             .map(
-              (e) => InkWell(
-                child: Container(
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    borderRadius: e == buttons.first
-                        ? BorderRadius.only(bottomLeft: Radius.circular(10), topLeft: Radius.circular(10))
-                        : e == buttons.last
-                            ? BorderRadius.only(bottomRight: Radius.circular(10), topRight: Radius.circular(10))
-                            : null,
-                    color: e == selectedValue ? AppColor.selectedDrawerItem : AppColor.grey,
+              (e) => ClipRRect(
+                borderRadius: BorderRadius.circular(10.0),
+                child: InkWell(
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: e == selectedValue ? AppColor.selected : AppColor.white,
+                    ),
+                    child: Text(
+                      e,
+                      style: TextStyle(color: e == selectedValue ? AppColor.white : Color(0xff255980)),
+                    ),
                   ),
-                  child: Text(
-                    e,
-                    style: TextStyle(color: selectedValue == e ? AppColor.white : AppColor.selectedDrawerItem),
-                  ),
+                  onTap: () => onTap(e),
                 ),
-                onTap: () => onTap(e),
               ),
             )
             .toList(),
@@ -280,6 +242,53 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget sampleTextButton({required IconData icon, required String label, void Function()? onPressed}) {
+    return SizedBox(
+      height: 42.5,
+      child: TextButton.icon(
+        icon: Icon(icon, color: AppColor.selected),
+        label: Text(label, style: TextStyle(color: AppColor.selected)),
+        onPressed: onPressed,
+      ),
+    );
+  }
+
+  Widget datePicker() {
+    return sampleTextButton(
+      icon: Icons.calendar_today_rounded,
+      label: DateFormat.yMMMd('ru').format(selectedDate),
+      onPressed: () {
+        showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(2015),
+          lastDate: DateTime(2030),
+        ).then((DateTime? newDate) {
+          if (newDate != null) {
+            setState(() => selectedDate = newDate);
+          }
+        });
+      },
+    );
+  }
+
+  Widget timePicker() {
+    return sampleTextButton(
+      icon: Icons.schedule_rounded,
+      label: selectedTime.format(context),
+      onPressed: () {
+        showTimePicker(
+          context: context,
+          initialTime: selectedTime,
+        ).then((TimeOfDay? newTime) {
+          if (newTime != null) {
+            setState(() => selectedTime = newTime);
+          }
+        });
+      },
     );
   }
 }

@@ -4,10 +4,10 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_login_vk/flutter_login_vk.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-import 'constants.dart';
+import '../constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-class AuthenticationService {
+class AuthService {
   final FirebaseAuth _firebaseAuth;
 
   //! Initialize GoogleSignIn with the scopes you want:
@@ -24,7 +24,7 @@ class AuthenticationService {
   //! Initialize vkontakte auth instance
   final vkSignIn = VKLogin();
 
-  AuthenticationService(this._firebaseAuth);
+  AuthService(this._firebaseAuth);
 
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 

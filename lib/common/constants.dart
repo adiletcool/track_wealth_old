@@ -15,13 +15,12 @@ extension HexColor on Color {
 
 class AppColor {
   static Color yellow = Color(0xffFFC222);
-  static Color selectedDrawerItem = Color(0xff0179B5);
+  static Color selected = Color(0xff008a86);
   static Color black = Colors.black;
   static Color grey = Color(0xffF5F5F5);
   static Color darkGrey = Color(0xff8a8a8a);
   static Color white = Colors.white;
-  static Color green = Color(0xff34A853);
-  static Color red = Color(0xffCD4932);
+  static Color red = Color(0xfff32221);
   static Color bgDark = Color(0xFF1A1A1A);
 }
 
@@ -46,7 +45,7 @@ InputDecoration myInputDecoration = InputDecoration(
   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
   isDense: true,
   focusedBorder: OutlineInputBorder(
-    borderSide: BorderSide(color: AppColor.selectedDrawerItem),
+    borderSide: BorderSide(color: AppColor.selected),
     borderRadius: BorderRadius.circular(10),
   ),
 );
@@ -134,3 +133,18 @@ String getSignUpErrorMessage(String errorCode) {
       return errorCode;
   }
 }
+
+Map<String, String> tooltips = {
+  'Актив': 'Наименование актива',
+  'Тикер': 'Код актива',
+  'Количество': 'Размер лота * Количество лотов',
+  'Ср. Цена, ₽': 'Средняя цена открытой позиции',
+  'Тек. Цена, ₽': 'Текущая цена за 1 акцию',
+  'Изм. сегодня, %': 'Процентное изменение цены актива за день',
+  'Прибыль, ₽': 'Суммарная прибыль по инструменту за все время', //, включающая дивиденды и комиссию
+  'Прибыль, %': 'Средневзвешенная процентная прибыль по инструменту за все время', //, включающая дивиденды и комиссию
+  'Доля, %': 'Доля инструмента, относительно стоимости портфеля',
+  'Стоимость, ₽': 'Рыночная стоимость позиции по инструменту в портфеле',
+  'open_pos_change': 'Прибыль или убыток только по открытым позициям.',
+  'totalWorth': 'Рыночная стоимость всех активов, а также денежные средства, конвертированные в рубли по текущему курсу.',
+};

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/app_responsive.dart';
-import 'package:track_wealth/common/dashboard_state.dart';
+import 'package:track_wealth/common/constants.dart';
+import 'package:track_wealth/common/services/dashboard.dart';
 
 class ColumnFilterButton extends StatefulWidget {
   @override
@@ -13,7 +14,7 @@ class _ColumnFilterButtonState extends State<ColumnFilterButton> {
 
   @override
   Widget build(BuildContext context) {
-    colFilter = AppResponsive.isMobile(context) ? context.read<DashboardState>().mobileColumnFilter : context.read<DashboardState>().columnFilter;
+    colFilter = AppResponsive.isMobile(context) ? context.read<TableState>().mobileColumnFilter : context.read<TableState>().columnFilter;
 
     return PopupMenuButton(
       icon: Icon(Icons.view_week_rounded),
@@ -27,7 +28,7 @@ class _ColumnFilterButtonState extends State<ColumnFilterButton> {
   }
 
   void filterColumn(String columnName, bool newValue, Function _setState) {
-    context.read<DashboardState>().updateFilter(columnName, newValue, AppResponsive.isMobile(context));
+    context.read<TableState>().updateFilter(columnName, newValue, AppResponsive.isMobile(context));
     _setState(() {});
   }
 
@@ -42,6 +43,7 @@ class _ColumnFilterButtonState extends State<ColumnFilterButton> {
                 value: colFilter[column]!,
                 onChanged: (bool newValue) => filterColumn(column, newValue, _setState),
                 dense: true,
+                activeColor: AppColor.selected,
               ),
             ),
           ),

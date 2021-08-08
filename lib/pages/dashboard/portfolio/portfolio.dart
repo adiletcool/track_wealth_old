@@ -4,12 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/models/portfolio_asset.dart';
-import 'package:track_wealth/common/dashboard_state.dart';
+import 'package:track_wealth/common/services/dashboard.dart';
 import 'package:track_wealth/pages/dashboard/header/operations/add_operation_dialog/add_operation_dialog.dart';
 
 class Portfolio extends StatefulWidget {
   final List<PortfolioAsset> portfolioAssets;
-  final List<Map<String, dynamic>> currencies;
+  final Map<String, Map<String, dynamic>> currencies;
   const Portfolio({required this.portfolioAssets, required this.currencies});
 
   @override
@@ -18,7 +18,7 @@ class Portfolio extends StatefulWidget {
 
 class _PortfolioState extends State<Portfolio> {
   final List<PortfolioAsset> portfolioAssets;
-  final List<Map<String, dynamic>> currencies;
+  final Map<String, Map<String, dynamic>> currencies;
 
   late Map<String, bool> colFilter;
 
@@ -34,10 +34,10 @@ class _PortfolioState extends State<Portfolio> {
 
   @override
   Widget build(BuildContext context) {
-    colFilter = AppResponsive.isMobile(context) ? context.watch<DashboardState>().mobileColumnFilter : context.watch<DashboardState>().columnFilter;
+    colFilter = AppResponsive.isMobile(context) ? context.watch<TableState>().mobileColumnFilter : context.watch<TableState>().columnFilter;
 
     myColumns = getFilteredColumns();
-    sortedColumn = context.read<DashboardState>().sortedColumn;
+    sortedColumn = context.watch<TableState>().sortedColumn;
 
     if ((sortedColumn['title'] != null)) {
       sortedColumnIndex = myColumns.map((e) => e['title']).toList().indexOf(sortedColumn['title']);
@@ -52,7 +52,7 @@ class _PortfolioState extends State<Portfolio> {
 
     return Container(
       margin: const EdgeInsets.all(10),
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(10),
@@ -61,6 +61,12 @@ class _PortfolioState extends State<Portfolio> {
         children: [
           portfolioAssets.length != 0 ? buildTable() : emptyPortfolioInfo(),
           if (currencies.length > 0) ...getCurrencyRows(),
+          // TextButton(
+          //   child: Text('Test'),
+          //   onPressed: () {
+          //     context.read<DashboardState>().updateCurrencyUserData('RUB', Random().nextInt(100));
+          //   },
+          // ),
         ],
       ),
     );
@@ -92,7 +98,7 @@ class _PortfolioState extends State<Portfolio> {
         label: Text(column['title'], maxLines: 1, overflow: TextOverflow.visible),
         numeric: column['type'] == num,
         onSort: sortColumn,
-        tooltip: column['tooltip'],
+        tooltip: tooltips[column['title']],
       );
     }).toList();
   }
@@ -125,20 +131,20 @@ class _PortfolioState extends State<Portfolio> {
     print("sorted ${ascending ? 'as' : 'des'}cending by ${myColumns[index]['title']}");
 
     context.read<DashboardState>().sortPortfolio(index, ascending, colFilter);
-    context.read<DashboardState>().updateSortedColumn(myColumns[index]['title'], ascending);
-    setState(() {});
+    context.read<TableState>().updateSortedColumn(myColumns[index]['title'], ascending);
+    // setState(() {});
   }
 
   List<Widget> getCurrencyRows() {
-    return currencies
+    return currencies.entries
         .map(
-          (e) => Container(
+          (entry) => Container(
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(e['name']),
-                Text(MyFormatter.currencyFormat(e['value'], e['locale'], e['symbol'])),
+                Text(entry.value['name']),
+                Text(MyFormatter.currencyFormat(entry.value['value'], entry.value['locale'], entry.value['symbol'])),
               ],
             ),
           ),
@@ -156,9 +162,12 @@ class _PortfolioState extends State<Portfolio> {
           child: Container(
             padding: const EdgeInsets.all(10),
             decoration: roundedBoxDecoration.copyWith(
-              color: Theme.of(context).iconTheme.color,
+              color: Color(0xff008a86),
             ),
-            child: Text('Добавить сделку', style: TextStyle(fontSize: 20, color: Theme.of(context).buttonColor)),
+            child: Text(
+              'Добавить сделку',
+              style: TextStyle(fontSize: 20, color: Colors.white),
+            ),
           ),
           onTap: addOperation,
         ),

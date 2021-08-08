@@ -75,7 +75,7 @@ class _SubHeaderState extends State<SubHeader> {
     Color textColor = Theme.of(context).brightness == Brightness.dark ? Colors.grey : AppColor.darkGrey;
 
     return Tooltip(
-      message: 'Прибыль или убыток только по открытым позициям.',
+      message: tooltips['open_pos_change']!,
       showDuration: const Duration(seconds: 5),
       margin: const EdgeInsets.all(10),
       child: Container(
@@ -110,7 +110,7 @@ class _SubHeaderState extends State<SubHeader> {
 
   TextStyle changeTextStyle(num change) {
     return TextStyle(
-      color: change >= 0 ? AppColor.green : AppColor.red,
+      color: change >= 0 ? AppColor.selected : AppColor.red,
       fontSize: 18,
     );
   }

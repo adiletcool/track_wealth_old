@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:pinput/pin_put/pin_put.dart';
 import 'package:provider/provider.dart';
-import 'package:track_wealth/common/auth_service.dart';
+import 'package:track_wealth/common/services/auth.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -133,7 +133,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
 
   Widget codeTextField() {
     BoxDecoration eachFieldDecoration = BoxDecoration(
-      border: Border(bottom: BorderSide(color: AppColor.selectedDrawerItem)),
+      border: Border(bottom: BorderSide(color: AppColor.selected)),
     );
     Color textColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
     return Column(
@@ -164,13 +164,13 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             TextButton(
-              child: Text('Изменить номер', style: TextStyle(color: AppColor.selectedDrawerItem)),
+              child: Text('Изменить номер', style: TextStyle(color: AppColor.selected)),
               onPressed: changePhoneNumber,
             ),
             TextButton(
               child: Text(
                 canSendAgain ? 'Отправить снова' : 'Отправить снова: $sendCodeAgainSecondsLeft',
-                style: TextStyle(color: canSendAgain ? AppColor.selectedDrawerItem : Colors.grey),
+                style: TextStyle(color: canSendAgain ? AppColor.selected : Colors.grey),
               ),
               onPressed: canSendAgain ? sendCodeAgain : null,
             ),
@@ -193,7 +193,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
         child: Center(
           child: Text(
             title,
-            style: TextStyle(fontSize: 22, color: canTap ? AppColor.selectedDrawerItem : Colors.grey),
+            style: TextStyle(fontSize: 22, color: canTap ? AppColor.selected : Colors.grey),
           ),
         ),
       ),
@@ -248,10 +248,10 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
 
     if (kIsWeb) {
       setState(() async {
-        webAuthResult = await context.read<AuthenticationService>().webSignInWithPhoneNumber(phoneNumber);
+        webAuthResult = await context.read<AuthService>().webSignInWithPhoneNumber(phoneNumber);
       });
     } else {
-      await context.read<AuthenticationService>().signInWithPhoneNumber(
+      await context.read<AuthService>().signInWithPhoneNumber(
             context: context,
             phoneNumber: phoneNumber,
             codeSent: (String verificationId, int? forceResendingToken) {
@@ -275,7 +275,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
         verificationId: phoneVerificationId,
         smsCode: codeController.text,
       );
-      String res = await context.read<AuthenticationService>().signInWithCreds(creds);
+      String res = await context.read<AuthService>().signInWithCreds(creds);
       if ((res == 'Signed in') || (res == 'session-expired'))
         Navigator.pushNamed(context, '/dashboard');
       else

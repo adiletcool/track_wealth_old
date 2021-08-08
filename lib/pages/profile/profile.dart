@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/page_wrapper/page_wrapper.dart';
 
@@ -10,32 +9,35 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String userName = 'Default name';
-  final GlobalKey<ScaffoldState> drawerKey = GlobalKey<ScaffoldState>();
-  User? firebaseUser;
+  late String userName;
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   String routeName = 'Профиль';
+  FirebaseAuth auth = FirebaseAuth.instance;
 
-  void setUserName() {
-    if (firebaseUser != null) {
-      if (!["", null].contains(firebaseUser!.displayName))
-        userName = firebaseUser!.displayName!;
-      else if (!["", null].contains(firebaseUser!.email))
-        userName = firebaseUser!.email!.split('@').first;
-      else if (!["", null].contains(firebaseUser!.phoneNumber)) userName = firebaseUser!.phoneNumber!;
-    }
-    setState(() {});
+  @override
+  void initState() {
+    super.initState();
+    setUserName(auth.currentUser!);
   }
 
-  void _openDrawer() => drawerKey.currentState!.openDrawer();
+  void setUserName(User firebaseUser) {
+    if (!["", null].contains(firebaseUser.displayName))
+      userName = firebaseUser.displayName!;
+    else if (!["", null].contains(firebaseUser.email))
+      userName = firebaseUser.email!.split('@').first;
+    else if (!["", null].contains(firebaseUser.phoneNumber))
+      userName = firebaseUser.phoneNumber!;
+    else
+      userName = 'Default name';
+  }
+
+  void _openDrawer() => scaffoldKey.currentState!.openDrawer();
 
   @override
   Widget build(BuildContext context) {
-    firebaseUser = context.watch<User?>();
-    setUserName();
-
     return PageWrapper(
       routeName: routeName,
-      drawerKey: drawerKey,
+      scaffoldKey: scaffoldKey,
       appBar: AppResponsive.isDesktop(context) ? null : appBar(),
       body: Center(
         child: Text(userName),

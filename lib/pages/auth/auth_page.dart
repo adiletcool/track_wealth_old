@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:track_wealth/common/auth_service.dart';
+import 'package:track_wealth/common/services/auth.dart';
 import 'package:track_wealth/common/constants.dart';
-import 'package:track_wealth/pages/auth/phone_auth.dart';
 
 class AuthPage extends StatefulWidget {
   @override
@@ -45,7 +44,7 @@ class _AuthPageState extends State<AuthPage> {
                 children: [
                   Text(
                     "TRACKWEALTH",
-                    style: TextStyle(color: AppColor.selectedDrawerItem, fontSize: 44, fontFamily: 'RussoOne'),
+                    style: TextStyle(color: AppColor.selected, fontSize: 44, fontFamily: 'RussoOne'),
                   ),
                   SizedBox(height: 20),
                   Text(isLogin ? 'Вход' : 'Регистрация', style: TextStyle(fontSize: 30)),
@@ -259,14 +258,14 @@ class _AuthPageState extends State<AuthPage> {
   Future<void> authenticate() async {
     if (isLogin) {
       //! Sign in
-      authResult = await context.read<AuthenticationService>().signIn(
+      authResult = await context.read<AuthService>().signIn(
             email: emailController.text.trim(),
             password: passwordController.text.trim(),
           );
       setState(() {}); // if error => show authResult as error message
     } else {
       //! Register
-      authResult = await context.read<AuthenticationService>().signUp(
+      authResult = await context.read<AuthService>().signUp(
             email: emailController.text.trim(),
             password: passwordController.text.trim(),
           );
@@ -277,14 +276,14 @@ class _AuthPageState extends State<AuthPage> {
   Future<void> socialAuthenticate(String method) async {
     switch (method) {
       case 'google':
-        return await context.read<AuthenticationService>().signInWithGoogle();
+        return await context.read<AuthService>().signInWithGoogle();
 
       case 'facebook':
-        return await context.read<AuthenticationService>().signInWithFacebook();
+        return await context.read<AuthService>().signInWithFacebook();
       case 'vkontakte':
-        return await context.read<AuthenticationService>().signInWithVk();
+        return await context.read<AuthService>().signInWithVk();
       case 'phone':
-        Navigator.push(context, MaterialPageRoute(builder: (ctx) => PhoneAuthPage()));
+        Navigator.pushNamed(context, '/auth/phone');
         break;
       default:
         print('Auth method $method is not recognized');

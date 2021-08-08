@@ -69,7 +69,7 @@ class AmountRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Tooltip(
-      message: 'Рыночная стоимость всех активов, а также денежные средства, конвертированные в рубли по текущему курсу.',
+      message: tooltips['totalWorth']!,
       showDuration: const Duration(seconds: 6),
       child: AutoSizeText(
         "${!AppResponsive.isMobile(context) ? 'Стоимость портфеля:    ' : ''}" + "${MyFormatter.numFormat(portfolioTotal)} ₽",

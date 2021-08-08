@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:track_wealth/pages/auth/phone_auth.dart';
 import 'package:track_wealth/pages/dashboard/dashboard.dart';
 import 'package:track_wealth/pages/profile/profile.dart';
 import 'pages/auth/auth_page.dart';
-import 'common/dashboard_state.dart';
+import 'common/services/dashboard.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:track_wealth/common/auth_service.dart';
+import 'package:track_wealth/common/services/auth.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,12 +22,13 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (ctx) => DashboardState()),
-        Provider<AuthenticationService>(
-          create: (ctx) => AuthenticationService(FirebaseAuth.instance),
+        ChangeNotifierProvider(create: (ctx) => TableState()),
+        Provider<AuthService>(
+          create: (ctx) => AuthService(FirebaseAuth.instance),
         ),
         StreamProvider<User?>(
           initialData: null,
-          create: (ctx) => ctx.read<AuthenticationService>().authStateChanges,
+          create: (ctx) => ctx.read<AuthService>().authStateChanges,
         ),
       ],
       child: MaterialApp(
@@ -50,6 +52,7 @@ class MyApp extends StatelessWidget {
         routes: {
           '/': (context) => AuthenticationWrapper(),
           '/auth': (context) => AuthPage(),
+          '/auth/phone': (context) => PhoneAuthPage(),
           '/dashboard': (context) => Dashboard(),
           '/profile': (context) => ProfilePage(),
         },
@@ -71,7 +74,7 @@ class AuthenticationWrapper extends StatelessWidget {
           return Text('Firebase initialization error!');
         } else if (snapshot.hasData) {
           return StreamBuilder(
-            stream: context.read<AuthenticationService>().authStateChanges,
+            stream: context.read<AuthService>().authStateChanges,
             builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
