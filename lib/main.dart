@@ -78,7 +78,7 @@ class AuthenticationWrapper extends StatelessWidget {
             builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasData) {
+              } else if (snapshot.data?.uid != null) {
                 return Dashboard();
               } else {
                 return AuthPage();
