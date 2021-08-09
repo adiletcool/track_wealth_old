@@ -4,20 +4,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:track_wealth/common/models/portfolio.dart';
 
 import '../models/portfolio_asset.dart';
 
 class DashboardState extends ChangeNotifier {
-  List<PortfolioAsset>? portfolioAssets;
-  Future<String>? loadDataState;
-
+  List<Portfolio>? portfolios;
+  List<PortfolioAsset>? selectedPortfolioAssets;
   Map<String, Map<String, dynamic>>? currencies;
+
+  Future<String>? loadDataState;
 
   // LOADING DATA
   Future<String> loadData() async {
     await Future.wait([
-      getPortfolioAssets(),
-      getCurrencies(),
+      getUserCurrencies(),
+      getUserAssets(),
     ]);
 
     return 'OK';
@@ -28,7 +30,7 @@ class DashboardState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Map<String, Map<String, dynamic>>> getCurrencies() async {
+  Future<Map<String, Map<String, dynamic>>> getUserCurrencies() async {
     print('Load currencies data');
 
     FirebaseAuth auth = FirebaseAuth.instance;
@@ -76,80 +78,67 @@ class DashboardState extends ChangeNotifier {
     return currenciesData;
   }
 
-  Future<List<PortfolioAsset>> getPortfolioAssets({bool hideSold = false}) async {
+  Future<List<PortfolioAsset>> getUserAssets() async {
     print('Load asset data');
     FirebaseAuth auth = FirebaseAuth.instance;
-    DocumentReference userAssets = FirebaseFirestore.instance.collection('assets').doc(auth.currentUser!.uid);
+    DocumentReference userAssets = FirebaseFirestore.instance.collection('portfolios').doc(auth.currentUser!.uid);
     DocumentSnapshot<Object?> data = await userAssets.get();
 
     if (!data.exists) {
-      portfolioAssets = [];
+      portfolios = [];
+      selectedPortfolioAssets = [];
     } else {
-      Map<String, Map<String, dynamic>> assetData = Map<String, Map<String, dynamic>>.from(data.data() as Map<String, dynamic>);
-      Map<String, Map<String, dynamic>> russianAssets = Map.fromEntries(assetData.entries.where((entry) => entry.value['boardId'] == 'TQBR'));
-      Map<String, Map<String, dynamic>> foreignAssets = Map.fromEntries(assetData.entries.where((entry) => entry.value['boardId'] == 'FQBR'));
+      Map<String, List<dynamic>> portfolioData = Map<String, List<dynamic>>.from(data.data() as Map<String, dynamic>);
 
-      russianAssets = await getAssetsMarketData(assetData: russianAssets);
-      foreignAssets = await getAssetsMarketData(assetData: foreignAssets, isForeign: true);
+      portfolios = Portfolio.fromList(List<Map<String, dynamic>>.from(portfolioData['portfolios']!));
+      selectedPortfolioAssets = portfolios!.firstWhere((portfolio) => portfolio.isSelected).assets;
 
-      assetData = {
-        ...russianAssets,
-        ...foreignAssets,
-      };
+      // Делим рос и зарубежные акции, делаем отдельные запросы, потом снова соединяем
+      Iterable<PortfolioAsset> russianAssets = selectedPortfolioAssets!.where((asset) => asset.boardId == 'TQBR');
+      Iterable<PortfolioAsset> foreignAssets = selectedPortfolioAssets!.where((asset) => asset.boardId == 'FQBR');
 
-      portfolioAssets = assetData.entries
-          .map((e) => PortfolioAsset(
-                boardId: e.value['boardId'],
-                secId: e.key,
-                shortName: e.value["shortName"],
-                quantity: e.value["quantity"],
-                meanPrice: e.value["meanPrice"],
-                currentPrice: e.value["currentPrice"],
-                todayPriceChange: e.value["todayPriceChange"],
-                profit: e.value["profit"],
-                profitPercent: e.value["profitPercent"],
-                sharePercent: e.value["sharePercent"],
-                worth: e.value["worth"],
-              ))
-          .toList();
-      portfolioAssets!.sort((a1, a2) => a2.worth.compareTo(a1.worth));
+      russianAssets = await getAssetsMarketData(assets: russianAssets);
+      foreignAssets = await getAssetsMarketData(assets: foreignAssets, isForeign: true);
+
+      selectedPortfolioAssets = russianAssets.toList() + foreignAssets.toList();
+
+      selectedPortfolioAssets!.sort((a1, a2) => a2.worth!.compareTo(a1.worth!)); // сортируем по рыночной стоимости
     }
 
-    if (hideSold) return portfolioAssets!.where((element) => element.quantity != 0).toList();
-    return portfolioAssets!;
+    return selectedPortfolioAssets!.where((asset) => asset.quantity != 0).toList(); // фильтруем qunatity != 0
   }
 
-  Future<Map<String, Map<String, dynamic>>> getAssetsMarketData({required Map<String, Map<String, dynamic>> assetData, bool isForeign = false}) async {
-    if (assetData.length > 0) {
-      Iterable<String> assets = assetData.entries.map<String>((e) => "${e.value['boardId']}:${e.key}"); // ["TQBR:SBER", "TQBR:GAZP", ...]
-      String securities = assets.reduce((a, b) => '$a,$b');
+  Future<Iterable<PortfolioAsset>> getAssetsMarketData({required Iterable<PortfolioAsset> assets, isForeign = false}) async {
+    if (assets.length > 0) {
+      Iterable<String> queries = assets.map((a) => '${a.boardId}:${a.secId}');
+      String securities = queries.reduce((a, b) => '$a,$b');
 
       String url = "https://iss.moex.com/iss/engines/stock/markets/${isForeign ? 'foreign' : ''}shares/securities.jsonp";
       List<Map<String, dynamic>> marketDataMaps = await getMoexMarketData(url, securities);
 
-      assetData.forEach((secId, asset) {
+      assets.forEach((asset) {
         Map<String, dynamic>? foundAsset = marketDataMaps.firstWhere(
-          (found) => found['SECID'] == secId,
+          (found) => found['SECID'] == asset.secId,
           orElse: () => {'LAST': 0, 'LASTTOPREVPRICE': 0},
         );
+
         num lastPrice = foundAsset['LAST'] ?? foundAsset['MARKETPRICE'];
         num todayPriceChange = foundAsset['LASTTOPREVPRICE'];
 
-        asset['currentPrice'] = lastPrice;
-        asset['todayPriceChange'] = todayPriceChange;
+        asset.currentPrice = lastPrice;
+        asset.todayPriceChange = todayPriceChange;
 
-        asset['profit'] = (asset['currentPrice'] - asset['meanPrice']) * asset['quantity'];
-        asset['profitPercent'] = (asset['currentPrice'] / asset['meanPrice'] - 1) * 100;
-        asset['worth'] = asset['currentPrice'] * asset['quantity'];
+        asset.profit = (asset.currentPrice! - asset.meanPrice) * asset.quantity;
+        asset.profitPercent = (asset.currentPrice! / asset.meanPrice - 1) * 100;
+        asset.worth = asset.currentPrice! * asset.quantity;
       });
 
-      num totalWorth = assetData.values.map((a) => a['worth'] as num).sum;
-      assetData.values.forEach((asset) {
-        asset['sharePercent'] = asset['worth'] * 100 / totalWorth;
+      num totalWorth = assets.map((asset) => asset.worth!).sum;
+      assets.forEach((asset) {
+        asset.sharePercent = asset.worth! * 100 / totalWorth;
       });
     }
-
-    return assetData;
+    return assets;
   }
 
   Future<List<Map<String, dynamic>>> getMoexMarketData(String url, String securities, {bool isCurrencies = false}) async {
@@ -198,8 +187,29 @@ class DashboardState extends ChangeNotifier {
     reloadData();
   }
 
+  Future<void> addUserPortfolio(String name, String? broker, String currency, String? description) async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    DocumentReference userAssets = FirebaseFirestore.instance.collection('portfolios').doc(auth.currentUser!.uid);
+
+    portfolios!.forEach((portfolio) => portfolio.isSelected = false);
+    portfolios!.add(
+      Portfolio(
+        name: name,
+        description: description,
+        currency: currency,
+        broker: broker,
+        isSelected: true,
+        assets: [],
+      ),
+    );
+
+    List<Map<String, dynamic>> updatedPortfolios = portfolios!.map((portfolio) => portfolio.toJson()).toList();
+    print(updatedPortfolios);
+    await userAssets.set({'portfolios': updatedPortfolios});
+  }
+
   void sortPortfolio(int index, bool ascending, Map<String, bool> colFilter) {
-    portfolioAssets!.sort((asset1, asset2) {
+    selectedPortfolioAssets!.sort((asset1, asset2) {
       return (ascending ? asset1 : asset2).getColumnValue(index, filter: colFilter).compareTo(
             (ascending ? asset2 : asset1).getColumnValue(index, filter: colFilter),
           );

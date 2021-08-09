@@ -4,12 +4,12 @@ class PortfolioAsset {
   final String shortName; // название компании (Аэрофлот)
   final int quantity; // Количество штук (размер лота * количество лотов)
   final num meanPrice; // Средняя цена покупки
-  final num currentPrice; // текущая цена за акцию
-  final num todayPriceChange; // изменение цены за сегодня в %
-  final num profit; // Доход (Руб) с момента покупки
-  final num profitPercent; // Доход (%) с момента покупки
-  final num sharePercent; // Доля в портфеле
-  final num worth; // Текущая рыночная стоимость
+  num? currentPrice; // текущая цена за акцию
+  num? todayPriceChange; // изменение цены за сегодня в %
+  num? profit; // Доход (Руб) с момента покупки
+  num? profitPercent; // Доход (%) с момента покупки
+  num? sharePercent; // Доля в портфеле
+  num? worth; // Текущая рыночная стоимость
 
   PortfolioAsset({
     required this.boardId,
@@ -17,13 +17,27 @@ class PortfolioAsset {
     required this.shortName,
     required this.quantity,
     required this.meanPrice,
-    required this.currentPrice,
-    required this.todayPriceChange,
-    required this.profit,
-    required this.profitPercent,
-    required this.sharePercent,
-    required this.worth,
+    this.currentPrice,
+    this.todayPriceChange,
+    this.profit,
+    this.profitPercent,
+    this.sharePercent,
+    this.worth,
   });
+
+  factory PortfolioAsset.fromJson(Map<String, dynamic> json) {
+    return PortfolioAsset(
+      boardId: json['boardId'],
+      secId: json['secId'],
+      shortName: json['shortName'],
+      quantity: json['quantity'],
+      meanPrice: json['meanPrice'],
+    );
+  }
+
+  static List<PortfolioAsset> fromList(List<Map<String, dynamic>> portfolioAssets) {
+    return portfolioAssets.map((a) => PortfolioAsset.fromJson(a)).toList();
+  }
 
   dynamic getColumnValue(int index, {required Map<String, bool> filter}) {
     return getColumnValues(filter: filter)[index];
@@ -46,7 +60,19 @@ class PortfolioAsset {
 
   @override
   String toString() {
-    return "PortfolioAsset($shortName, $quantity, $meanPrice, $profit, $profitPercent, $sharePercent, $worth)";
+    return "PortfolioAsset($boardId, $secId, $shortName, $quantity, $meanPrice,"
+        "$currentPrice, $todayPriceChange, $profit, $profitPercent,"
+        "$sharePercent, $worth)";
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'boardId': boardId,
+      'secId': secId,
+      'shortName': shortName,
+      'quantity': quantity,
+      'meanPrice': meanPrice,
+    };
   }
 }
 

@@ -32,6 +32,7 @@ dependencies:
   pinput: ^1.2.0
   auto_size_text_pk: ^3.0.0
   shimmer: ^2.0.0
+  lottie: ^1.1.0
   
 dev_dependencies:
   flutter_test:
@@ -43,6 +44,7 @@ flutter:
 
   assets:
     - assets/images/auth/
+    - assets/animations/
 
   fonts:
     - family: Sinaloa

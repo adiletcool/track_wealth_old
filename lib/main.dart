@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/pages/auth/phone_auth.dart';
 import 'package:track_wealth/pages/dashboard/dashboard.dart';
+import 'package:track_wealth/pages/dashboard/portfolio/add_new_portfolio.dart';
 import 'package:track_wealth/pages/profile/profile.dart';
 import 'pages/auth/auth_page.dart';
 import 'common/services/dashboard.dart';
@@ -10,6 +11,22 @@ import 'common/services/dashboard.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:track_wealth/common/services/auth.dart';
+
+// TODO: создать коллекцию tradeHistory с документами для каждого пользователя
+// {'secId': {'datetime', 'boardId', 'price', 'quantity', 'shortName', 'currency', 'comission', 'note', 'type': 'buy'(sell,deposit,withdraw,earn,spend)}
+// для типа earn/spend 'info': {'type': 'dividends/comission/...',}}
+
+// TODO: добавить функционал в addOperation для акций -> проверять:
+// есть ли secId
+// хватает ли денег (при покупке)
+// сохранять в tradeHistory
+// менять assets (quantity, meanPrice), все остальное пересчитывается тут
+
+// TODO: добавить функционал в addOperation для денег ->
+// если type == spend, проверить, хватает ли средств
+// если type == earn, добавить необходимость указать информацию (пришли дивы, заплатил комиссию, др)
+// добавить tradeHistory
+// изменить currencies
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,6 +71,7 @@ class MyApp extends StatelessWidget {
           '/auth': (context) => AuthPage(),
           '/auth/phone': (context) => PhoneAuthPage(),
           '/dashboard': (context) => Dashboard(),
+          '/dashboard/add': (context) => AddNewPortfolio(),
           '/profile': (context) => ProfilePage(),
         },
       ),

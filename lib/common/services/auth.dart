@@ -179,7 +179,8 @@ class AuthService {
     }
   }
 
-  Future<void> signOut(User? firebaseUser) async {
+  Future<void> signOut() async {
+    User? firebaseUser = FirebaseAuth.instance.currentUser;
     if (firebaseUser == null) return;
     List<UserInfo> providerData = firebaseUser.providerData;
     String providerId = providerData.first.providerId;

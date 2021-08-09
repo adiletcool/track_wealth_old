@@ -7,16 +7,16 @@ import 'package:track_wealth/common/models/portfolio_asset.dart';
 import 'package:track_wealth/common/services/dashboard.dart';
 import 'package:track_wealth/pages/dashboard/header/operations/add_operation_dialog/add_operation_dialog.dart';
 
-class Portfolio extends StatefulWidget {
+class PortfolioTable extends StatefulWidget {
   final List<PortfolioAsset> portfolioAssets;
   final Map<String, Map<String, dynamic>> currencies;
-  const Portfolio({required this.portfolioAssets, required this.currencies});
+  const PortfolioTable({required this.portfolioAssets, required this.currencies});
 
   @override
-  _PortfolioState createState() => _PortfolioState(portfolioAssets, currencies);
+  _PortfolioTableState createState() => _PortfolioTableState(portfolioAssets, currencies);
 }
 
-class _PortfolioState extends State<Portfolio> {
+class _PortfolioTableState extends State<PortfolioTable> {
   final List<PortfolioAsset> portfolioAssets;
   final Map<String, Map<String, dynamic>> currencies;
 
@@ -28,7 +28,7 @@ class _PortfolioState extends State<Portfolio> {
 
   ScrollController tableScrollController = ScrollController();
 
-  _PortfolioState(this.portfolioAssets, this.currencies);
+  _PortfolioTableState(this.portfolioAssets, this.currencies);
 
   final List<Map<String, dynamic>> allColumns = ColumnFilter.getAllColumns();
 

@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/services/auth.dart';
@@ -39,8 +38,6 @@ class _SideBarState extends State<SideBar> {
 
   // оставить параметр item
   void logout() {
-    User? firebaseUser = context.read<User?>();
-
     showDialog(
       context: context,
       builder: (context) {
@@ -54,7 +51,7 @@ class _SideBarState extends State<SideBar> {
               ),
               onPressed: () async {
                 // Navigator.pop(context);
-                await context.read<AuthService>().signOut(firebaseUser);
+                await context.read<AuthService>().signOut();
                 Navigator.pushNamed(context, '/');
               },
             ),
