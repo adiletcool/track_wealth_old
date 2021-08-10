@@ -1,3 +1,4 @@
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -5,6 +6,7 @@ import 'package:track_wealth/pages/auth/phone_auth.dart';
 import 'package:track_wealth/pages/dashboard/dashboard.dart';
 import 'package:track_wealth/pages/dashboard/portfolio/add_new_portfolio.dart';
 import 'package:track_wealth/pages/profile/profile.dart';
+import 'package:track_wealth/pages/shimmers/dashboard_shimmer.dart';
 import 'pages/auth/auth_page.dart';
 import 'common/services/dashboard.dart';
 
@@ -38,6 +40,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        StreamProvider<ConnectivityResult>(
+          create: (ctx) => Connectivity().onConnectivityChanged,
+          initialData: ConnectivityResult.none,
+        ),
         ChangeNotifierProvider(create: (ctx) => DashboardState()),
         ChangeNotifierProvider(create: (ctx) => TableState()),
         Provider<AuthService>(
@@ -84,29 +90,35 @@ class AuthenticationWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _initialization,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          print('Firebase initialization error! ${snapshot.error.toString()}');
-          return Text('Firebase initialization error!');
-        } else if (snapshot.hasData) {
-          return StreamBuilder(
-            stream: context.read<AuthService>().authStateChanges,
-            builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              } else if (snapshot.data?.uid != null) {
-                return Dashboard();
-              } else {
-                return AuthPage();
-              }
-            },
-          );
-        } else {
-          return Center(child: CircularProgressIndicator());
-        }
-      },
-    );
+    ConnectivityResult connection = context.watch<ConnectivityResult>();
+
+    if (connection == ConnectivityResult.none) {
+      return SafeArea(child: DashboardShimmer());
+    } else {
+      return FutureBuilder(
+        future: _initialization,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            print('Firebase initialization error! ${snapshot.error.toString()}');
+            return Text('Firebase initialization error!');
+          } else if (snapshot.hasData) {
+            return StreamBuilder<User?>(
+              stream: context.read<AuthService>().authStateChanges,
+              builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.data?.uid != null) {
+                  return Dashboard();
+                } else {
+                  return AuthPage();
+                }
+              },
+            );
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        },
+      );
+    }
   }
 }

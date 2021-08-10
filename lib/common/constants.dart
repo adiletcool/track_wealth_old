@@ -148,3 +148,32 @@ Map<String, String> tooltips = {
   'open_pos_change': 'Прибыль или убыток только по открытым позициям.',
   'totalWorth': 'Рыночная стоимость всех активов, а также денежные средства, конвертированные в рубли по текущему курсу.',
 };
+
+List<Map<String, dynamic>> sampleUserAssets = [
+  {"secId": "GMKN", "boardId": "TQBR", "shortName": "ГМКНорНик", "quantity": 15, "meanPrice": 22160.00},
+  {"secId": "LKOH", "boardId": "TQBR", "shortName": "Лукойл", "quantity": 30, "meanPrice": 4751.5},
+  {"secId": "SBER", "boardId": "TQBR", "shortName": "Сбербанк", "quantity": 610, "meanPrice": 191.37},
+  {"secId": "YNDX", "boardId": "TQBR", "shortName": "Yandex clA", "quantity": 33, "meanPrice": 4177.80},
+  {"secId": "AGRO", "boardId": "TQBR", "shortName": "AGRO-гдр", "quantity": 100, "meanPrice": 896.00},
+  {"secId": "RTKM", "boardId": "TQBR", "shortName": "Ростел -ао", "quantity": 560, "meanPrice": 81.78},
+  {"secId": "FIVE", "boardId": "TQBR", "shortName": "FIVE-гдр", "quantity": 16, "meanPrice": 2420.00},
+  {"secId": "ALRS", "boardId": "TQBR", "shortName": "АЛРОСА ао", "quantity": 120, "meanPrice": 69.97},
+  {"secId": "M-RM", "boardId": "FQBR", "shortName": "Macy's", "quantity": 38, "meanPrice": 1200.00},
+  {"secId": "VTBR", "boardId": "TQBR", "shortName": "ВТБ ао", "quantity": 60000, "meanPrice": 0.046069},
+  {"secId": "MGNT", "boardId": "TQBR", "shortName": "Магнит ао", "quantity": 2, "meanPrice": 5486.00},
+  {"secId": "MTLRP", "boardId": "TQBR", "shortName": "Мечел ап", "quantity": 30, "meanPrice": 132.38},
+  {"secId": "OXY-RM", "boardId": "FQBR", "shortName": "Occidental", "quantity": 4, "meanPrice": 1993.00},
+  {"secId": "DSKY", "boardId": "TQBR", "shortName": "ДетскийМир", "quantity": 400, "meanPrice": 143.29},
+  {"secId": "MVID", "boardId": "TQBR", "shortName": "М.видео", "quantity": 22, "meanPrice": 728.60},
+  {"secId": "LNTA", "boardId": "TQBR", "shortName": "Лента др", "quantity": 70, "meanPrice": 252.10},
+  {"secId": "TATN", "boardId": "TQBR", "shortName": "Татнфт 3ао", "quantity": 116, "meanPrice": 540.20},
+  {"secId": "FIXP", "boardId": "TQBR", "shortName": "FIXP-гдр", "quantity": 40, "meanPrice": 745.20},
+  {"secId": "MAIL", "boardId": "TQBR", "shortName": "MAIL-гдр", "quantity": 32, "meanPrice": 2042.40},
+  {"secId": "RSTI", "boardId": "TQBR", "shortName": "Россети ао", "quantity": 45000, "meanPrice": 1.70},
+];
+
+List<Map<String, dynamic>> newUserCurrencies = [
+  {'code': 'RUB', 'name': 'Рубли', 'value': 0, 'locale': 'ru', 'symbol': '₽'},
+  {'code': 'USD000UTSTOM', 'name': 'Доллары', 'value': 0, 'locale': 'en_US', 'symbol': '\$'},
+  {'code': 'EUR_RUB__TOM', 'name': 'Евро', 'value': 0, 'locale': 'eu', 'symbol': '€'},
+];

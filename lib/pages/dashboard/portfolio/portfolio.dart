@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/constants.dart';
+import 'package:track_wealth/common/models/column_filter.dart';
 import 'package:track_wealth/common/models/portfolio_asset.dart';
+import 'package:track_wealth/common/models/portfolio_currency.dart';
 import 'package:track_wealth/common/services/dashboard.dart';
 import 'package:track_wealth/pages/dashboard/header/operations/add_operation_dialog/add_operation_dialog.dart';
 
 class PortfolioTable extends StatefulWidget {
   final List<PortfolioAsset> portfolioAssets;
-  final Map<String, Map<String, dynamic>> currencies;
+  final List<PortfolioCurrency> currencies;
   const PortfolioTable({required this.portfolioAssets, required this.currencies});
 
   @override
@@ -18,7 +20,7 @@ class PortfolioTable extends StatefulWidget {
 
 class _PortfolioTableState extends State<PortfolioTable> {
   final List<PortfolioAsset> portfolioAssets;
-  final Map<String, Map<String, dynamic>> currencies;
+  final List<PortfolioCurrency> currencies;
 
   late Map<String, bool> colFilter;
 
@@ -136,15 +138,15 @@ class _PortfolioTableState extends State<PortfolioTable> {
   }
 
   List<Widget> getCurrencyRows() {
-    return currencies.entries
+    return currencies
         .map(
-          (entry) => Container(
+          (currency) => Container(
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(entry.value['name']),
-                Text(MyFormatter.currencyFormat(entry.value['value'], entry.value['locale'], entry.value['symbol'])),
+                Text(currency.name),
+                Text(MyFormatter.currencyFormat(currency.value, currency.locale, currency.symbol)),
               ],
             ),
           ),

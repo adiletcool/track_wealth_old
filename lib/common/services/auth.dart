@@ -9,6 +9,9 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AuthService {
   final FirebaseAuth _firebaseAuth;
+  AuthService(this._firebaseAuth);
+
+  Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
   //! Initialize GoogleSignIn with the scopes you want:
   final GoogleSignIn googleSignIn = GoogleSignIn(
@@ -23,10 +26,6 @@ class AuthService {
 
   //! Initialize vkontakte auth instance
   final vkSignIn = VKLogin();
-
-  AuthService(this._firebaseAuth);
-
-  Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
   Future<String> signUp({required String email, required String password}) async {
     try {

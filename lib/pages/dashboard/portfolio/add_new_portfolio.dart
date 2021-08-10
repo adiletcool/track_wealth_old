@@ -44,7 +44,18 @@ class _AddNewPortfolioState extends State<AddNewPortfolio> {
           child: ListView(
             controller: scrollController,
             children: [
-              Lottie.asset('assets/animations/add_portfolio.json', height: MediaQuery.of(context).size.height * .3, reverse: true),
+              Stack(
+                children: [
+                  Center(child: Lottie.asset('assets/animations/add_portfolio.json', height: MediaQuery.of(context).size.height * .3, reverse: true)),
+                  if (widget.isSeparatePage)
+                    Positioned(
+                      child: IconButton(
+                        icon: Icon(Icons.arrow_back),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ),
+                ],
+              ),
               Text(
                 title,
                 style: TextStyle(fontSize: 25),
@@ -140,7 +151,9 @@ class _AddNewPortfolioState extends State<AddNewPortfolio> {
 
   String? validateName(String? name) {
     if (name!.isEmpty) name = 'Основной портфель';
-    List<Portfolio> portfolios = context.read<DashboardState>().portfolios!;
+    name = name.trim();
+    if (name.length < 3) return 'Имя должно содержать не менее трех символов';
+    List<Portfolio> portfolios = context.read<DashboardState>().portfolios;
     bool hasSameName = portfolios.any((portfolio) => portfolio.name == name);
     if (hasSameName) {
       return 'Портфель с таким именем уже существует';
@@ -150,13 +163,13 @@ class _AddNewPortfolioState extends State<AddNewPortfolio> {
 
   Future<void> createPortfolio() async {
     if (nameFormKey.currentState!.validate()) {
-      String name = nameController.text != '' ? nameController.text : 'Основной портфель';
+      String name = nameController.text != '' ? nameController.text.trim() : 'Основной портфель';
       String? decription = descController.text.isEmpty ? null : descController.text;
       String? broker = brokerController.text.isEmpty ? null : brokerController.text;
 
       String currency = currencies.entries.firstWhere((e) => e.value == selectedCurrency).key;
 
-      await context.read<DashboardState>().addUserPortfolio(name, broker, currency, decription);
+      await context.read<DashboardState>().addUserPortfolio(name: name, broker: broker, currency: currency, desc: decription);
       if (!widget.isSeparatePage)
         context.read<DashboardState>().reloadData();
       else
