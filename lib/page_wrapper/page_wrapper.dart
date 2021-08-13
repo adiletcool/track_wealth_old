@@ -5,11 +5,11 @@ import 'package:track_wealth/pages/side_bar/side_bar.dart';
 
 class PageWrapper extends StatelessWidget {
   final String routeName;
-  final GlobalKey<ScaffoldState> scaffoldKey;
+  final GlobalKey<ScaffoldState>? scaffoldKey;
   final PreferredSizeWidget? appBar;
   final Widget body;
 
-  PageWrapper({required this.routeName, required this.scaffoldKey, required this.body, this.appBar});
+  PageWrapper({required this.routeName, this.scaffoldKey, required this.body, this.appBar});
 
   @override
   Widget build(BuildContext context) {

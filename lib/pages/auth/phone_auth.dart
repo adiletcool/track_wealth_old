@@ -247,9 +247,8 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
     String phoneNumber = phoneNumberController.text; // .replaceAll(RegExp(r'[^0-9+]+'), ''), // только + и цифры
 
     if (kIsWeb) {
-      setState(() async {
-        webAuthResult = await context.read<AuthService>().webSignInWithPhoneNumber(phoneNumber);
-      });
+      webAuthResult = await context.read<AuthService>().webSignInWithPhoneNumber(phoneNumber);
+      setState(() {});
     } else {
       await context.read<AuthService>().signInWithPhoneNumber(
             context: context,

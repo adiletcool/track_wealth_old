@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/services/auth.dart';
 import 'package:track_wealth/common/constants.dart';
 
@@ -17,7 +18,7 @@ class _SideBarState extends State<SideBar> {
   void changePage(String? route) {
     if (route != null) {
       if (ModalRoute.of(context)!.settings.name == route) {
-        Navigator.pop(context);
+        if (!AppResponsive.isDesktop(context)) Navigator.pop(context);
       } else {
         Navigator.pushNamed(context, route);
       }

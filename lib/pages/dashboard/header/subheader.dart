@@ -8,11 +8,13 @@ class SubHeader extends StatefulWidget {
   final num portfolioTodayChange;
   final num portfolioAllTimeChange;
   final num portfolioTotal;
+  final void Function() updateColumnFilter;
 
   const SubHeader({
     required this.portfolioTodayChange,
     required this.portfolioAllTimeChange,
     required this.portfolioTotal,
+    required this.updateColumnFilter,
   });
 
   @override
@@ -64,7 +66,7 @@ class _SubHeaderState extends State<SubHeader> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           amountChangedCard(context),
-          ColumnFilterButton(),
+          ColumnFilterButton(widget.updateColumnFilter), // widget.updateColumnFilter
         ],
       ),
     );

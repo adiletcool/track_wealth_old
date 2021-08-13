@@ -7,36 +7,38 @@ class DashboardShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     Color bgColor = Theme.of(context).brightness == Brightness.dark ? Colors.black : AppColor.white;
 
-    return Container(
-      color: bgColor,
-      child: Shimmer.fromColors(
-        highlightColor: Color(0xffcdd5d5),
-        baseColor: Color(0xff595a5c),
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  ShimmerContainer(width: 40, height: 35),
-                  SizedBox(width: 10),
-                  Expanded(child: ShimmerContainer(height: 35)),
-                  SizedBox(width: 10),
-                  ShimmerContainer(width: 70, height: 35),
-                ],
-              ),
-              SizedBox(height: 10),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  ShimmerContainer(height: 70, width: 250),
-                  Spacer(),
-                  ShimmerContainer(width: 40, height: 35),
-                ],
-              ),
-              SizedBox(height: 10),
-              Expanded(child: ShimmerContainer())
-            ],
+    return SafeArea(
+      child: Container(
+        color: bgColor,
+        child: Shimmer.fromColors(
+          highlightColor: Color(0xffcdd5d5),
+          baseColor: Color(0xff595a5c),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    ShimmerContainer(width: 40, height: 35),
+                    SizedBox(width: 10),
+                    Expanded(child: ShimmerContainer(height: 35)),
+                    SizedBox(width: 10),
+                    ShimmerContainer(width: 70, height: 35),
+                  ],
+                ),
+                SizedBox(height: 10),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    ShimmerContainer(height: 70, width: 250),
+                    Spacer(),
+                    ShimmerContainer(width: 40, height: 35),
+                  ],
+                ),
+                SizedBox(height: 10),
+                Expanded(child: ShimmerContainer())
+              ],
+            ),
           ),
         ),
       ),

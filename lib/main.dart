@@ -1,4 +1,4 @@
-import 'package:connectivity/connectivity.dart';
+import 'package:cross_connectivity/cross_connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -40,10 +40,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        StreamProvider<ConnectivityResult>(
-          create: (ctx) => Connectivity().onConnectivityChanged,
-          initialData: ConnectivityResult.none,
-        ),
         ChangeNotifierProvider(create: (ctx) => DashboardState()),
         ChangeNotifierProvider(create: (ctx) => TableState()),
         Provider<AuthService>(
@@ -85,40 +81,53 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class AuthenticationWrapper extends StatelessWidget {
+class AuthenticationWrapper extends StatefulWidget {
+  @override
+  _AuthenticationWrapperState createState() => _AuthenticationWrapperState();
+}
+
+class _AuthenticationWrapperState extends State<AuthenticationWrapper> {
   final Future<FirebaseApp> _initialization = Firebase.initializeApp();
 
   @override
   Widget build(BuildContext context) {
-    ConnectivityResult connection = context.watch<ConnectivityResult>();
+    // User? _user = context.watch<User?>();
 
-    if (connection == ConnectivityResult.none) {
-      return SafeArea(child: DashboardShimmer());
-    } else {
-      return FutureBuilder(
-        future: _initialization,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            print('Firebase initialization error! ${snapshot.error.toString()}');
-            return Text('Firebase initialization error!');
-          } else if (snapshot.hasData) {
-            return StreamBuilder<User?>(
-              stream: context.read<AuthService>().authStateChanges,
-              builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (snapshot.data?.uid != null) {
-                  return Dashboard();
-                } else {
-                  return AuthPage();
-                }
-              },
-            );
-          } else {
-            return Center(child: CircularProgressIndicator());
-          }
-        },
-      );
-    }
+    return ConnectivityBuilder(
+      builder: (context, isConnected, status) {
+        if (status == ConnectivityStatus.none) {
+          return DashboardShimmer();
+        } else {
+          return FutureBuilder(
+            future: _initialization,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Text('Firebase initialization error!\n${snapshot.error.toString()}');
+              } else if (snapshot.hasData) {
+                return StreamBuilder<User?>(
+                  stream: context.read<AuthService>().authStateChanges,
+                  builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.data?.uid != null) {
+                      return Dashboard();
+                    } else {
+                      return AuthPage();
+                    }
+                  },
+                );
+              } else {
+                return Center(child: CircularProgressIndicator());
+              }
+            },
+          );
+        }
+      },
+    );
   }
+
+  final connectionSnackbar = SnackBar(
+    content: Text('Отсутствует подключение к интернету.'),
+    duration: const Duration(seconds: 4),
+  );
 }

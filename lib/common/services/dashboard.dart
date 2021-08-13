@@ -20,6 +20,7 @@ class DashboardState extends ChangeNotifier {
 
   /// LOADING DATA
   Future<String> loadData() async {
+    print('LOADING DATA');
     await getSelectedUserPortfolio().then((value) async {
       if (value != null) {
         selectedPortfolio = value;
@@ -254,6 +255,6 @@ class TableState extends ChangeNotifier {
   void updateSortedColumn(String columnName, bool isAscending) {
     sortedColumn.update('title', (value) => columnName);
     sortedColumn.update('ascending', (value) => isAscending);
-    notifyListeners();
+    // notifyListeners();
   }
 }

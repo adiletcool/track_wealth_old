@@ -277,11 +277,11 @@ class _AuthPageState extends State<AuthPage> {
     switch (method) {
       case 'google':
         return await context.read<AuthService>().signInWithGoogle();
-
       case 'facebook':
         return await context.read<AuthService>().signInWithFacebook();
       case 'vkontakte':
-        return await context.read<AuthService>().signInWithVk();
+        break;
+      // return await context.read<AuthService>().signInWithVk();
       case 'phone':
         Navigator.pushNamed(context, '/auth/phone');
         break;

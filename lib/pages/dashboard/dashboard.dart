@@ -1,4 +1,4 @@
-import 'package:connectivity/connectivity.dart';
+import 'package:cross_connectivity/cross_connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -26,20 +26,9 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   String routeName = 'Портфель';
-  ConnectivityResult connection = ConnectivityResult.none;
   late List<Portfolio> portfolios;
   late Portfolio selectedPortfolio;
-
-  @override
-  void initState() {
-    super.initState();
-    try {
-      context.read<DashboardState>().loadDataState = context.read<DashboardState>().loadData();
-    } catch (e) {
-      print('Unable to load data');
-      print('Reason: ${e.toString()}');
-    }
-  }
+  bool firstLoaded = false;
 
   void setOrientationMode({bool canLandscape = true}) {
     SystemChrome.setPreferredOrientations([
@@ -50,61 +39,77 @@ class _DashboardState extends State<Dashboard> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    connection = context.watch<ConnectivityResult>();
+  Widget build(BuildContext context) {
+    return ConnectivityBuilder(
+      builder: (context, isConnected, status) {
+        if ((status != ConnectivityStatus.none) && (status != null)) {
+          if (!firstLoaded) {
+            print('FIRST DATA LOAD');
+            context.read<DashboardState>().loadDataState = context.read<DashboardState>().loadData();
+            firstLoaded = true;
+          }
+          return mainBody();
+        } else
+          return DashboardShimmer();
+      },
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (connection == ConnectivityResult.none) {
-      return SafeArea(child: DashboardShimmer());
-    } else {
-      Future<String>? _loadData = context.watch<DashboardState>().loadDataState;
+  Widget mainBody() {
+    Future<String>? _loadData = context.watch<DashboardState>().loadDataState;
 
-      return FutureBuilder(
-        future: _loadData,
-        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasError) {
-              return Center(
-                child: Text(snapshot.error.toString()),
-              );
-            } else {
-              portfolios = context.read<DashboardState>().portfolios;
-              setOrientationMode(canLandscape: portfolios.length != 0);
-
-              if (portfolios.length == 0) {
-                return AddNewPortfolio(title: 'Добавьте свой первый портфель', isSeparatePage: false);
-              } else {
-                selectedPortfolio = context.read<DashboardState>().selectedPortfolio;
-                return PageWrapper(
-                  routeName: routeName,
-                  scaffoldKey: scaffoldKey,
-                  body: MainTable(
-                    portfolioAssets: selectedPortfolio.assets!,
-                    currencies: selectedPortfolio.curercies!,
-                    scaffoldKey: scaffoldKey,
-                  ),
-                );
-              }
-            }
+    return FutureBuilder(
+      future: _loadData,
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
           } else {
-            return SafeArea(child: DashboardShimmer());
+            portfolios = context.read<DashboardState>().portfolios;
+            setOrientationMode(canLandscape: portfolios.length != 0);
+
+            if (portfolios.length == 0) {
+              return AddNewPortfolio(title: 'Добавьте свой первый портфель', isSeparatePage: false);
+            } else {
+              selectedPortfolio = context.read<DashboardState>().selectedPortfolio;
+              return PageWrapper(
+                routeName: routeName,
+                scaffoldKey: scaffoldKey,
+                body: DashboardScreen(
+                  portfolioAssets: selectedPortfolio.assets!,
+                  currencies: selectedPortfolio.curercies!,
+                  scaffoldKey: scaffoldKey,
+                ),
+              );
+            }
           }
-        },
-      );
-    }
+        } else {
+          return PageWrapper(
+            routeName: routeName,
+            body: DashboardShimmer(),
+          );
+        }
+      },
+    );
   }
 }
 
-class MainTable extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   final List<PortfolioAsset> portfolioAssets;
   final List<PortfolioCurrency> currencies;
   final GlobalKey<ScaffoldState> scaffoldKey;
-  final ScrollController scrollController = ScrollController();
 
-  MainTable({required this.portfolioAssets, required this.currencies, required this.scaffoldKey});
+  DashboardScreen({required this.portfolioAssets, required this.currencies, required this.scaffoldKey});
+
+  @override
+  _DashboardScreenState createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  final ScrollController scrollController = ScrollController();
+  late Map<String, bool> colFilter;
 
   num getCurrenciesTotal(List<PortfolioCurrency> data) => data.map((currency) => currency.totalRub!).sum;
 
@@ -114,9 +119,14 @@ class MainTable extends StatelessWidget {
 
   num getPortfolioTodayChange(List<PortfolioAsset> data) => data.map((asset) => asset.worth! - asset.worth! / (1 + asset.todayPriceChange! / 100)).sum;
 
+  void updateColumnFilter() => setState(() {});
+
   @override
   Widget build(BuildContext context) {
     Color bgColor = Theme.of(context).brightness == Brightness.dark ? Colors.black : AppColor.white;
+
+    // Логичнее было бы использовать context.watch в PortfolioTable вместо colFilter и updateColumnFilter здесь, однако
+    colFilter = AppResponsive.isMobile(context) ? context.read<TableState>().mobileColumnFilter : context.read<TableState>().columnFilter;
 
     return Container(
       margin: EdgeInsets.only(top: AppResponsive.isMobile(context) ? 0 : 10),
@@ -138,21 +148,23 @@ class MainTable extends StatelessWidget {
               pinned: true,
               leading: Container(),
               flexibleSpace: Header(
-                drawerKey: scaffoldKey,
-                portfolioTotal: getPortfolioTotal(portfolioAssets) + getCurrenciesTotal(currencies), // активы + кэш
+                drawerKey: widget.scaffoldKey,
+                portfolioTotal: getPortfolioTotal(widget.portfolioAssets) + getCurrenciesTotal(widget.currencies), // активы + кэш
               ),
             ),
             SliverToBoxAdapter(
               child: SubHeader(
-                portfolioTotal: getPortfolioTotal(portfolioAssets), // изменения считаются относительно стоимости активов без учета свободных денег
-                portfolioTodayChange: getPortfolioTodayChange(portfolioAssets),
-                portfolioAllTimeChange: getPortfolioAllTimeChange(portfolioAssets),
+                portfolioTotal: getPortfolioTotal(widget.portfolioAssets), // изменения считаются относительно стоимости активов без учета свободных денег
+                portfolioTodayChange: getPortfolioTodayChange(widget.portfolioAssets),
+                portfolioAllTimeChange: getPortfolioAllTimeChange(widget.portfolioAssets),
+                updateColumnFilter: updateColumnFilter,
               ),
             ),
             SliverToBoxAdapter(
               child: PortfolioTable(
-                portfolioAssets: portfolioAssets,
-                currencies: currencies,
+                portfolioAssets: widget.portfolioAssets,
+                currencies: widget.currencies,
+                colFilter: colFilter,
               ),
             ),
           ],

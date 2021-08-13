@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-import 'package:flutter_login_vk/flutter_login_vk.dart';
+// import 'package:flutter_login_vk/flutter_login_vk.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../constants.dart';
@@ -25,7 +25,7 @@ class AuthService {
   final FacebookAuth facebookSignIn = FacebookAuth.instance;
 
   //! Initialize vkontakte auth instance
-  final vkSignIn = VKLogin();
+  // final vkSignIn = VKLogin();
 
   Future<String> signUp({required String email, required String password}) async {
     try {
@@ -107,8 +107,9 @@ class AuthService {
     }
   }
 
+  /*
   Future<void> signInWithVk() async {
-    await vkSignIn.initSdk('7913884'); //* инициализируем с app id
+    await vkSignIn.initSdk('7913884'); // инициализируем с app id
 
     // Запрашиваем вход и разрешение на почту
     final res = await vkSignIn.logIn(scope: [VKScope.email]);
@@ -143,6 +144,7 @@ class AuthService {
       print('Ошибка при входе: ${res.asError!.error}');
     }
   }
+  */
 
   Future<void> signInWithPhoneNumber({
     required BuildContext context,

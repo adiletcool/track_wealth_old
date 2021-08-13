@@ -33,7 +33,7 @@ dependencies:
   auto_size_text_pk: ^3.0.0
   shimmer: ^2.0.0
   lottie: ^1.1.0
-  connectivity: ^3.0.6
+  cross_connectivity: ^3.0.3
   
 dev_dependencies:
   flutter_test:

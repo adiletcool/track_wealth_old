@@ -12,17 +12,19 @@ import 'package:track_wealth/pages/dashboard/header/operations/add_operation_dia
 class PortfolioTable extends StatefulWidget {
   final List<PortfolioAsset> portfolioAssets;
   final List<PortfolioCurrency> currencies;
-  const PortfolioTable({required this.portfolioAssets, required this.currencies});
+  final Map<String, bool> colFilter;
+
+  const PortfolioTable({required this.portfolioAssets, required this.currencies, required this.colFilter});
 
   @override
-  _PortfolioTableState createState() => _PortfolioTableState(portfolioAssets, currencies);
+  _PortfolioTableState createState() => _PortfolioTableState(portfolioAssets, currencies, colFilter);
 }
 
 class _PortfolioTableState extends State<PortfolioTable> {
   final List<PortfolioAsset> portfolioAssets;
   final List<PortfolioCurrency> currencies;
 
-  late Map<String, bool> colFilter;
+  final Map<String, bool> colFilter;
 
   late List<Map<String, dynamic>> myColumns;
   late Map<String, dynamic> sortedColumn;
@@ -30,16 +32,14 @@ class _PortfolioTableState extends State<PortfolioTable> {
 
   ScrollController tableScrollController = ScrollController();
 
-  _PortfolioTableState(this.portfolioAssets, this.currencies);
+  _PortfolioTableState(this.portfolioAssets, this.currencies, this.colFilter);
 
   final List<Map<String, dynamic>> allColumns = ColumnFilter.getAllColumns();
 
   @override
   Widget build(BuildContext context) {
-    colFilter = AppResponsive.isMobile(context) ? context.watch<TableState>().mobileColumnFilter : context.watch<TableState>().columnFilter;
-
     myColumns = getFilteredColumns();
-    sortedColumn = context.watch<TableState>().sortedColumn;
+    sortedColumn = context.read<TableState>().sortedColumn;
 
     if ((sortedColumn['title'] != null)) {
       sortedColumnIndex = myColumns.map((e) => e['title']).toList().indexOf(sortedColumn['title']);
@@ -134,7 +134,7 @@ class _PortfolioTableState extends State<PortfolioTable> {
 
     context.read<DashboardState>().sortPortfolio(index, ascending, colFilter);
     context.read<TableState>().updateSortedColumn(myColumns[index]['title'], ascending);
-    // setState(() {});
+    setState(() {});
   }
 
   List<Widget> getCurrencyRows() {
