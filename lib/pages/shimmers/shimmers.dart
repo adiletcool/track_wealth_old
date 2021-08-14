@@ -46,6 +46,19 @@ class DashboardShimmer extends StatelessWidget {
   }
 }
 
+class AmountRowShimmer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Shimmer.fromColors(
+          baseColor: Color(0xff283048),
+          highlightColor: Color(0xff859398),
+          child: ShimmerContainer(),
+        ));
+  }
+}
+
 class ShimmerContainer extends StatelessWidget {
   final double? width;
   final double? height;

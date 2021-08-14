@@ -12,19 +12,19 @@ import 'package:track_wealth/pages/dashboard/header/operations/add_operation_dia
 class PortfolioTable extends StatefulWidget {
   final List<PortfolioAsset> portfolioAssets;
   final List<PortfolioCurrency> currencies;
-  final Map<String, bool> colFilter;
 
-  const PortfolioTable({required this.portfolioAssets, required this.currencies, required this.colFilter});
+  const PortfolioTable({required this.portfolioAssets, required this.currencies});
 
   @override
-  _PortfolioTableState createState() => _PortfolioTableState(portfolioAssets, currencies, colFilter);
+  _PortfolioTableState createState() => _PortfolioTableState(portfolioAssets, currencies);
 }
 
 class _PortfolioTableState extends State<PortfolioTable> {
   final List<PortfolioAsset> portfolioAssets;
   final List<PortfolioCurrency> currencies;
 
-  final Map<String, bool> colFilter;
+  late TableState tableState;
+  late Map<String, bool> colFilter;
 
   late List<Map<String, dynamic>> myColumns;
   late Map<String, dynamic> sortedColumn;
@@ -32,14 +32,17 @@ class _PortfolioTableState extends State<PortfolioTable> {
 
   ScrollController tableScrollController = ScrollController();
 
-  _PortfolioTableState(this.portfolioAssets, this.currencies, this.colFilter);
+  _PortfolioTableState(this.portfolioAssets, this.currencies);
 
   final List<Map<String, dynamic>> allColumns = ColumnFilter.getAllColumns();
 
   @override
   Widget build(BuildContext context) {
+    tableState = context.watch<TableState>();
+    colFilter = AppResponsive.isMobile(context) ? tableState.mobileColumnFilter : tableState.columnFilter;
+
     myColumns = getFilteredColumns();
-    sortedColumn = context.read<TableState>().sortedColumn;
+    sortedColumn = tableState.sortedColumn;
 
     if ((sortedColumn['title'] != null)) {
       sortedColumnIndex = myColumns.map((e) => e['title']).toList().indexOf(sortedColumn['title']);
@@ -63,12 +66,6 @@ class _PortfolioTableState extends State<PortfolioTable> {
         children: [
           portfolioAssets.length != 0 ? buildTable() : emptyPortfolioInfo(),
           if (currencies.length > 0) ...getCurrencyRows(),
-          // TextButton(
-          //   child: Text('Test'),
-          //   onPressed: () {
-          //     context.read<DashboardState>().updateCurrencyUserData('RUB', Random().nextInt(100));
-          //   },
-          // ),
         ],
       ),
     );
@@ -130,10 +127,10 @@ class _PortfolioTableState extends State<PortfolioTable> {
   }
 
   void sortColumn(int index, bool ascending) {
-    print("sorted ${ascending ? 'as' : 'des'}cending by ${myColumns[index]['title']}");
+    print("sorted column ${myColumns[index]['title']}: ${ascending ? 'as' : 'des'}cending");
 
     context.read<DashboardState>().sortPortfolio(index, ascending, colFilter);
-    context.read<TableState>().updateSortedColumn(myColumns[index]['title'], ascending);
+    tableState.updateSortedColumn(myColumns[index]['title'], ascending);
     setState(() {});
   }
 

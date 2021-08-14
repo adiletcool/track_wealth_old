@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'dart:math' as math;
+import 'package:provider/provider.dart';
+import 'package:track_wealth/common/services/dashboard.dart';
+
+import 'services/auth.dart';
 
 extension HexColor on Color {
   /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
@@ -149,6 +153,7 @@ Map<String, String> tooltips = {
   'totalWorth': 'Рыночная стоимость всех активов, а также денежные средства, конвертированные в рубли по текущему курсу.',
 };
 
+/*
 List<Map<String, dynamic>> sampleUserAssets = [
   {"secId": "GMKN", "boardId": "TQBR", "shortName": "ГМКНорНик", "quantity": 15, "meanPrice": 22160.00},
   {"secId": "LKOH", "boardId": "TQBR", "shortName": "Лукойл", "quantity": 30, "meanPrice": 4751.5},
@@ -171,9 +176,55 @@ List<Map<String, dynamic>> sampleUserAssets = [
   {"secId": "MAIL", "boardId": "TQBR", "shortName": "MAIL-гдр", "quantity": 32, "meanPrice": 2042.40},
   {"secId": "RSTI", "boardId": "TQBR", "shortName": "Россети ао", "quantity": 45000, "meanPrice": 1.70},
 ];
+*/
 
 List<Map<String, dynamic>> newUserCurrencies = [
   {'code': 'RUB', 'name': 'Рубли', 'value': 0, 'locale': 'ru', 'symbol': '₽'},
   {'code': 'USD000UTSTOM', 'name': 'Доллары', 'value': 0, 'locale': 'en_US', 'symbol': '\$'},
   {'code': 'EUR_RUB__TOM', 'name': 'Евро', 'value': 0, 'locale': 'eu', 'symbol': '€'},
 ];
+
+PreferredSizeWidget simpleAppBar(context) {
+  Color bgColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
+
+  return AppBar(
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    leading: IconButton(
+      icon: Icon(Icons.arrow_back, color: bgColor),
+      onPressed: () => Navigator.pop(context),
+    ),
+  );
+}
+
+void userLogout(context) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        content: Text('Вы уверены, что хотите выйти из аккаунта?'),
+        actions: [
+          TextButton(
+            child: Text(
+              'Да',
+              style: TextStyle(color: Colors.red),
+            ),
+            onPressed: () async {
+              await context.read<AuthService>().signOut();
+
+              // чтобы при перезаходе обновился DashboardState
+              context.read<DashboardState>().loadDataState = null;
+
+              // не popUnti, т.к. home закрылся после popAndPushNamed(context, '/dashboard'))
+              Navigator.popAndPushNamed(context, '/');
+            },
+          ),
+          TextButton(
+            child: Text('Отмена'),
+            onPressed: () => Navigator.pop(context),
+          )
+        ],
+      );
+    },
+  );
+}

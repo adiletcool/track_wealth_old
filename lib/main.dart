@@ -1,28 +1,30 @@
-import 'package:cross_connectivity/cross_connectivity.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:track_wealth/pages/auth/phone_auth.dart';
-import 'package:track_wealth/pages/dashboard/dashboard.dart';
-import 'package:track_wealth/pages/dashboard/portfolio/add_new_portfolio.dart';
-import 'package:track_wealth/pages/profile/profile.dart';
-import 'package:track_wealth/pages/shimmers/dashboard_shimmer.dart';
-import 'pages/auth/auth_page.dart';
-import 'common/services/dashboard.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:track_wealth/common/services/auth.dart';
 
-// TODO: создать коллекцию tradeHistory с документами для каждого пользователя
-// {'secId': {'datetime', 'boardId', 'price', 'quantity', 'shortName', 'currency', 'comission', 'note', 'type': 'buy'(sell,deposit,withdraw,earn,spend)}
-// для типа earn/spend 'info': {'type': 'dividends/comission/...',}}
+import 'package:cross_connectivity/cross_connectivity.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
-// TODO: добавить функционал в addOperation для акций -> проверять:
-// есть ли secId
-// хватает ли денег (при покупке)
-// сохранять в tradeHistory
-// менять assets (quantity, meanPrice), все остальное пересчитывается тут
+import 'common/services/auth.dart';
+import 'common/services/dashboard.dart';
+
+import 'pages/auth/auth.dart';
+import 'pages/auth/phone_auth.dart';
+import 'pages/profile/profile.dart';
+import 'pages/dashboard/dashboard.dart';
+import 'pages/dashboard/portfolio/add_portfolio.dart';
+import 'pages/analysis/analysis.dart';
+import 'pages/trades/trades.dart';
+import 'pages/calendar/calendar.dart';
+import 'pages/trends/trends.dart';
+import 'pages/settings/setting.dart';
+
+import 'pages/shimmers/shimmers.dart';
+
+// TODO: добавить страницу для редактирования портфеля (см не final Portfolio поля) с возможностью его удаления
+// TODO: см todo хэдера
 
 // TODO: добавить функционал в addOperation для денег ->
 // если type == spend, проверить, хватает ли средств
@@ -45,10 +47,10 @@ class MyApp extends StatelessWidget {
         Provider<AuthService>(
           create: (ctx) => AuthService(FirebaseAuth.instance),
         ),
-        StreamProvider<User?>(
-          initialData: null,
-          create: (ctx) => ctx.read<AuthService>().authStateChanges,
-        ),
+        // StreamProvider<User?>(
+        //   initialData: null,
+        //   create: (ctx) => ctx.read<AuthService>().authStateChanges,
+        // ),
       ],
       child: MaterialApp(
         localizationsDelegates: [
@@ -72,10 +74,16 @@ class MyApp extends StatelessWidget {
           '/': (context) => AuthenticationWrapper(),
           '/auth': (context) => AuthPage(),
           '/auth/phone': (context) => PhoneAuthPage(),
-          '/dashboard': (context) => Dashboard(),
-          '/dashboard/add': (context) => AddNewPortfolio(),
           '/profile': (context) => ProfilePage(),
+          '/dashboard': (context) => DashboardPage(),
+          '/dashboard/add': (context) => AddPortfolioPage(),
+          '/analysis': (context) => AnalysisPage(),
+          '/trades': (context) => TradesPage(),
+          '/calendar': (context) => CalendarPage(),
+          '/trends': (context) => TrendsPage(),
+          '/settings': (context) => SettingsPage(),
         },
+        initialRoute: '/',
       ),
     );
   }
@@ -91,8 +99,6 @@ class _AuthenticationWrapperState extends State<AuthenticationWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    // User? _user = context.watch<User?>();
-
     return ConnectivityBuilder(
       builder: (context, isConnected, status) {
         if (status == ConnectivityStatus.none) {
@@ -110,7 +116,8 @@ class _AuthenticationWrapperState extends State<AuthenticationWrapper> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(child: CircularProgressIndicator());
                     } else if (snapshot.data?.uid != null) {
-                      return Dashboard();
+                      Future.microtask(() => Navigator.popAndPushNamed(context, '/dashboard')); // Перенаправляем после выполнения build
+                      return Container();
                     } else {
                       return AuthPage();
                     }

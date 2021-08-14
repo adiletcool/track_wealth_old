@@ -3,9 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:track_wealth/common/constants.dart';
+import 'package:track_wealth/common/models/search_asset_model.dart';
 
-import '../../../../../common/models/search_asset_model.dart';
 import 'asset_search/searchable_dropdown.dart';
+
+// TODO: добавить функционал в addOperation для акций -> проверять:
+// есть ли secId
+// хватает ли денег (при покупке)
+// сохранять в tradeHistory
+// менять assets (quantity, meanPrice), все остальное пересчитывается тут
 
 class AddOperationDialog extends StatefulWidget {
   @override

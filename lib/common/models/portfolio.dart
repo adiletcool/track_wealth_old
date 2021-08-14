@@ -3,14 +3,16 @@ import 'package:track_wealth/common/models/portfolio_asset.dart';
 import 'package:track_wealth/common/models/portfolio_currency.dart';
 
 class Portfolio {
-  final String name;
-  final String? broker;
-  final String currency;
-  final String? description;
-  final Timestamp openDate;
+  String name;
+  String? broker;
+  String currency; // Валюта, в которой считается total worth по assets
+  String? description;
+  final Timestamp openDate; // не изм
   bool isSelected;
-  List<PortfolioAsset>? assets;
-  List<PortfolioCurrency>? curercies;
+  List<PortfolioAsset>? assets; // Акции, торгующиеся только на МосБирже
+  List<PortfolioCurrency>? currencies;
+  num? assetsTotal;
+  num? currenciesTotal;
 
   Portfolio({
     required this.name,
@@ -21,7 +23,9 @@ class Portfolio {
     required this.openDate,
     // required this.datetime,
     this.assets,
-    this.curercies,
+    this.currencies,
+    this.assetsTotal,
+    this.currenciesTotal,
   });
 
   factory Portfolio.fromJson(Map<String, dynamic> json) {

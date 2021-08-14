@@ -7,14 +7,12 @@ import 'columns_filter.dart';
 class SubHeader extends StatefulWidget {
   final num portfolioTodayChange;
   final num portfolioAllTimeChange;
-  final num portfolioTotal;
-  final void Function() updateColumnFilter;
+  final num portfolioAssetsTotal;
 
   const SubHeader({
     required this.portfolioTodayChange,
     required this.portfolioAllTimeChange,
-    required this.portfolioTotal,
-    required this.updateColumnFilter,
+    required this.portfolioAssetsTotal,
   });
 
   @override
@@ -22,7 +20,7 @@ class SubHeader extends StatefulWidget {
 }
 
 class _SubHeaderState extends State<SubHeader> {
-  late num portfolioTotal;
+  late num portfolioAssetsTotal;
 
   // * Учитываются только изменения по акциям. Изменение иностранной валюты (если есть) не учитывается
   late num todayChange;
@@ -33,7 +31,7 @@ class _SubHeaderState extends State<SubHeader> {
   @override
   void initState() {
     super.initState();
-    portfolioTotal = widget.portfolioTotal;
+    portfolioAssetsTotal = widget.portfolioAssetsTotal;
 
     todayChange = widget.portfolioTodayChange;
     todayChangePercent = getTodayChangePercent();
@@ -43,13 +41,13 @@ class _SubHeaderState extends State<SubHeader> {
   }
 
   num getTodayChangePercent() {
-    num res = todayChange * 100 / (portfolioTotal - todayChange);
+    num res = todayChange * 100 / (portfolioAssetsTotal - todayChange);
     if (res.isNaN) res = 0;
     return res;
   }
 
   num getAllTimeChangePercent() {
-    num res = allTimeChange * 100 / (portfolioTotal - allTimeChange);
+    num res = allTimeChange * 100 / (portfolioAssetsTotal - allTimeChange);
     if (res.isNaN) res = 0;
     return res;
   }
@@ -66,7 +64,7 @@ class _SubHeaderState extends State<SubHeader> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           amountChangedCard(context),
-          ColumnFilterButton(widget.updateColumnFilter), // widget.updateColumnFilter
+          ColumnFilterButton(), // widget.updateColumnFilter
         ],
       ),
     );

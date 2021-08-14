@@ -68,13 +68,16 @@ class DashboardState extends ChangeNotifier {
     List<Map<String, dynamic>> currencies = List<Map<String, dynamic>>.from(assetsCurrencies['currencies']);
 
     selectedPortfolio.assets = PortfolioAsset.fromJsonsList(assets);
-    selectedPortfolio.curercies = PortfolioCurrency.fromJsonsList(currencies);
+    selectedPortfolio.currencies = PortfolioCurrency.fromJsonsList(currencies);
 
     // дожидаемся параллельно выполняющися загрузок данных по акциям и валютам
     await Future.wait([
       loadSelectedPortfolioAssets(),
       loadSelectedPortfolioCurrencies(),
     ]);
+
+    selectedPortfolio.assetsTotal = selectedPortfolio.assets!.map((asset) => asset.worth!).sum;
+    selectedPortfolio.currenciesTotal = selectedPortfolio.currencies!.map((currency) => currency.totalRub!).sum;
   }
 
   /// Получаем рыночные данные по акциям выбранного портфеля
@@ -94,8 +97,8 @@ class DashboardState extends ChangeNotifier {
 
   /// Получаем рыночные данные по валютам выбранного портфеля
   Future<void> loadSelectedPortfolioCurrencies() async {
-    selectedPortfolio.curercies = (await getCurrenciesMarketData(selectedPortfolio.curercies!)).toList();
-    selectedPortfolio.curercies = selectedPortfolio.curercies!.where((c) => c.value != 0).toList(); // фильтруем value != 0
+    selectedPortfolio.currencies = (await getCurrenciesMarketData()).toList();
+    selectedPortfolio.currencies = selectedPortfolio.currencies!.where((c) => c.value != 0).toList(); // фильтруем value != 0
   }
 
   /// Aadd currentPrice, todayPriceChange, profit, profitPercent, worth, sharePercent to selectedPortfolio.assets
@@ -133,7 +136,10 @@ class DashboardState extends ChangeNotifier {
   }
 
   /// Convert all currencies to rubles by adding key value 'totalRub'
-  Future<Iterable<PortfolioCurrency>> getCurrenciesMarketData(Iterable<PortfolioCurrency> currencies) async {
+  /// ! TODO:
+  Future<Iterable<PortfolioCurrency>> getCurrenciesMarketData() async {
+    // String portfolioCurrency = selectedPortfolio.currency;
+    Iterable<PortfolioCurrency> currencies = selectedPortfolio.currencies!; // copy
     Iterable<String> foreignCodes = currencies.where((c) => c.code != 'RUB').map((c) => c.code); // рубли не смотрим
 
     if (foreignCodes.length > 0) {
@@ -210,26 +216,40 @@ class DashboardState extends ChangeNotifier {
 
   Future<void> changeSelectedPortfolio(String portfolioName) async {
     if (portfolioName != selectedPortfolio.name) {
-      FirebaseAuth auth = FirebaseAuth.instance;
-      DocumentReference userAssets = FirebaseFirestore.instance.collection('portfolios').doc(auth.currentUser!.uid);
-
-      portfolios.firstWhere((portfolio) => portfolio.isSelected == true).isSelected = false; // isSelected = false у выбранного портфеля
+      portfolios.firstWhere((portfolio) => portfolio.isSelected == true).isSelected = false; // isSelected = false у выбранного ранее портфеля
       portfolios.firstWhere((portfolio) => portfolio.name == portfolioName).isSelected = true; // isSelected = false у портфеля c указанным именем
 
-      // форматируем список с портфелями в Json
-      List<Map<String, dynamic>> updatedPortfolios = portfolios.map((portfolio) => portfolio.toJson()).toList();
-
-      userAssets.set({'portfolios': updatedPortfolios}); // переписываем док
+      updatePortfolios();
       reloadData();
     }
   }
 
+  Future<void> changeSelectedPortfolioCurrency(String newCurrency) async {
+    if (newCurrency != selectedPortfolio.currency) {
+      portfolios.firstWhere((portfolio) => portfolio.isSelected == true).currency = newCurrency;
+    }
+    updatePortfolios();
+  }
+
+  // updating portfolios to Firestore
+  Future<void> updatePortfolios() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    DocumentReference userAssets = FirebaseFirestore.instance.collection('portfolios').doc(auth.currentUser!.uid);
+
+    // форматируем список с портфелями в Json
+    List<Map<String, dynamic>> updatedPortfolios = portfolios.map((portfolio) => portfolio.toJson()).toList();
+
+    userAssets.set({'portfolios': updatedPortfolios}); // переписываем док
+  }
+
+  // Сорировка портфеля по выбранному столбцу
   void sortPortfolio(int index, bool ascending, Map<String, bool> colFilter) {
     selectedPortfolio.assets!.sort((asset1, asset2) {
       return (ascending ? asset1 : asset2).getColumnValue(index, filter: colFilter).compareTo(
             (ascending ? asset2 : asset1).getColumnValue(index, filter: colFilter),
           );
     });
+    // ХЗ почему, но работает без notifyListeners()  ^_^
   }
 }
 
@@ -255,6 +275,5 @@ class TableState extends ChangeNotifier {
   void updateSortedColumn(String columnName, bool isAscending) {
     sortedColumn.update('title', (value) => columnName);
     sortedColumn.update('ascending', (value) => isAscending);
-    // notifyListeners();
   }
 }

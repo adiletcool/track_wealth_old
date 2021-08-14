@@ -5,9 +5,6 @@ import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/services/dashboard.dart';
 
 class ColumnFilterButton extends StatefulWidget {
-  final void Function() updateColumnFilter;
-
-  const ColumnFilterButton(this.updateColumnFilter);
   @override
   _ColumnFilterButtonState createState() => _ColumnFilterButtonState();
 }
@@ -25,14 +22,13 @@ class _ColumnFilterButtonState extends State<ColumnFilterButton> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       padding: const EdgeInsets.all(0),
       tooltip: 'Фильтр',
-      // color: AppColor.grey,
       offset: Offset(0, 40),
     );
   }
 
   void filterColumn(String columnName, bool newValue, Function _setState) {
+    print('Filter column $columnName: $newValue');
     context.read<TableState>().updateFilter(columnName, newValue, AppResponsive.isMobile(context));
-    widget.updateColumnFilter();
     _setState(() {});
   }
 

@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:track_wealth/common/app_responsive.dart';
-import 'package:track_wealth/page_wrapper/page_wrapper.dart';
+import 'package:track_wealth/common/constants.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -10,8 +9,6 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   late String userName;
-  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-  String routeName = 'Профиль';
   FirebaseAuth auth = FirebaseAuth.instance;
 
   @override
@@ -31,29 +28,12 @@ class _ProfilePageState extends State<ProfilePage> {
       userName = 'Default name';
   }
 
-  void _openDrawer() => scaffoldKey.currentState!.openDrawer();
-
   @override
   Widget build(BuildContext context) {
-    return PageWrapper(
-      routeName: routeName,
-      scaffoldKey: scaffoldKey,
-      appBar: AppResponsive.isDesktop(context) ? null : appBar(),
+    return Scaffold(
+      appBar: simpleAppBar(context),
       body: Center(
         child: Text(userName),
-      ),
-    );
-  }
-
-  PreferredSizeWidget appBar() {
-    Color bgColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
-
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      leading: IconButton(
-        icon: Icon(Icons.menu_rounded, color: bgColor),
-        onPressed: _openDrawer,
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:cross_connectivity/cross_connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:track_wealth/common/constants.dart';
@@ -5,16 +6,16 @@ import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/services/dashboard.dart';
 import 'package:provider/provider.dart';
 
-class AddNewPortfolio extends StatefulWidget {
+class AddPortfolioPage extends StatefulWidget {
   final String title;
   final bool isSeparatePage;
 
-  const AddNewPortfolio({this.title = 'Создание нового портфеля', this.isSeparatePage = true});
+  const AddPortfolioPage({this.title = 'Создание нового портфеля', this.isSeparatePage = true});
   @override
-  _AddNewPortfolioState createState() => _AddNewPortfolioState(title);
+  _AddPortfolioPageState createState() => _AddPortfolioPageState(title);
 }
 
-class _AddNewPortfolioState extends State<AddNewPortfolio> {
+class _AddPortfolioPageState extends State<AddPortfolioPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descController = TextEditingController();
   final TextEditingController brokerController = TextEditingController();
@@ -23,6 +24,8 @@ class _AddNewPortfolioState extends State<AddNewPortfolio> {
   final nameFormKey = GlobalKey<FormState>();
   ScrollController scrollController = ScrollController();
 
+  GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
   String selectedCurrency = 'Рубли';
   Map<String, String> currencies = {
     'RUB': 'Рубли',
@@ -30,13 +33,14 @@ class _AddNewPortfolioState extends State<AddNewPortfolio> {
     'EUR_RUB__TOM': 'Евро',
   };
 
-  _AddNewPortfolioState(this.title);
+  _AddPortfolioPageState(this.title);
 
   @override
   Widget build(BuildContext context) {
     Color bgColor = Theme.of(context).brightness == Brightness.dark ? Colors.black : AppColor.white;
 
     return Scaffold(
+      key: scaffoldKey,
       body: SafeArea(
         child: Container(
           color: bgColor,
@@ -47,11 +51,23 @@ class _AddNewPortfolioState extends State<AddNewPortfolio> {
               Stack(
                 children: [
                   Center(child: Lottie.asset('assets/animations/add_portfolio.json', height: MediaQuery.of(context).size.height * .3, reverse: true)),
+                  // Если не новый пользователь
                   if (widget.isSeparatePage)
                     Positioned(
                       child: IconButton(
                         icon: Icon(Icons.arrow_back),
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => Navigator.popUntil(context, ModalRoute.withName('/dashboard')),
+                      ),
+                    ),
+                  // Если новый пользователь
+                  if (!widget.isSeparatePage)
+                    Positioned(
+                      right: 1,
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.logout_rounded,
+                        ),
+                        onPressed: () => userLogout(context),
                       ),
                     ),
                 ],
@@ -144,7 +160,6 @@ class _AddNewPortfolioState extends State<AddNewPortfolio> {
           ),
         ),
         onPressed: createPortfolio,
-        // onTap: createPortfolio,
       ),
     ]);
   }
@@ -162,7 +177,11 @@ class _AddNewPortfolioState extends State<AddNewPortfolio> {
   }
 
   Future<void> createPortfolio() async {
-    if (nameFormKey.currentState!.validate()) {
+    bool hasConnection = await Connectivity().checkConnection();
+    final snackBar = SnackBar(content: Text('Нет соединения с интернетом'));
+    if (!hasConnection) {
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else if (nameFormKey.currentState!.validate()) {
       String name = nameController.text != '' ? nameController.text.trim() : 'Основной портфель';
       String? decription = descController.text.isEmpty ? null : descController.text;
       String? broker = brokerController.text.isEmpty ? null : brokerController.text;
@@ -170,10 +189,8 @@ class _AddNewPortfolioState extends State<AddNewPortfolio> {
       String currency = currencies.entries.firstWhere((e) => e.value == selectedCurrency).key;
 
       await context.read<DashboardState>().addUserPortfolio(name: name, broker: broker, currency: currency, desc: decription);
-      if (!widget.isSeparatePage)
-        context.read<DashboardState>().reloadData();
-      else
-        Navigator.pushNamed(context, '/dashboard');
+      context.read<DashboardState>().reloadData();
+      Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
     }
   }
 
