@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -6,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:cross_connectivity/cross_connectivity.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:track_wealth/pages/dashboard/portfolio/settings.dart';
 
 import 'common/services/auth.dart';
 import 'common/services/dashboard.dart';
@@ -29,9 +31,8 @@ import 'pages/shimmers/shimmers.dart';
 // TODO: добавить функционал в addOperation для денег ->
 // если type == spend, проверить, хватает ли средств
 // если type == earn, добавить необходимость указать информацию (пришли дивы, заплатил комиссию, др)
-// добавить tradeHistory
-// изменить currencies
 
+// restore user password
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
@@ -70,20 +71,37 @@ class MyApp extends StatelessWidget {
         ),
         title: 'TrackWealth',
         debugShowCheckedModeBanner: false,
-        routes: {
-          '/': (context) => AuthenticationWrapper(),
-          '/auth': (context) => AuthPage(),
-          '/auth/phone': (context) => PhoneAuthPage(),
-          '/profile': (context) => ProfilePage(),
-          '/dashboard': (context) => DashboardPage(),
-          '/dashboard/add': (context) => AddPortfolioPage(),
-          '/analysis': (context) => AnalysisPage(),
-          '/trades': (context) => TradesPage(),
-          '/calendar': (context) => CalendarPage(),
-          '/trends': (context) => TrendsPage(),
-          '/settings': (context) => SettingsPage(),
-        },
         initialRoute: '/',
+        routes: {
+          '/dashboard': (context) => DashboardPage(),
+        },
+        onGenerateRoute: (RouteSettings settings) {
+          switch (settings.name) {
+            case '/':
+              return PageTransition(child: AuthenticationWrapper(), type: PageTransitionType.rightToLeft);
+            case '/auth':
+              return PageTransition(child: AuthPage(), type: PageTransitionType.rightToLeft);
+            case '/auth/phone':
+              return PageTransition(child: PhoneAuthPage(), type: PageTransitionType.rightToLeft);
+            case '/profile':
+              return PageTransition(child: ProfilePage(), type: PageTransitionType.leftToRight);
+            case '/dashboard/add':
+              return PageTransition(child: AddPortfolioPage(), type: PageTransitionType.rightToLeft);
+            case '/dashboard/settings':
+              final args = settings.arguments as PortfolioSettingsAgrs;
+              return PageTransition(child: PortfolioSettingsPage(name: args.name), type: PageTransitionType.rightToLeft);
+            case '/analysis':
+              return PageTransition(child: AnalysisPage(), type: PageTransitionType.leftToRight);
+            case '/trades':
+              return PageTransition(child: TradesPage(), type: PageTransitionType.leftToRight);
+            case '/calendar':
+              return PageTransition(child: CalendarPage(), type: PageTransitionType.leftToRight);
+            case '/trends':
+              return PageTransition(child: TrendsPage(), type: PageTransitionType.leftToRight);
+            case '/settings':
+              return PageTransition(child: SettingsPage(), type: PageTransitionType.leftToRight);
+          }
+        },
       ),
     );
   }

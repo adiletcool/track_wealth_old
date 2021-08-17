@@ -1,8 +1,5 @@
-import 'dart:convert';
-import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:collection/collection.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/models/column_filter.dart';
@@ -54,7 +51,12 @@ class DashboardState extends ChangeNotifier {
       Map<String, List<dynamic>> portfolioData = Map<String, List<dynamic>>.from(data.data() as Map<String, dynamic>);
 
       portfolios = Portfolio.fromList(List<Map<String, dynamic>>.from(portfolioData['portfolios']!)); // список портфелей (без акций)
-      return portfolios.firstWhere((portfolio) => portfolio.isSelected); // выбранный портфель (для него запрашиваем акции по имени)
+
+      // т.к. при удалении последнего портфеля сохраняется док с portfolios = []
+      if (portfolios.length != 0)
+        return portfolios.firstWhere((portfolio) => portfolio.isSelected); // выбранный портфель (для него запрашиваем акции по имени)
+      else
+        return null;
     }
   }
 
@@ -72,131 +74,13 @@ class DashboardState extends ChangeNotifier {
 
     // дожидаемся параллельно выполняющися загрузок данных по акциям и валютам
     await Future.wait([
-      loadSelectedPortfolioAssets(),
-      loadSelectedPortfolioCurrencies(),
+      selectedPortfolio.loadAssetsData(),
+      selectedPortfolio.loadCurrenciesData(),
     ]);
-
-    selectedPortfolio.assetsTotal = selectedPortfolio.assets!.map((asset) => asset.worth!).sum;
-    selectedPortfolio.currenciesTotal = selectedPortfolio.currencies!.map((currency) => currency.totalRub!).sum;
-  }
-
-  /// Получаем рыночные данные по акциям выбранного портфеля
-  Future<void> loadSelectedPortfolioAssets() async {
-    // Делим рос и зарубежные акции, делаем отдельные запросы, потом снова соединяем
-    Iterable<PortfolioAsset> russianAssets = selectedPortfolio.assets!.where((asset) => asset.boardId == 'TQBR');
-    Iterable<PortfolioAsset> foreignAssets = selectedPortfolio.assets!.where((asset) => asset.boardId == 'FQBR');
-
-    russianAssets = await getAssetsMarketData(assets: russianAssets);
-    foreignAssets = await getAssetsMarketData(assets: foreignAssets, isForeign: true);
-
-    selectedPortfolio.assets = russianAssets.toList() + foreignAssets.toList();
-
-    selectedPortfolio.assets!.sort((a1, a2) => a2.worth!.compareTo(a1.worth!)); // сортируем по рыночной стоимости
-    selectedPortfolio.assets = selectedPortfolio.assets!.where((asset) => asset.quantity != 0).toList(); // фильтруем qunatity != 0
-  }
-
-  /// Получаем рыночные данные по валютам выбранного портфеля
-  Future<void> loadSelectedPortfolioCurrencies() async {
-    selectedPortfolio.currencies = (await getCurrenciesMarketData()).toList();
-    selectedPortfolio.currencies = selectedPortfolio.currencies!.where((c) => c.value != 0).toList(); // фильтруем value != 0
-  }
-
-  /// Aadd currentPrice, todayPriceChange, profit, profitPercent, worth, sharePercent to selectedPortfolio.assets
-  Future<Iterable<PortfolioAsset>> getAssetsMarketData({required Iterable<PortfolioAsset> assets, isForeign = false}) async {
-    if (assets.length > 0) {
-      Iterable<String> queries = assets.map((a) => '${a.boardId}:${a.secId}');
-      String securities = queries.reduce((a, b) => '$a,$b');
-
-      String url = "https://iss.moex.com/iss/engines/stock/markets/${isForeign ? 'foreign' : ''}shares/securities.jsonp";
-      List<Map<String, dynamic>> marketDataMaps = await getMoexMarketData(url, securities);
-
-      assets.forEach((asset) {
-        Map<String, dynamic>? foundAsset = marketDataMaps.firstWhere(
-          (found) => found['SECID'] == asset.secId,
-          orElse: () => {'LAST': 0, 'LASTTOPREVPRICE': 0},
-        );
-
-        num lastPrice = foundAsset['LAST'] ?? foundAsset['MARKETPRICE'];
-        num todayPriceChange = foundAsset['LASTTOPREVPRICE'];
-
-        asset.currentPrice = lastPrice;
-        asset.todayPriceChange = todayPriceChange;
-
-        asset.profit = (asset.currentPrice! - asset.meanPrice) * asset.quantity;
-        asset.profitPercent = (asset.currentPrice! / asset.meanPrice - 1) * 100;
-        asset.worth = asset.currentPrice! * asset.quantity;
-      });
-
-      num totalWorth = assets.map((asset) => asset.worth!).sum;
-      assets.forEach((asset) {
-        asset.sharePercent = asset.worth! * 100 / totalWorth;
-      });
-    }
-    return assets;
-  }
-
-  /// Convert all currencies to rubles by adding key value 'totalRub'
-  /// ! TODO:
-  Future<Iterable<PortfolioCurrency>> getCurrenciesMarketData() async {
-    // String portfolioCurrency = selectedPortfolio.currency;
-    Iterable<PortfolioCurrency> currencies = selectedPortfolio.currencies!; // copy
-    Iterable<String> foreignCodes = currencies.where((c) => c.code != 'RUB').map((c) => c.code); // рубли не смотрим
-
-    if (foreignCodes.length > 0) {
-      Iterable<String> codes = currencies.map((c) => c.code);
-      String securities = codes.reduce((a, b) => '$a,$b');
-
-      String url = 'https://iss.moex.com/iss/engines/currency/markets/selt/boards/CETS/securities.json';
-      List<Map<String, dynamic>> marketDataMaps = await getMoexMarketData(url, securities, isCurrencies: true);
-
-      currencies.forEach((c) {
-        if (c.code != 'RUB') {
-          Map<String, dynamic>? foundCurrency = marketDataMaps.firstWhere(
-            (found) => found['SECID'] == c.code,
-            orElse: () => {'LAST': 0},
-          );
-          num lastPrice = foundCurrency['LAST'] ?? foundCurrency['MARKETPRICE'];
-          c.totalRub = c.value * lastPrice;
-        } else {
-          c.totalRub = c.value;
-        }
-      });
-    }
-    return currencies;
-  }
-
-  /// Loading assets and currencies market data from moex
-  Future<List<Map<String, dynamic>>> getMoexMarketData(String url, String securities, {bool isCurrencies = false}) async {
-    Map<String, dynamic> result;
-
-    Map<String, String> params = {
-      'iss.meta': 'off',
-      'iss.only': 'marketdata',
-      'securities': securities,
-      'lang': 'ru',
-    };
-    var response = await Dio().get(url, queryParameters: params);
-
-    if (isCurrencies)
-      result = Map<String, dynamic>.from(response.data);
-    else
-      result = Map<String, dynamic>.from(json.decode(response.data));
-    Map<String, dynamic> marketData = result['marketdata']!;
-
-    List<String> columns = List<String>.from(marketData['columns']);
-
-    // [{SECID: LKOH, BOARDID: TQBR, ...},
-    return List.generate(
-      marketData['data']!.length,
-      (i) => Map.fromIterables(columns, marketData['data']![i]),
-    );
   }
 
   /// Adding user portfolio document and new subcollection with assets = [], currencies = newUserCurrencies, portfolioName = name
   Future<void> addUserPortfolio({required String name, String? broker, required String currency, String? desc, List<Map<String, dynamic>>? stocks}) async {
-    FirebaseAuth auth = FirebaseAuth.instance;
-    DocumentReference userAssets = FirebaseFirestore.instance.collection('portfolios').doc(auth.currentUser!.uid);
-
     portfolios.forEach((portfolio) => portfolio.isSelected = false);
 
     // добавляем портфель в список
@@ -205,13 +89,13 @@ class DashboardState extends ChangeNotifier {
     // форматируем список с портфелями в Json
     List<Map<String, dynamic>> updatedPortfolios = portfolios.map((portfolio) => portfolio.toJson()).toList();
 
-    userAssets.set({'portfolios': updatedPortfolios}); // переписываем весь док, поскольку поменять поле у элемента списка нельзя
+    userAssets!.set({'portfolios': updatedPortfolios}); // переписываем весь док, поскольку поменять поле у элемента списка нельзя
 
     // добавляем коллекцию с пустым списком акций по нему
-    userAssets.collection('assets').add({'portfolioName': name, 'stocks': stocks ?? [], 'currencies': newUserCurrencies});
+    userAssets!.collection('assets').add({'portfolioName': name, 'stocks': stocks ?? [], 'currencies': newUserCurrencies});
 
     // добавляем коллекцию с пустым списком сделок
-    userAssets.collection('tradeHistory').add({'portfolioName': name, 'trades': []});
+    userAssets!.collection('tradeHistory').add({'portfolioName': name, 'trades': []});
   }
 
   Future<void> changeSelectedPortfolio(String portfolioName) async {
@@ -219,7 +103,7 @@ class DashboardState extends ChangeNotifier {
       portfolios.firstWhere((portfolio) => portfolio.isSelected == true).isSelected = false; // isSelected = false у выбранного ранее портфеля
       portfolios.firstWhere((portfolio) => portfolio.name == portfolioName).isSelected = true; // isSelected = false у портфеля c указанным именем
 
-      updatePortfolios();
+      await _updatePortfolios();
       reloadData();
     }
   }
@@ -228,21 +112,65 @@ class DashboardState extends ChangeNotifier {
     if (newCurrency != selectedPortfolio.currency) {
       portfolios.firstWhere((portfolio) => portfolio.isSelected == true).currency = newCurrency;
     }
-    updatePortfolios();
+    _updatePortfolios();
   }
 
-  // updating portfolios to Firestore
-  Future<void> updatePortfolios() async {
-    FirebaseAuth auth = FirebaseAuth.instance;
-    DocumentReference userAssets = FirebaseFirestore.instance.collection('portfolios').doc(auth.currentUser!.uid);
-
+  /// updating portfolios to Firestore
+  Future<void> _updatePortfolios() async {
     // форматируем список с портфелями в Json
     List<Map<String, dynamic>> updatedPortfolios = portfolios.map((portfolio) => portfolio.toJson()).toList();
 
-    userAssets.set({'portfolios': updatedPortfolios}); // переписываем док
+    userAssets!.set({'portfolios': updatedPortfolios}); // переписываем док
   }
 
-  // Сорировка портфеля по выбранному столбцу
+  /// Удаляем портфель в документе portfolios, а также в документах (2) коллекций assets и tradeHistory
+  // TODO
+  Future<void> deletePortfolio(String portfolioName) async {
+    // Если удаляемый портфель был выбран, то меняем выбранный портфель на другой, если есть
+    if (portfolios.firstWhere((p) => p.name == portfolioName).isSelected && (portfolios.length != 0)) portfolios.first.isSelected = true;
+
+    portfolios.removeWhere((portfolio) => portfolio.name == portfolioName);
+
+    // параллельно обновляем доки коллекций portfolios, assets, tradeHistory
+    await Future.wait([
+      _updatePortfolios(),
+      _deleteDocumentFromCollection('assets', portfolioName),
+      _deleteDocumentFromCollection('tradeHistory', portfolioName),
+    ]);
+
+    reloadData();
+  }
+
+  Future<void> changePortfolioSettings(String portfolioName, {required String? newName, required String? newDesc, required String? newBroker}) async {
+    portfolios.firstWhere((p) => p.name == portfolioName).updateSettings(newName, newDesc, newBroker);
+
+    // параллельно изменяем док со списком портфелей и доки коллекций assets и tradeHistory
+    await Future.wait([
+      _updatePortfolios(),
+
+      // Если меняется название портфеля, то помимо документа portfolios, его нужно также заменить в документах (2) коллекций assets и tradeHistory
+      if (newName != null)
+        // параллельно изменяем доки коллекций assets и tradeHistory
+        Future.wait([
+          _updateDocumentPortfolioName('assets', portfolioName, newName),
+          _updateDocumentPortfolioName('tradeHistory', portfolioName, newName),
+        ]),
+    ]);
+
+    reloadData();
+  }
+
+  Future<void> _updateDocumentPortfolioName(String collection, String portfolioName, String newName) async {
+    var foundDoc = await userAssets!.collection(collection).where('portfolioName', isEqualTo: portfolioName).limit(1).get();
+    foundDoc.docs.first.reference.update({'portfolioName': newName});
+  }
+
+  Future<void> _deleteDocumentFromCollection(String collection, String portfolioName) async {
+    var foundDoc = await userAssets!.collection(collection).where('portfolioName', isEqualTo: portfolioName).limit(1).get();
+    await foundDoc.docs.first.reference.delete();
+  }
+
+  /// Сорировка портфеля по выбранному столбцу
   void sortPortfolio(int index, bool ascending, Map<String, bool> colFilter) {
     selectedPortfolio.assets!.sort((asset1, asset2) {
       return (ascending ? asset1 : asset2).getColumnValue(index, filter: colFilter).compareTo(

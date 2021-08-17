@@ -6,10 +6,14 @@ class PortfolioAsset {
   final num meanPrice; // Средняя цена покупки
   num? currentPrice; // текущая цена за акцию
   num? todayPriceChange; // изменение цены за сегодня в %
-  num? profit; // Доход (Руб) с момента покупки
-  num? profitPercent; // Доход (%) с момента покупки
-  num? sharePercent; // Доля в портфеле
-  num? worth; // Текущая рыночная стоимость
+  num? _sharePercent; // Доля в портфеле, %
+
+  num? get profit => (currentPrice! - meanPrice) * quantity; // Доход (Руб) с момента покупки
+  num? get profitPercent => (currentPrice! / meanPrice - 1) * 100; // Доход (%) с момента покупки
+  num? get worth => currentPrice! * quantity; // Текущая рыночная стоимость
+  num? get sharePercent => _sharePercent;
+
+  void setSharePercent(totalWorth) => _sharePercent = worth! * 100 / totalWorth;
 
   PortfolioAsset({
     required this.boardId,
@@ -19,21 +23,15 @@ class PortfolioAsset {
     required this.meanPrice,
     this.currentPrice,
     this.todayPriceChange,
-    this.profit,
-    this.profitPercent,
-    this.sharePercent,
-    this.worth,
   });
 
-  factory PortfolioAsset.fromJson(Map<String, dynamic> json) {
-    return PortfolioAsset(
-      boardId: json['boardId'],
-      secId: json['secId'],
-      shortName: json['shortName'],
-      quantity: json['quantity'],
-      meanPrice: json['meanPrice'],
-    );
-  }
+  // Named constructor
+  PortfolioAsset.fromJson(Map<String, dynamic> json)
+      : boardId = json['boardId'],
+        secId = json['secId'],
+        shortName = json['shortName'],
+        quantity = json['quantity'],
+        meanPrice = json['meanPrice'];
 
   static List<PortfolioAsset> fromJsonsList(List<Map<String, dynamic>> portfolioAssets) {
     return portfolioAssets.map((a) => PortfolioAsset.fromJson(a)).toList();

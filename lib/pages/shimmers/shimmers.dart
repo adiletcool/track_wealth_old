@@ -5,7 +5,7 @@ import 'package:track_wealth/common/constants.dart';
 class DashboardShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    Color bgColor = Theme.of(context).brightness == Brightness.dark ? Colors.black : AppColor.white;
+    Color bgColor = AppColor.themeBasedColor(context, Colors.black, AppColor.white);
 
     return SafeArea(
       child: Container(

@@ -28,6 +28,9 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
   late List<String> selectedActions; // ['Купить', 'Продать'] / ["Внести", "Вывести", "Доход", "Расход"]
   late String action; // Купить / Внести
 
+  late Color bgColor;
+  late Size size; // MediaQuery size
+
   Asset? selectedAsset; // Н-р, Asset("sber:moex", Сбербанк)
 
   DateTime selectedDate = DateTime.now();
@@ -77,14 +80,16 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
     //TODO: Валидатор для selectedAsset(а не значение поля) и selectedDate
     //TODO: Валидатор для значения полей цены и количества
 
-    Color bgColor = Theme.of(context).brightness == Brightness.dark ? AppColor.bgDark : AppColor.white;
+    bgColor = AppColor.themeBasedColor(context, AppColor.bgDark, AppColor.white);
+    size = MediaQuery.of(context).size;
 
     return AlertDialog(
+      contentPadding: const EdgeInsets.all(0),
       insetPadding: const EdgeInsets.all(0),
       backgroundColor: Colors.transparent,
       content: Container(
-        width: MediaQuery.of(context).size.width < 600 ? MediaQuery.of(context).size.width : 600,
-        height: MediaQuery.of(context).size.height,
+        width: size.width < 600 ? size.width : 600,
+        height: size.height,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           color: bgColor,
@@ -200,6 +205,7 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
                 borderRadius: BorderRadius.circular(10.0),
                 child: InkWell(
                   child: Container(
+                    width: size.width < 600 ? size.width / 4 - 10 : 600 / 4 - 20,
                     alignment: Alignment.center,
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
@@ -222,7 +228,6 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
   Widget myTextField({
     required Key formKey,
     required TextEditingController controller,
-    double width = 150,
     required String label,
     bool onlyInteger = false,
     String suffixText: '',
@@ -230,7 +235,7 @@ class _AddOperationDialogState extends State<AddOperationDialog> {
     int decimalRange = 2,
   }) {
     return Container(
-      width: width,
+      width: size.width < 600 ? size.width / 2 - 20 : 280,
       child: Form(
         key: formKey,
         child: TextFormField(

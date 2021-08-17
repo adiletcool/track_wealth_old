@@ -3,7 +3,6 @@ import "dart:async";
 import "package:dio/dio.dart";
 import "package:flutter/material.dart";
 import "package:flutter_typeahead/flutter_typeahead.dart";
-import "package:track_wealth/common/app_responsive.dart";
 import "package:track_wealth/common/constants.dart";
 import 'package:track_wealth/common/models/search_asset_model.dart';
 
@@ -30,7 +29,7 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: AppResponsive.isMobile(context) ? 325 : 400,
+      width: MediaQuery.of(context).size.width < 600 ? MediaQuery.of(context).size.width - 20 : 580,
       height: 42.5,
       child: assetTypeAhead(formKey: formKey, controller: typeAheadController),
     );

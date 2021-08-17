@@ -53,7 +53,7 @@ class _PortfolioTableState extends State<PortfolioTable> {
       sortedColumnIndex = null;
     }
 
-    Color bgColor = Theme.of(context).brightness == Brightness.dark ? AppColor.bgDark : AppColor.grey;
+    Color bgColor = AppColor.themeBasedColor(context, AppColor.bgDark, AppColor.grey);
 
     return Container(
       margin: const EdgeInsets.all(10),

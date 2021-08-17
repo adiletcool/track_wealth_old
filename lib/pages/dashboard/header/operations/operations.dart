@@ -4,6 +4,7 @@ import 'package:track_wealth/common/constants.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/services/dashboard.dart';
+import 'package:track_wealth/pages/dashboard/portfolio/settings.dart';
 
 import 'add_operation_dialog/add_operation_dialog.dart';
 
@@ -26,22 +27,24 @@ class _OperationsState extends State<Operations> {
 
   @override
   Widget build(BuildContext context) {
-    Color bgColor = Theme.of(context).brightness == Brightness.dark ? AppColor.bgDark : AppColor.grey;
-    Color popupBgColor = Theme.of(context).brightness == Brightness.dark ? Color(0xff292929) : AppColor.grey;
+    Color bgColor = AppColor.themeBasedColor(context, AppColor.bgDark, AppColor.grey);
+    Color popupBgColor = AppColor.themeBasedColor(context, Color(0xff292929), AppColor.grey);
+
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
         color: bgColor,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           InkWell(
+            // radius: ,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Icon(Icons.add_circle_rounded, size: 28),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+              child: Icon(Icons.add_circle_rounded, size: 26),
             ),
             onTap: addOperation,
           ),
@@ -52,7 +55,10 @@ class _OperationsState extends State<Operations> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             padding: const EdgeInsets.symmetric(horizontal: 4),
             offset: Offset(0, 35),
-            icon: Icon(Icons.cases_rounded, size: 28),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+              child: Icon(Icons.cases_rounded, size: 26),
+            ),
             itemBuilder: (context) => getPortfolioNames(portfolioNames),
           ),
         ],
@@ -70,7 +76,7 @@ class _OperationsState extends State<Operations> {
   }
 
   List<PopupMenuEntry> getPortfolioNames(Iterable<String> names) {
-    Color _color = Color(0xff489cb1);
+    Color _color = Color(0xff4093f2);
     List<PopupMenuEntry> nameItems = [];
     nameItems.addAll(
       names.map(
@@ -86,10 +92,12 @@ class _OperationsState extends State<Operations> {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(color: name == selectedPortfolio.name ? _color : null),
             ),
-            trailing: IconButton(
-              icon: Icon(Icons.settings),
-              onPressed: () {},
-            ),
+            trailing: name != selectedPortfolio.name
+                ? null
+                : IconButton(
+                    icon: Icon(Icons.settings),
+                    onPressed: () => Navigator.pushNamed(context, '/dashboard/settings', arguments: PortfolioSettingsAgrs(name)),
+                  ),
             onTap: () {
               context.read<DashboardState>().changeSelectedPortfolio(name);
               Navigator.pop(context);

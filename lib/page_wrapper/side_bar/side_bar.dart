@@ -25,7 +25,7 @@ class _SideBarState extends State<SideBar> {
 
   @override
   Widget build(BuildContext context) {
-    Color bgColor = Theme.of(context).brightness == Brightness.dark ? AppColor.bgDark : AppColor.grey;
+    Color bgColor = AppColor.themeBasedColor(context, AppColor.bgDark, AppColor.grey);
 
     return Drawer(
       elevation: 0,
@@ -77,7 +77,7 @@ class DrawerListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color textColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : AppColor.black;
+    Color textColor = AppColor.themeBasedColor(context, Colors.white, AppColor.black);
 
     return ListTile(
       onTap: onTapFunc,

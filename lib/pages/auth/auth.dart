@@ -135,7 +135,7 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Widget loginPasswordTextFields() {
-    Color borderColor = (Theme.of(context).brightness == Brightness.dark ? AppColor.grey : Colors.black).withOpacity(.3);
+    Color borderColor = (AppColor.themeBasedColor(context, AppColor.grey, Colors.black)).withOpacity(.3);
     return Container(
       height: 150,
       width: 385,

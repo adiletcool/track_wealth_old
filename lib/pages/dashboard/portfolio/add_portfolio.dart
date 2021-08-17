@@ -2,7 +2,6 @@ import 'package:cross_connectivity/cross_connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:track_wealth/common/constants.dart';
-import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/services/dashboard.dart';
 import 'package:provider/provider.dart';
 
@@ -16,11 +15,12 @@ class AddPortfolioPage extends StatefulWidget {
 }
 
 class _AddPortfolioPageState extends State<AddPortfolioPage> {
+  String broker = 'Не выбран';
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descController = TextEditingController();
-  final TextEditingController brokerController = TextEditingController();
 
   final String title;
+
   final nameFormKey = GlobalKey<FormState>();
   ScrollController scrollController = ScrollController();
 
@@ -37,7 +37,7 @@ class _AddPortfolioPageState extends State<AddPortfolioPage> {
 
   @override
   Widget build(BuildContext context) {
-    Color bgColor = Theme.of(context).brightness == Brightness.dark ? Colors.black : AppColor.white;
+    Color bgColor = AppColor.themeBasedColor(context, Colors.black, AppColor.white);
 
     return Scaffold(
       key: scaffoldKey,
@@ -77,48 +77,45 @@ class _AddPortfolioPageState extends State<AddPortfolioPage> {
                 style: TextStyle(fontSize: 25),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 40),
-              Form(
-                key: nameFormKey,
-                child: TextFormField(
-                  onTap: scrollDown,
-                  validator: validateName,
-                  controller: nameController,
-                  decoration: myInputDecoration.copyWith(hintText: 'Основной портфель*', counterText: ''),
-                  style: TextStyle(fontSize: 20),
-                  maxLength: 40,
-                ),
-              ),
               SizedBox(height: 20),
-              TextFormField(
-                onTap: scrollDown,
-                controller: descController,
-                decoration: myInputDecoration.copyWith(hintText: 'Описание', counterText: ''),
-                style: TextStyle(fontSize: 20),
-                maxLength: 400,
-                maxLines: 7,
-                minLines: 1,
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Основная валюта',
-                style: TextStyle(fontSize: 20),
-                textAlign: TextAlign.center,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Название', style: TextStyle(fontSize: 16, color: AppColor.darkGrey)),
+                  SizedBox(height: 6),
+                  Form(
+                    key: nameFormKey,
+                    child: TextFormField(
+                      onTap: scrollDown,
+                      validator: (name) => validatePortfolioName(context, name),
+                      controller: nameController,
+                      decoration: myInputDecoration.copyWith(hintText: 'Основной портфель*', counterText: ''),
+                      style: TextStyle(fontSize: 18),
+                      maxLength: 40,
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: 10),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(width: 1, color: AppColor.selected),
-                  borderRadius: BorderRadius.circular(11.0),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10.0),
-                  child: Row(
-                    children: currencies.values.map((name) => currencyButton(name)).toList(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Описание', style: TextStyle(fontSize: 16, color: AppColor.darkGrey)),
+                  SizedBox(height: 6),
+                  TextFormField(
+                    onTap: scrollDown,
+                    controller: descController,
+                    decoration: myInputDecoration.copyWith(hintText: 'Расскажите об этом портфеле', counterText: ''),
+                    style: TextStyle(fontSize: 18),
+                    maxLength: 400,
+                    maxLines: 7,
+                    minLines: 1,
                   ),
-                ),
+                ],
               ),
-              SizedBox(height: 50),
+              SizedBox(height: 10),
+              brokerDropdown(),
+              SizedBox(height: 40),
               createPortfolioButton(),
             ],
           ),
@@ -127,21 +124,23 @@ class _AddPortfolioPageState extends State<AddPortfolioPage> {
     );
   }
 
-  Widget currencyButton(String name) {
-    return Expanded(
-      child: Container(
-        color: selectedCurrency == name ? AppColor.selected : null,
-        padding: const EdgeInsets.all(10),
-        child: InkWell(
-          child: Text(
-            name,
-            style: TextStyle(fontSize: 18, color: selectedCurrency == name ? Colors.white : null),
-            textAlign: TextAlign.center,
-          ),
-          onTap: () => setState(() => selectedCurrency = name),
+  Widget brokerDropdown() {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text('Брокер', style: TextStyle(fontSize: 16, color: AppColor.darkGrey)),
+      SizedBox(height: 6),
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: roundedBoxDecoration.copyWith(border: Border.all(width: 1, color: AppColor.darkGrey)),
+        child: DropdownButton<String>(
+          hint: const Text('Брокер', style: TextStyle(fontSize: 20)),
+          underline: Container(),
+          isExpanded: true,
+          value: broker,
+          onChanged: (newBroker) => setState(() => broker = newBroker ?? broker),
+          items: availableBrokers.map((b) => DropdownMenuItem<String>(child: Text(b), value: b)).toList(),
         ),
       ),
-    );
+    ]);
   }
 
   Widget createPortfolioButton() {
@@ -164,18 +163,6 @@ class _AddPortfolioPageState extends State<AddPortfolioPage> {
     ]);
   }
 
-  String? validateName(String? name) {
-    if (name!.isEmpty) name = 'Основной портфель';
-    name = name.trim();
-    if (name.length < 3) return 'Имя должно содержать не менее трех символов';
-    List<Portfolio> portfolios = context.read<DashboardState>().portfolios;
-    bool hasSameName = portfolios.any((portfolio) => portfolio.name == name);
-    if (hasSameName) {
-      return 'Портфель с таким именем уже существует';
-    }
-    return null;
-  }
-
   Future<void> createPortfolio() async {
     bool hasConnection = await Connectivity().checkConnection();
     final snackBar = SnackBar(content: Text('Нет соединения с интернетом'));
@@ -184,7 +171,6 @@ class _AddPortfolioPageState extends State<AddPortfolioPage> {
     } else if (nameFormKey.currentState!.validate()) {
       String name = nameController.text != '' ? nameController.text.trim() : 'Основной портфель';
       String? decription = descController.text.isEmpty ? null : descController.text;
-      String? broker = brokerController.text.isEmpty ? null : brokerController.text;
 
       String currency = currencies.entries.firstWhere((e) => e.value == selectedCurrency).key;
 

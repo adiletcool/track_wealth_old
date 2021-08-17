@@ -45,28 +45,24 @@ class Asset {
     this.lotSize,
   });
 
-  factory Asset.fromList(List<dynamic> list) {
-    assert(list.length >= 16);
-
-    return Asset(
-      id: list[0] ?? -1,
-      secId: list[1] ?? "-1",
-      shortName: list[2] ?? "-1",
-      regNumber: list[3] ?? "-1",
-      name: list[4] ?? "-1",
-      isin: list[5] ?? "-1",
-      isTraded: list[6] ?? -1,
-      emitentId: list[7] ?? -1,
-      emitentTitle: list[8] ?? "-1",
-      emitentInn: list[9] ?? "-1",
-      emitentOkpo: list[10] ?? "-1",
-      gosreg: list[11] ?? "-1",
-      type: list[12] ?? "-1",
-      group: list[13] ?? "-1",
-      primaryBoardId: list[14] ?? "-1",
-      marketPriceBoardId: list[15] ?? "-1",
-    );
-  }
+  Asset.fromList(List<dynamic> list)
+      : assert(list.length >= 16),
+        id = list[0] ?? -1,
+        secId = list[1] ?? "-1",
+        shortName = list[2] ?? "-1",
+        regNumber = list[3] ?? "-1",
+        name = list[4] ?? "-1",
+        isin = list[5] ?? "-1",
+        isTraded = list[6] ?? -1,
+        emitentId = list[7] ?? -1,
+        emitentTitle = list[8] ?? "-1",
+        emitentInn = list[9] ?? "-1",
+        emitentOkpo = list[10] ?? "-1",
+        gosreg = list[11] ?? "-1",
+        type = list[12] ?? "-1",
+        group = list[13] ?? "-1",
+        primaryBoardId = list[14] ?? "-1",
+        marketPriceBoardId = list[15] ?? "-1";
 
   static List<Asset> fromListOfLists(List listOfLists) {
     var onlyStocks = listOfLists.where((e) {

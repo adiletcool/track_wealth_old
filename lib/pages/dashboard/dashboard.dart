@@ -106,7 +106,7 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color bgColor = Theme.of(context).brightness == Brightness.dark ? Colors.black : AppColor.white;
+    Color bgColor = AppColor.themeBasedColor(context, Colors.black, AppColor.white);
 
     return Container(
       margin: EdgeInsets.only(top: AppResponsive.isMobile(context) ? 0 : 10),
@@ -129,13 +129,14 @@ class DashboardScreen extends StatelessWidget {
               leading: Container(),
               flexibleSpace: Header(drawerKey: scaffoldKey),
             ),
-            SliverToBoxAdapter(
-              child: SubHeader(
-                portfolioAssetsTotal: selectedPortfolio.assetsTotal!, // изменения считаются относительно стоимости активов без учета свободных денег
-                portfolioTodayChange: getPortfolioTodayChange(selectedPortfolio.assets!),
-                portfolioAllTimeChange: getPortfolioAllTimeChange(selectedPortfolio.assets!),
+            if (selectedPortfolio.assets!.length > 0)
+              SliverToBoxAdapter(
+                child: SubHeader(
+                  portfolioAssetsTotal: selectedPortfolio.assetsTotal!, // изменения считаются относительно стоимости активов без учета свободных денег
+                  portfolioTodayChange: getPortfolioTodayChange(selectedPortfolio.assets!),
+                  portfolioAllTimeChange: getPortfolioAllTimeChange(selectedPortfolio.assets!),
+                ),
               ),
-            ),
             SliverToBoxAdapter(
               child: PortfolioTable(
                 portfolioAssets: selectedPortfolio.assets!,

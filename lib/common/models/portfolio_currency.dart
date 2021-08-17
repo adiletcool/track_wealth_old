@@ -15,15 +15,13 @@ class PortfolioCurrency {
     this.totalRub,
   });
 
-  factory PortfolioCurrency.fromJson(Map<String, dynamic> json) {
-    return PortfolioCurrency(
-      code: json['code'],
-      name: json['name'],
-      value: json['value'],
-      locale: json['locale'],
-      symbol: json['symbol'],
-    );
-  }
+  // Named constructor
+  PortfolioCurrency.fromJson(Map<String, dynamic> json)
+      : code = json['code'],
+        name = json['name'],
+        value = json['value'],
+        locale = json['locale'],
+        symbol = json['symbol'];
 
   static List<PortfolioCurrency> fromJsonsList(List<Map<String, dynamic>> currencies) {
     return currencies.map((p) => PortfolioCurrency.fromJson(p)).toList();

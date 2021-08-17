@@ -135,7 +135,7 @@ class _PhoneAuthPageState extends State<PhoneAuthPage> with SingleTickerProvider
     BoxDecoration eachFieldDecoration = BoxDecoration(
       border: Border(bottom: BorderSide(color: AppColor.selected)),
     );
-    Color textColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
+    Color textColor = AppColor.themeBasedColor(context, Colors.white, Colors.black);
     return Column(
       children: [
         Text(

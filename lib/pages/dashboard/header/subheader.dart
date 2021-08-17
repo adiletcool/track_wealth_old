@@ -71,8 +71,8 @@ class _SubHeaderState extends State<SubHeader> {
   }
 
   Widget amountChangedCard(BuildContext context) {
-    Color bgColor = Theme.of(context).brightness == Brightness.dark ? AppColor.bgDark : AppColor.grey;
-    Color textColor = Theme.of(context).brightness == Brightness.dark ? Colors.grey : AppColor.darkGrey;
+    Color bgColor = AppColor.themeBasedColor(context, AppColor.bgDark, AppColor.grey);
+    Color textColor = AppColor.themeBasedColor(context, Colors.grey, AppColor.darkGrey);
 
     return Tooltip(
       message: tooltips['open_pos_change']!,
@@ -100,8 +100,8 @@ class _SubHeaderState extends State<SubHeader> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: TextStyle(color: textColor, fontSize: 17)),
-        SizedBox(height: 10),
+        Text(title, style: TextStyle(color: textColor, fontSize: 15)),
+        SizedBox(height: 5),
         Text("${MyFormatter.numFormat(todayChange)} ₽", style: changeTextStyle(todayChange)),
         Text("${MyFormatter.numFormat(todayChangePercent)}%", style: changeTextStyle(todayChangePercent)),
       ],
@@ -111,7 +111,7 @@ class _SubHeaderState extends State<SubHeader> {
   TextStyle changeTextStyle(num change) {
     return TextStyle(
       color: change >= 0 ? AppColor.selected : AppColor.red,
-      fontSize: 18,
+      fontSize: 17,
     );
   }
 }

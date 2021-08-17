@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/services/dashboard.dart';
 
+import 'models/portfolio.dart';
 import 'services/auth.dart';
 
 extension HexColor on Color {
@@ -26,6 +27,10 @@ class AppColor {
   static Color white = Colors.white;
   static Color red = Color(0xfff32221);
   static Color bgDark = Color(0xFF1A1A1A);
+
+  static Color themeBasedColor(context, darkColor, lightColor) {
+    return Theme.of(context).brightness == Brightness.dark ? darkColor : lightColor;
+  }
 }
 
 class MyFormatter {
@@ -184,8 +189,8 @@ List<Map<String, dynamic>> newUserCurrencies = [
   {'code': 'EUR_RUB__TOM', 'name': 'Евро', 'value': 0, 'locale': 'eu', 'symbol': '€'},
 ];
 
-PreferredSizeWidget simpleAppBar(context) {
-  Color bgColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
+PreferredSizeWidget simpleAppBar(context, {Widget? title, bool? centerTitle, List<Widget>? actions}) {
+  Color bgColor = AppColor.themeBasedColor(context, Colors.white, Colors.black);
 
   return AppBar(
     backgroundColor: Colors.transparent,
@@ -194,6 +199,9 @@ PreferredSizeWidget simpleAppBar(context) {
       icon: Icon(Icons.arrow_back, color: bgColor),
       onPressed: () => Navigator.pop(context),
     ),
+    title: title,
+    centerTitle: centerTitle,
+    actions: actions,
   );
 }
 
@@ -212,10 +220,11 @@ void userLogout(context) {
             onPressed: () async {
               await context.read<AuthService>().signOut();
 
-              // чтобы при перезаходе обновился DashboardState
+              // trigger to reload DashboardState
               context.read<DashboardState>().loadDataState = null;
 
               // не popUnti, т.к. home закрылся после popAndPushNamed(context, '/dashboard'))
+              Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
               Navigator.popAndPushNamed(context, '/');
             },
           ),
@@ -228,3 +237,30 @@ void userLogout(context) {
     },
   );
 }
+
+String? validatePortfolioName(BuildContext context, String? name, {String? exceptName}) {
+  if (name!.isEmpty) name = 'Основной портфель';
+  name = name.trim();
+  if (name.length < 3) return 'Имя должно содержать не менее трех символов';
+  List<Portfolio> portfolios = context.read<DashboardState>().portfolios;
+  bool hasSameName;
+
+  hasSameName = portfolios.where((p) => p.name != exceptName).any((portfolio) => portfolio.name == name);
+
+  if (hasSameName) {
+    return 'Портфель с таким именем уже существует';
+  }
+  return null;
+}
+
+List<String> availableBrokers = [
+  'Сбербанк',
+  "Тинькофф",
+  "Финам",
+  "ВТБ ",
+  "БКС",
+  "Открытие",
+  "Альфа-директ",
+  "Церих",
+  "Не выбран",
+];
