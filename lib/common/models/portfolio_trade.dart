@@ -29,6 +29,7 @@ abstract class Trade {
 * TODO: при получении списка trades создаем список объектов класса Trade:
 List<Map<String, dynamic>> trades = [...{}, ...{}];
 
+апкастим до Trade
 List<Trade> portfolioTrades = trades.map<Trade>((t) {
   switch (t['type']) {
     case 'assets':

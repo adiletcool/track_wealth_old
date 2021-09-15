@@ -1,15 +1,19 @@
+import 'package:track_wealth/common/models/portfolio.dart';
+
 class PortfolioAsset {
   final String boardId; // TQBR (см search_asset_model)
   final String secId; // тикер (AFLT)
   final String shortName; // название компании (Аэрофлот)
-  final int quantity; // Количество штук (размер лота * количество лотов)
-  final num meanPrice; // Средняя цена покупки
+  int quantity; // Количество штук (размер лота * количество лотов)
+  num meanPrice; // Средняя цена покупки
+  num realizedPnl; // реализованная прибыль
+
   num? currentPrice; // текущая цена за акцию
   num? todayPriceChange; // изменение цены за сегодня в %
   num? _sharePercent; // Доля в портфеле, %
 
-  num? get profit => (currentPrice! - meanPrice) * quantity; // Доход (Руб) с момента покупки
-  num? get profitPercent => (currentPrice! / meanPrice - 1) * 100; // Доход (%) с момента покупки
+  num? get unrealizedPnl => (currentPrice! - meanPrice) * quantity; // нереализованная прибыль
+  num? get unrealizedPnlPercent => (currentPrice! / meanPrice - 1) * 100; // нереализованная прибыль
   num? get worth => currentPrice! * quantity; // Текущая рыночная стоимость
   num? get sharePercent => _sharePercent;
 
@@ -21,6 +25,7 @@ class PortfolioAsset {
     required this.shortName,
     required this.quantity,
     required this.meanPrice,
+    required this.realizedPnl,
     this.currentPrice,
     this.todayPriceChange,
   });
@@ -31,7 +36,8 @@ class PortfolioAsset {
         secId = json['secId'],
         shortName = json['shortName'],
         quantity = json['quantity'],
-        meanPrice = json['meanPrice'];
+        meanPrice = json['meanPrice'],
+        realizedPnl = json['realizedPnl'];
 
   static List<PortfolioAsset> fromJsonsList(List<Map<String, dynamic>> portfolioAssets) {
     return portfolioAssets.map((a) => PortfolioAsset.fromJson(a)).toList();
@@ -49,8 +55,8 @@ class PortfolioAsset {
       if (filter['Ср. Цена, ₽']!) meanPrice,
       if (filter['Тек. Цена, ₽']!) currentPrice,
       if (filter['Изм. сегодня, %']!) todayPriceChange,
-      if (filter['Прибыль, ₽']!) profit,
-      if (filter['Прибыль, %']!) profitPercent,
+      if (filter['Прибыль, ₽']!) unrealizedPnl,
+      if (filter['Прибыль, %']!) unrealizedPnlPercent,
       if (filter['Доля, %']!) sharePercent,
       worth,
     ];
@@ -59,7 +65,7 @@ class PortfolioAsset {
   @override
   String toString() {
     return "PortfolioAsset($boardId, $secId, $shortName, $quantity, $meanPrice,"
-        "$currentPrice, $todayPriceChange, $profit, $profitPercent,"
+        "$currentPrice, $todayPriceChange, $unrealizedPnl, $unrealizedPnlPercent,"
         "$sharePercent, $worth)";
   }
 
@@ -70,6 +76,27 @@ class PortfolioAsset {
       'shortName': shortName,
       'quantity': quantity,
       'meanPrice': meanPrice,
+      'tradesProfit': realizedPnl,
     };
+  }
+
+  void addTrade(OperationType type, num oPrice, int oQuantity, num oFee) {
+    switch (type) {
+      case OperationType.sell:
+        num oTradeProfit = (oPrice - meanPrice) * oQuantity;
+        this.realizedPnl += oTradeProfit;
+        break;
+      case OperationType.buy:
+        // считаем средневзвешенную цену покупок
+        this.meanPrice = (meanPrice * quantity + oPrice * oQuantity - oFee) / (quantity + oQuantity);
+        this.quantity = quantity + oQuantity;
+        break;
+      default:
+        break;
+    }
+  }
+
+  void addDividend(num totalRub) {
+    this.realizedPnl += totalRub;
   }
 }

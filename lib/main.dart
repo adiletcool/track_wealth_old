@@ -7,26 +7,24 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:cross_connectivity/cross_connectivity.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:track_wealth/pages/dashboard/portfolio/settings.dart';
 
 import 'common/services/auth.dart';
-import 'common/services/dashboard.dart';
+import 'common/services/portfolio.dart';
 
 import 'pages/auth/auth.dart';
 import 'pages/auth/phone_auth.dart';
 import 'pages/profile/profile.dart';
 import 'pages/dashboard/dashboard.dart';
 import 'pages/dashboard/portfolio/add_portfolio.dart';
+import 'pages/dashboard/add_operation/add_operation.dart';
+import 'pages/dashboard/portfolio/settings.dart';
 import 'pages/analysis/analysis.dart';
 import 'pages/trades/trades.dart';
 import 'pages/calendar/calendar.dart';
 import 'pages/trends/trends.dart';
-import 'pages/settings/setting.dart';
+import 'pages/settings/settings.dart';
 
 import 'pages/shimmers/shimmers.dart';
-
-// TODO: добавить страницу для редактирования портфеля (см не final Portfolio поля) с возможностью его удаления
-// TODO: см todo хэдера
 
 // TODO: добавить функционал в addOperation для денег ->
 // если type == spend, проверить, хватает ли средств
@@ -43,15 +41,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (ctx) => DashboardState()),
+        ChangeNotifierProvider(create: (ctx) => PortfolioState()),
         ChangeNotifierProvider(create: (ctx) => TableState()),
-        Provider<AuthService>(
-          create: (ctx) => AuthService(FirebaseAuth.instance),
-        ),
-        // StreamProvider<User?>(
-        //   initialData: null,
-        //   create: (ctx) => ctx.read<AuthService>().authStateChanges,
-        // ),
+        Provider<AuthService>(create: (ctx) => AuthService(FirebaseAuth.instance)),
       ],
       child: MaterialApp(
         localizationsDelegates: [
@@ -85,8 +77,10 @@ class MyApp extends StatelessWidget {
               return PageTransition(child: PhoneAuthPage(), type: PageTransitionType.rightToLeft);
             case '/profile':
               return PageTransition(child: ProfilePage(), type: PageTransitionType.leftToRight);
-            case '/dashboard/add':
+            case '/dashboard/add_portfolio':
               return PageTransition(child: AddPortfolioPage(), type: PageTransitionType.rightToLeft);
+            case '/dashboard/add_operation':
+              return PageTransition(child: AddOperationPage(), type: PageTransitionType.rightToLeft);
             case '/dashboard/settings':
               final args = settings.arguments as PortfolioSettingsAgrs;
               return PageTransition(child: PortfolioSettingsPage(name: args.name), type: PageTransitionType.rightToLeft);

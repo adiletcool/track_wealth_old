@@ -6,8 +6,7 @@ import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/models/column_filter.dart';
 import 'package:track_wealth/common/models/portfolio_asset.dart';
 import 'package:track_wealth/common/models/portfolio_currency.dart';
-import 'package:track_wealth/common/services/dashboard.dart';
-import 'package:track_wealth/pages/dashboard/header/operations/add_operation_dialog/add_operation_dialog.dart';
+import 'package:track_wealth/common/services/portfolio.dart';
 
 class PortfolioTable extends StatefulWidget {
   final List<PortfolioAsset> portfolioAssets;
@@ -129,7 +128,7 @@ class _PortfolioTableState extends State<PortfolioTable> {
   void sortColumn(int index, bool ascending) {
     print("sorted column ${myColumns[index]['title']}: ${ascending ? 'as' : 'des'}cending");
 
-    context.read<DashboardState>().sortPortfolio(index, ascending, colFilter);
+    context.read<PortfolioState>().sortPortfolio(index, ascending, colFilter);
     tableState.updateSortedColumn(myColumns[index]['title'], ascending);
     setState(() {});
   }
@@ -168,19 +167,10 @@ class _PortfolioTableState extends State<PortfolioTable> {
               style: TextStyle(fontSize: 20, color: Colors.white),
             ),
           ),
-          onTap: addOperation,
+          onTap: () => Navigator.pushNamed(context, '/dashboard/add_operation'),
         ),
         SizedBox(height: 40),
       ],
-    );
-  }
-
-  void addOperation() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AddOperationDialog();
-      },
     );
   }
 }

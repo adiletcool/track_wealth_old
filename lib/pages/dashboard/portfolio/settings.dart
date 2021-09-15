@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
-import 'package:track_wealth/common/services/dashboard.dart';
+import 'package:track_wealth/common/services/portfolio.dart';
 import 'package:provider/provider.dart';
 
 class PortfolioSettingsAgrs {
@@ -22,28 +24,109 @@ class PortfolioSettingsPage extends StatefulWidget {
 class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
   late Portfolio portfolio;
   late String openDate;
-  final nameController = TextEditingController();
   final descController = TextEditingController();
   String? broker;
-  final nameFormKey = GlobalKey<FormState>();
 
   // bool initialized = false;
+  late Color settingsNameColor;
 
   @override
   void initState() {
     super.initState();
-    portfolio = context.read<DashboardState>().portfolios.firstWhere((p) => p.name == widget.name);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-    nameController.text = portfolio.name;
+    portfolio = context.read<PortfolioState>().portfolios.firstWhere((p) => p.name == widget.name);
+
     descController.text = portfolio.description ?? '';
     openDate = DateFormat('d MMM y H:m', 'ru_RU').format(portfolio.openDate.toDate());
     broker = portfolio.broker;
   }
 
+  Widget myRoundedContainer({required Widget child, Color? color}) {
+    color ??= AppColor.themeBasedColor(context, Color(0xff21212B), Color(0xffF9F9FB));
+    return Container(
+      decoration: roundedBoxDecoration.copyWith(color: color),
+      padding: const EdgeInsets.all(10),
+      child: child,
+    );
+  }
+
+  Widget getTitle() {
+    return myRoundedContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Название', style: TextStyle(color: settingsNameColor)),
+          SizedBox(height: 6),
+          Text(portfolio.name, style: TextStyle(fontSize: 17)),
+        ],
+      ),
+    );
+  }
+
+  Widget getEditableSettings() {
+    return myRoundedContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Описание', style: TextStyle(color: settingsNameColor)),
+          SizedBox(height: 6),
+          TextFormField(
+            controller: descController,
+            decoration: myInputDecoration.copyWith(
+              hintText: 'Расскажите об этом портфеле',
+              counterText: '',
+              hintStyle: TextStyle(color: settingsNameColor),
+            ),
+            maxLength: 400,
+            maxLines: 7,
+            minLines: 1,
+          ),
+          SizedBox(height: 20),
+          getBrokerDropdown(),
+        ],
+      ),
+    );
+  }
+
+  Widget getBrokerDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Брокер', style: TextStyle(color: settingsNameColor)),
+        SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: roundedBoxDecoration.copyWith(border: Border.all(width: 1, color: AppColor.darkGrey)),
+          child: DropdownButton<String>(
+            underline: Container(),
+            isExpanded: true,
+            value: broker,
+            onChanged: (newBroker) => setState(() => broker = newBroker ?? broker),
+            items: availableBrokers.map((b) => DropdownMenuItem<String>(child: Text(b), value: b)).toList(),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget getCreationDate() {
+    return myRoundedContainer(
+      color: AppColor.themeBasedColor(context, Color(0xff272732), Color(0xffF7F7FC)),
+      child: Text(
+        'Cоздан: $openDate',
+        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 16),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    Color bgColor = AppColor.themeBasedColor(context, Colors.black, AppColor.white);
+    Color bgColor = AppColor.themeBasedColor(context, Color(0xff181820), AppColor.white);
     Color textColor = AppColor.themeBasedColor(context, Colors.white, Colors.black);
+    settingsNameColor = AppColor.themeBasedColor(context, Color(0xffA3A3A3), Color(0xff64668A));
 
     return Scaffold(
       appBar: AppBar(
@@ -66,62 +149,34 @@ class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
           ]),
       backgroundColor: bgColor,
       body: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          child: ListView(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Название', style: TextStyle(fontSize: 16, color: AppColor.darkGrey)),
-                  SizedBox(height: 6),
-                  Form(
-                    key: nameFormKey,
-                    child: TextFormField(
-                      validator: (name) => validatePortfolioName(context, name, exceptName: portfolio.name),
-                      controller: nameController,
-                      decoration: myInputDecoration.copyWith(hintText: 'Основной портфель*', counterText: ''),
-                      style: TextStyle(fontSize: 18),
-                      maxLength: 40,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: Container(
+            width: AppResponsive.isDesktop(context) ? 600 : null,
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                getTitle(),
+                SizedBox(height: 20),
+                getEditableSettings(),
+                SizedBox(height: 10),
+                getCreationDate(),
+                SizedBox(height: 10),
+                Spacer(),
+                Container(
+                  decoration: roundedBoxDecoration.copyWith(color: Color(0xffE00019)),
+                  child: SizedBox(
+                    height: 45,
+                    child: TextButton(
+                      child: Text('Удалить', style: TextStyle(fontSize: 17, color: Colors.white)),
+                      onPressed: deletePortfolioDialog,
                     ),
                   ),
-                ],
-              ),
-              SizedBox(height: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Описание', style: TextStyle(fontSize: 16, color: AppColor.darkGrey)),
-                  SizedBox(height: 6),
-                  TextFormField(
-                    controller: descController,
-                    decoration: myInputDecoration.copyWith(hintText: 'Расскажите об этом портфеле', counterText: ''),
-                    style: TextStyle(fontSize: 18),
-                    maxLength: 400,
-                    maxLines: 7,
-                    minLines: 1,
-                  ),
-                ],
-              ),
-              SizedBox(height: 20),
-              brokerDropdown(),
-              SizedBox(height: 20),
-              Text(
-                'Cоздан: $openDate',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18),
-              ),
-              SizedBox(height: 20),
-              Divider(color: Colors.grey),
-              SizedBox(height: 20),
-              Container(
-                decoration: roundedBoxDecoration.copyWith(color: Colors.red),
-                child: TextButton(
-                  child: Text('Удалить', style: TextStyle(fontSize: 18, color: bgColor)),
-                  onPressed: deletePortfolioDialog,
                 ),
-              ),
-            ],
+                SizedBox(height: 10),
+              ],
+            ),
           ),
         ),
       ),
@@ -130,7 +185,6 @@ class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
 
   bool hasSettingsChanged() {
     return ![
-      nameController.text == portfolio.name,
       descController.text == (portfolio.description ?? ''),
       broker == portfolio.broker,
     ].every((hasChanged) => hasChanged);
@@ -138,16 +192,13 @@ class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
 
   Future<void> saveChanges() async {
     if (hasSettingsChanged()) {
-      if (nameFormKey.currentState!.validate()) {
-        await context.read<DashboardState>().changePortfolioSettings(
-              portfolio.name,
-              newName: nameController.text == portfolio.name ? null : nameController.text,
-              newDesc: descController.text,
-              newBroker: broker,
-            );
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Изменения сохранены')));
-        Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
-      }
+      await context.read<PortfolioState>().changePortfolioSettings(
+            portfolio.name,
+            newDesc: descController.text,
+            newBroker: broker,
+          );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Изменения сохранены')));
+      Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
     } else {
       Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
     }
@@ -196,7 +247,8 @@ class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
                   style: TextStyle(color: Colors.red),
                 ),
                 onPressed: () async {
-                  context.read<DashboardState>().deletePortfolio(portfolio.name);
+                  context.read<PortfolioState>().deletePortfolio(portfolio.name);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Портфель (${portfolio.name}) удален.')));
                   Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
                 },
               ),
@@ -207,27 +259,5 @@ class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
             ],
           );
         });
-  }
-
-  Widget brokerDropdown() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Брокер', style: TextStyle(fontSize: 16, color: AppColor.darkGrey)),
-        SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: roundedBoxDecoration.copyWith(border: Border.all(width: 1, color: AppColor.darkGrey)),
-          child: DropdownButton<String>(
-            hint: const Text('Брокер', style: TextStyle(fontSize: 20)),
-            underline: Container(),
-            isExpanded: true,
-            value: broker,
-            onChanged: (newBroker) => setState(() => broker = newBroker ?? broker),
-            items: availableBrokers.map((b) => DropdownMenuItem<String>(child: Text(b), value: b)).toList(),
-          ),
-        ),
-      ],
-    );
   }
 }

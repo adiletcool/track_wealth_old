@@ -6,7 +6,7 @@ import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/models/portfolio_asset.dart';
-import 'package:track_wealth/common/services/dashboard.dart';
+import 'package:track_wealth/common/services/portfolio.dart';
 import 'package:track_wealth/page_wrapper/page_wrapper.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
@@ -27,7 +27,7 @@ class _DashboardPageState extends State<DashboardPage> {
   late List<Portfolio> portfolios;
   late Portfolio selectedPortfolio;
   Future<String>? _loadData;
-  late DashboardState dashboardState;
+  late PortfolioState dashboardState;
 
   void setOrientationMode({bool canLandscape = true}) {
     SystemChrome.setPreferredOrientations([
@@ -52,7 +52,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget mainBody() {
-    dashboardState = context.watch<DashboardState>();
+    dashboardState = context.watch<PortfolioState>();
     // при reload ребилдится виджет, поэтому loadDataState снова загружать не нужно
     dashboardState.loadDataState ??= dashboardState.loadData();
     _loadData = dashboardState.loadDataState;
@@ -100,7 +100,7 @@ class DashboardScreen extends StatelessWidget {
 
   DashboardScreen({required this.selectedPortfolio, required this.scaffoldKey});
 
-  num getPortfolioAllTimeChange(List<PortfolioAsset> data) => data.map((asset) => asset.profit!).sum;
+  num getPortfolioAllTimeChange(List<PortfolioAsset> data) => data.map((asset) => asset.unrealizedPnl!).sum;
 
   num getPortfolioTodayChange(List<PortfolioAsset> data) => data.map((asset) => asset.worth! - asset.worth! / (1 + asset.todayPriceChange! / 100)).sum;
 
@@ -115,7 +115,7 @@ class DashboardScreen extends StatelessWidget {
         color: Theme.of(context).iconTheme.color,
         edgeOffset: 45,
         displacement: 30,
-        onRefresh: context.read<DashboardState>().reloadData,
+        onRefresh: context.read<PortfolioState>().reloadData,
         child: CustomScrollView(
           controller: scrollController,
           physics: AlwaysScrollableScrollPhysics(),
@@ -140,7 +140,7 @@ class DashboardScreen extends StatelessWidget {
             SliverToBoxAdapter(
               child: PortfolioTable(
                 portfolioAssets: selectedPortfolio.assets!,
-                currencies: selectedPortfolio.currencies!,
+                currencies: selectedPortfolio.currencies!.where((c) => c.value != 0).toList(),
               ),
             ),
           ],

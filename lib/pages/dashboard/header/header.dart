@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
-import 'package:track_wealth/common/services/dashboard.dart';
+import 'package:track_wealth/common/services/portfolio.dart';
 import 'package:track_wealth/pages/shimmers/shimmers.dart';
-import 'operations/operations.dart';
+import 'operations.dart';
 import 'package:provider/provider.dart';
 
 class Header extends StatefulWidget {
@@ -59,14 +59,17 @@ class AmountRow extends StatefulWidget {
 class _AmountRowState extends State<AmountRow> {
   late Portfolio portfolio;
   late num total;
-  late String currency; // 'RUB' | 'USD000UTSTOM' | 'EUR_RUB__TOM'
   late String symbol;
+  String currency = 'RUB'; // 'RUB' | 'USD000UTSTOM' | 'EUR_RUB__TOM'
+
+  @override
+  void initState() {
+    super.initState();
+    portfolio = context.read<PortfolioState>().selectedPortfolio;
+  }
 
   @override
   Widget build(BuildContext context) {
-    portfolio = context.read<DashboardState>().selectedPortfolio;
-
-    currency = portfolio.currency;
     symbol = newUserCurrencies.firstWhere((c) => c['code'] == currency)['symbol'];
 
     return FutureBuilder(
@@ -97,21 +100,20 @@ class _AmountRowState extends State<AmountRow> {
   }
 
   Future<num> getConvertedTotal(String currency) async {
-    num portfolioTotalRub = portfolio.assetsTotal! + portfolio.currenciesTotal!; // активы + кэш
-    await Future.delayed(const Duration(seconds: 1));
-    if (currency == 'RUB') {
-      return portfolioTotalRub;
-    } else {
-      // TODO: пересчитать по курсу выбранной валюты
-      return 300;
+    if (currency == 'RUB')
+      return portfolio.total!;
+    else {
+      num exchangeRate = portfolio.currencies!.firstWhere((c) => c.code == currency).exchangeRate!;
+      return portfolio.total! / exchangeRate;
     }
   }
 
   void changePortfolioCurrency() {
     String newCurrency = newCurrencies[currency]!;
     print('Set currency: $newCurrency');
-    context.read<DashboardState>().changeSelectedPortfolioCurrency(newCurrency);
-    setState(() {});
+    // context.read<DashboardState>().changeSelectedPortfolioCurrency(newCurrency);
+
+    setState(() => currency = newCurrency);
   }
 
   static const Map<String, String> newCurrencies = {

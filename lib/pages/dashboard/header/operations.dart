@@ -3,10 +3,8 @@ import 'package:flutter/rendering.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
-import 'package:track_wealth/common/services/dashboard.dart';
+import 'package:track_wealth/common/services/portfolio.dart';
 import 'package:track_wealth/pages/dashboard/portfolio/settings.dart';
-
-import 'add_operation_dialog/add_operation_dialog.dart';
 
 class Operations extends StatefulWidget {
   @override
@@ -20,8 +18,8 @@ class _OperationsState extends State<Operations> {
   @override
   void initState() {
     super.initState();
-    portfolios = context.read<DashboardState>().portfolios;
-    selectedPortfolio = context.read<DashboardState>().selectedPortfolio;
+    portfolios = context.read<PortfolioState>().portfolios;
+    selectedPortfolio = context.read<PortfolioState>().selectedPortfolio;
     portfolioNames = portfolios.map((p) => p.name);
   }
 
@@ -46,7 +44,7 @@ class _OperationsState extends State<Operations> {
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
               child: Icon(Icons.add_circle_rounded, size: 26),
             ),
-            onTap: addOperation,
+            onTap: () => Navigator.pushNamed(context, '/dashboard/add_operation'),
           ),
           SizedBox(width: 10),
           PopupMenuButton(
@@ -63,15 +61,6 @@ class _OperationsState extends State<Operations> {
           ),
         ],
       ),
-    );
-  }
-
-  void addOperation() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AddOperationDialog();
-      },
     );
   }
 
@@ -99,7 +88,7 @@ class _OperationsState extends State<Operations> {
                     onPressed: () => Navigator.pushNamed(context, '/dashboard/settings', arguments: PortfolioSettingsAgrs(name)),
                   ),
             onTap: () {
-              context.read<DashboardState>().changeSelectedPortfolio(name);
+              context.read<PortfolioState>().changeSelectedPortfolio(name);
               Navigator.pop(context);
             },
           ),
@@ -120,7 +109,7 @@ class _OperationsState extends State<Operations> {
             style: TextStyle(color: _color),
             textAlign: TextAlign.center,
           ),
-          onTap: () => Navigator.pushNamed(context, '/dashboard/add'),
+          onTap: () => Navigator.pushNamed(context, '/dashboard/add_portfolio'),
         ),
       ),
     );

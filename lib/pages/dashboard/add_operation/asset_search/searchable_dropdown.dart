@@ -7,17 +7,18 @@ import "package:track_wealth/common/constants.dart";
 import 'package:track_wealth/common/models/search_asset_model.dart';
 
 class AssetSearchField extends StatefulWidget {
-  final void Function(Asset selectedAsset) selectedAssetCallback;
-  final Asset? preSelectedAsset;
+  final void Function(SearchAsset? selectedAsset) selectedAssetCallback;
+  final SearchAsset? preSelectedAsset;
+  final GlobalKey<FormState> formKey;
+  final String? Function() validate;
 
-  AssetSearchField({required this.selectedAssetCallback, this.preSelectedAsset});
+  AssetSearchField({required this.selectedAssetCallback, required this.formKey, required this.validate, this.preSelectedAsset});
 
   @override
   _AssetSearchFieldState createState() => _AssetSearchFieldState();
 }
 
 class _AssetSearchFieldState extends State<AssetSearchField> {
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController typeAheadController = TextEditingController();
 
   @override
@@ -29,17 +30,18 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: MediaQuery.of(context).size.width < 600 ? MediaQuery.of(context).size.width - 20 : 580,
-      height: 42.5,
-      child: assetTypeAhead(formKey: formKey, controller: typeAheadController),
+      margin: const EdgeInsets.symmetric(horizontal: 15),
+      child: assetTypeAhead(formKey: widget.formKey, controller: typeAheadController),
     );
   }
 
   Widget assetTypeAhead({required Key formKey, required TextEditingController controller}) {
     return Form(
       key: formKey,
-      child: TypeAheadField<Asset>(
+      child: TypeAheadFormField<SearchAsset>(
+        validator: (query) => widget.validate(),
         textFieldConfiguration: TextFieldConfiguration(
+          onChanged: (query) => widget.selectedAssetCallback(null),
           controller: controller,
           decoration: myInputDecoration.copyWith(
             suffixIcon: Icon(Icons.arrow_drop_down),
@@ -48,7 +50,7 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
           ),
         ),
         suggestionsCallback: (String query) async => getSearchSuggestion(query),
-        itemBuilder: (BuildContext context, Asset asset) => searchItemBuilder(context, asset),
+        itemBuilder: (BuildContext context, SearchAsset asset) => searchItemBuilder(context, asset),
         onSuggestionSelected: onSuggesionSelected,
         hideOnEmpty: true,
         noItemsFoundBuilder: (BuildContext context) => Container(),
@@ -61,7 +63,7 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
     );
   }
 
-  Widget searchItemBuilder(BuildContext context, Asset asset) {
+  Widget searchItemBuilder(BuildContext context, SearchAsset asset) {
     return ListTile(
       title: Text(asset.shortName),
       subtitle: Text(
@@ -72,13 +74,13 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
     );
   }
 
-  Future<void> onSuggesionSelected(Asset selectedAsset) async {
+  Future<void> onSuggesionSelected(SearchAsset selectedAsset) async {
     typeAheadController.text = selectedAsset.secId;
     await selectedAsset.getStockData();
     widget.selectedAssetCallback(selectedAsset);
   }
 
-  Future<List<Asset>> getSearchSuggestion(String query) async {
+  Future<List<SearchAsset>> getSearchSuggestion(String query) async {
     if (query.length >= 2) {
       var url = "https://iss.moex.com/iss/securities.json";
       Map<String, String> params = {"q": query, "iss.meta": "off"};
@@ -86,7 +88,7 @@ class _AssetSearchFieldState extends State<AssetSearchField> {
       var response = await Dio().get(url, queryParameters: params);
 
       List result = response.data["securities"]["data"];
-      return Asset.fromListOfLists(result);
+      return SearchAsset.fromListOfLists(result);
     }
     print("search is empty");
     return [];

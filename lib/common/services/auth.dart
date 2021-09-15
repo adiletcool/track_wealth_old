@@ -130,7 +130,6 @@ class AuthService {
           //   accessToken: accessToken.token,
           // );
           // await _firebaseAuth.signInWithCredential(vkAuthCredential);
-          // * TODO wait till firebase supports vk auth :(
           // or
           // _firebaseAuth.signInWithCustomToken(accessToken.token);
         }

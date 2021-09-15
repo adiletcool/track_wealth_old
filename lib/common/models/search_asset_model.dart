@@ -1,51 +1,51 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 
-class Asset {
-  final int id;
-  final String secId;
-  final String shortName;
-  final String regNumber;
-  final String name;
-  final String isin;
-  final int isTraded;
-  final int emitentId;
-  final String emitentTitle;
-  final String emitentInn;
-  final String emitentOkpo;
-  final String gosreg;
-  final String type;
-  final String group;
-  final String primaryBoardId;
-  final String marketPriceBoardId;
+class SearchAsset {
+  final int id; // 2700
+  final String secId; // "AFLT"  -- тикер
+  final String shortName; // "Аэрофлот"
+  final String regNumber; // "1-01-00010-A"
+  final String name; // "Аэрофлот-росс.авиалин(ПАО)ао"
+  final String isin; // "RU0009062285"
+  final int isTraded; // 1
+  final int emitentId; // 1300
+  final String emitentTitle; // "публичное акционерное общество \"Аэрофлот – российские авиалинии\""
+  final String emitentInn; // "7712040126"
+  final String emitentOkpo; // "29063984"
+  final String gosreg; // "1-01-00010-A"
+  final String type; // "common_share"
+  final String group; // "stock_shares"
+  final String primaryBoardId; // "TQBR" (russian) / "FQBR" (Foreign)
+  final String marketPriceBoardId; // "TQBR"
 
   num? price;
   int? priceDecimals;
   int? lotSize;
 
-  Asset({
-    required this.id, // 2700
-    required this.secId, // "AFLT"  -- тикер
-    required this.shortName, // "Аэрофлот"
-    required this.regNumber, // "1-01-00010-A"
-    required this.name, // "Аэрофлот-росс.авиалин(ПАО)ао"
-    required this.isin, // "RU0009062285"
-    required this.isTraded, // 1
-    required this.emitentId, // 1300
-    required this.emitentTitle, // "публичное акционерное общество \"Аэрофлот – российские авиалинии\""
-    required this.emitentInn, // "7712040126"
-    required this.emitentOkpo, // "29063984"
-    required this.gosreg, // "1-01-00010-A"
-    required this.type, // "common_share"
-    required this.group, // "stock_shares"
-    required this.primaryBoardId, // "TQBR"
-    required this.marketPriceBoardId, // "TQBR"
+  SearchAsset({
+    required this.id,
+    required this.secId,
+    required this.shortName,
+    required this.regNumber,
+    required this.name,
+    required this.isin,
+    required this.isTraded,
+    required this.emitentId,
+    required this.emitentTitle,
+    required this.emitentInn,
+    required this.emitentOkpo,
+    required this.gosreg,
+    required this.type,
+    required this.group,
+    required this.primaryBoardId,
+    required this.marketPriceBoardId,
     this.price,
     this.priceDecimals,
     this.lotSize,
   });
 
-  Asset.fromList(List<dynamic> list)
+  SearchAsset.fromList(List<dynamic> list)
       : assert(list.length >= 16),
         id = list[0] ?? -1,
         secId = list[1] ?? "-1",
@@ -64,11 +64,11 @@ class Asset {
         primaryBoardId = list[14] ?? "-1",
         marketPriceBoardId = list[15] ?? "-1";
 
-  static List<Asset> fromListOfLists(List listOfLists) {
+  static List<SearchAsset> fromListOfLists(List listOfLists) {
     var onlyStocks = listOfLists.where((e) {
       return ["stock_shares", "stock_dr"].contains(e[13]); // только акции или деп расписки
     }).toList();
-    return onlyStocks.map((item) => Asset.fromList(item)).toList();
+    return onlyStocks.map((item) => SearchAsset.fromList(item)).toList();
   }
 
   Future<void> getStockData() async {
@@ -99,4 +99,9 @@ class Asset {
 
   @override
   String toString() => "Asset($name, $emitentTitle)";
+
+  // @override
+  // bool operator ==(SearchAsset other) {
+  //   return false;
+  // }
 }

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'dart:math' as math;
 import 'package:provider/provider.dart';
-import 'package:track_wealth/common/services/dashboard.dart';
+import 'package:track_wealth/common/services/portfolio.dart';
 
 import 'models/portfolio.dart';
 import 'services/auth.dart';
@@ -20,7 +20,7 @@ extension HexColor on Color {
 
 class AppColor {
   static Color yellow = Color(0xffFFC222);
-  static Color selected = Color(0xff008a86);
+  static Color selected = Color(0xff01B1A5);
   static Color black = Colors.black;
   static Color grey = Color(0xffF5F5F5);
   static Color darkGrey = Color(0xff8a8a8a);
@@ -82,6 +82,13 @@ class DecimalTextInputFormatter extends TextInputFormatter {
       // } // не более decimalRange знаков после точки
       if (value == ".") {
         truncated = "0.";
+
+        newSelection = newValue.selection.copyWith(
+          baseOffset: math.min(truncated.length, truncated.length + 1),
+          extentOffset: math.min(truncated.length, truncated.length + 1),
+        );
+      } else if (value == '00') {
+        truncated = "0";
 
         newSelection = newValue.selection.copyWith(
           baseOffset: math.min(truncated.length, truncated.length + 1),
@@ -150,7 +157,7 @@ Map<String, String> tooltips = {
   'Ср. Цена, ₽': 'Средняя цена открытой позиции',
   'Тек. Цена, ₽': 'Текущая цена за 1 акцию',
   'Изм. сегодня, %': 'Процентное изменение цены актива за день',
-  'Прибыль, ₽': 'Курсовая прибыль по инструменту за все время', //TODO: , включающая дивиденды и комиссию
+  'Прибыль, ₽': 'Курсовая прибыль по инструменту за все время',
   'Прибыль, %': 'Средневзвешенная процентная прибыль по инструменту за все время', //, включающая дивиденды и комиссию
   'Доля, %': 'Доля инструмента, относительно стоимости портфеля',
   'Стоимость, ₽': 'Рыночная стоимость позиции по инструменту в портфеле',
@@ -221,7 +228,7 @@ void userLogout(context) {
               await context.read<AuthService>().signOut();
 
               // trigger to reload DashboardState
-              context.read<DashboardState>().loadDataState = null;
+              context.read<PortfolioState>().loadDataState = null;
 
               // не popUnti, т.к. home закрылся после popAndPushNamed(context, '/dashboard'))
               Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
@@ -242,7 +249,7 @@ String? validatePortfolioName(BuildContext context, String? name, {String? excep
   if (name!.isEmpty) name = 'Основной портфель';
   name = name.trim();
   if (name.length < 3) return 'Имя должно содержать не менее трех символов';
-  List<Portfolio> portfolios = context.read<DashboardState>().portfolios;
+  List<Portfolio> portfolios = context.read<PortfolioState>().portfolios;
   bool hasSameName;
 
   hasSameName = portfolios.where((p) => p.name != exceptName).any((portfolio) => portfolio.name == name);
@@ -264,3 +271,18 @@ List<String> availableBrokers = [
   "Церих",
   "Не выбран",
 ];
+
+Future<void> delayedScrollDown(
+  ScrollController controller, {
+  Duration delay = const Duration(milliseconds: 300),
+  Duration animationDuration = const Duration(milliseconds: 100),
+  Curve animationCurve = Curves.easeOut,
+}) async {
+  Future.delayed(delay).then(
+    (value) => controller.animateTo(
+      controller.position.maxScrollExtent,
+      curve: animationCurve,
+      duration: animationDuration,
+    ),
+  );
+}

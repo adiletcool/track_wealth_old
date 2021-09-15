@@ -1,10 +1,12 @@
 class PortfolioCurrency {
-  final String code;
+  final String code; // 'RUB' 'USD000UTSTOM' 'EUR_RUB__TOM'
   final String name;
   final num value;
   final String locale;
   final String symbol;
-  num? totalRub;
+  num? exchangeRate;
+
+  num? get totalRub => code == 'RUB' ? value : value * exchangeRate!;
 
   PortfolioCurrency({
     required this.code,
@@ -12,7 +14,7 @@ class PortfolioCurrency {
     required this.value,
     required this.locale,
     required this.symbol,
-    this.totalRub,
+    this.exchangeRate,
   });
 
   // Named constructor
@@ -35,5 +37,10 @@ class PortfolioCurrency {
       'locale': locale,
       'symbol': symbol,
     };
+  }
+
+  @override
+  String toString() {
+    return '$code: {exchangeRate: $exchangeRate, value: $value, totalRub: $totalRub}';
   }
 }
