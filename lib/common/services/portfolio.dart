@@ -1,10 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/models/column_filter.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/models/portfolio_currency.dart';
+import 'package:track_wealth/common/static/portfolio_helpers.dart';
 
 import '../models/portfolio_asset.dart';
 
@@ -193,7 +193,7 @@ class TableState extends ChangeNotifier {
     (isMobile ? mobileColumnFilter : columnFilter).update(colName, (value) => newValue);
 
     if (sortedColumn['title'] != null) {
-      // ! Случай, если убрали отсортированный столбик
+      // * Случай, если убрали отсортированный столбик
       if ((colName == sortedColumn['title']) && (newValue == false)) {
         sortedColumn.update('title', (value) => null);
       }

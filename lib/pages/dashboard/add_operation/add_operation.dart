@@ -8,6 +8,10 @@ import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/models/search_asset_model.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/services/portfolio.dart';
+import 'package:track_wealth/common/static/app_color.dart';
+import 'package:track_wealth/common/static/decorations.dart';
+import 'package:track_wealth/common/static/formatters.dart';
+import 'package:track_wealth/common/static/portfolio_helpers.dart';
 import 'asset_search/searchable_dropdown.dart';
 import 'package:collection/collection.dart';
 

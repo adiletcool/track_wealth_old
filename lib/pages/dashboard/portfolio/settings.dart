@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:track_wealth/common/app_responsive.dart';
-import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/services/portfolio.dart';
 import 'package:provider/provider.dart';
+import 'package:track_wealth/common/static/app_color.dart';
+import 'package:track_wealth/common/static/decorations.dart';
+import 'package:track_wealth/common/static/portfolio_helpers.dart';
 
 class PortfolioSettingsAgrs {
   final name;

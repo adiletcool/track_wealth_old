@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:track_wealth/common/app_responsive.dart';
-import 'package:track_wealth/common/constants.dart';
+import 'package:track_wealth/common/static/app_color.dart';
+import 'package:track_wealth/common/static/auth_helpers.dart';
 
 class SideBar extends StatefulWidget {
   @override

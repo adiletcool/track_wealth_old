@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:track_wealth/common/app_responsive.dart';
-import 'package:track_wealth/common/constants.dart';
+import 'package:track_wealth/common/static/app_color.dart';
+import 'package:track_wealth/common/static/formatters.dart';
+import 'package:track_wealth/common/static/portfolio_helpers.dart';
 
 import 'columns_filter.dart';
 

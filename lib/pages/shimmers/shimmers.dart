@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:track_wealth/common/constants.dart';
+import 'package:track_wealth/common/static/app_color.dart';
+import 'package:track_wealth/common/static/decorations.dart';
 
 class DashboardShimmer extends StatelessWidget {
   @override

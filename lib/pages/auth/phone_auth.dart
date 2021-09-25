@@ -7,8 +7,10 @@ import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:pinput/pin_put/pin_put.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/services/auth.dart';
-import 'package:track_wealth/common/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:track_wealth/common/static/app_color.dart';
+import 'package:track_wealth/common/static/auth_helpers.dart';
+import 'package:track_wealth/common/static/decorations.dart';
 
 class PhoneAuthPage extends StatefulWidget {
   @override

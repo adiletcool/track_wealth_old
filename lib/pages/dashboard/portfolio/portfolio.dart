@@ -2,11 +2,14 @@ import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/app_responsive.dart';
-import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/models/column_filter.dart';
 import 'package:track_wealth/common/models/portfolio_asset.dart';
 import 'package:track_wealth/common/models/portfolio_currency.dart';
 import 'package:track_wealth/common/services/portfolio.dart';
+import 'package:track_wealth/common/static/app_color.dart';
+import 'package:track_wealth/common/static/decorations.dart';
+import 'package:track_wealth/common/static/formatters.dart';
+import 'package:track_wealth/common/static/portfolio_helpers.dart';
 
 class PortfolioTable extends StatefulWidget {
   final List<PortfolioAsset> portfolioAssets;

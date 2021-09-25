@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/services/auth.dart';
-import 'package:track_wealth/common/constants.dart';
+import 'package:track_wealth/common/static/app_color.dart';
+import 'package:track_wealth/common/static/auth_helpers.dart';
+import 'package:track_wealth/common/static/decorations.dart';
 
 class AuthPage extends StatefulWidget {
   @override

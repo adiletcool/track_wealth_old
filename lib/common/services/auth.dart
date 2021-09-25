@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 // import 'package:flutter_login_vk/flutter_login_vk.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:track_wealth/common/static/auth_helpers.dart';
 
-import '../constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AuthService {
