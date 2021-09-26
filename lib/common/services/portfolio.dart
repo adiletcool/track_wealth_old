@@ -184,13 +184,13 @@ class PortfolioState extends ChangeNotifier {
 }
 
 class TableState extends ChangeNotifier {
-  Map<String, bool> columnFilter = ColumnFilter(isMobile: false).filter;
-  Map<String, bool> mobileColumnFilter = ColumnFilter(isMobile: true).filter;
+  Map<String, bool> columnFilter = ColumnFilter(isPortrait: false).filter;
+  Map<String, bool> mobileColumnFilter = ColumnFilter(isPortrait: true).filter;
   Map<String, dynamic> sortedColumn = {'title': null, 'ascending': false};
 
   // * FILTER
-  void updateFilter(String colName, bool newValue, bool isMobile) {
-    (isMobile ? mobileColumnFilter : columnFilter).update(colName, (value) => newValue);
+  void updateFilter(String colName, bool newValue, bool isPortrait) {
+    (isPortrait ? mobileColumnFilter : columnFilter).update(colName, (value) => newValue);
 
     if (sortedColumn['title'] != null) {
       // * Случай, если убрали отсортированный столбик

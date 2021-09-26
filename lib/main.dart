@@ -75,8 +75,6 @@ class MyApp extends StatelessWidget {
               return PageTransition(child: AuthPage(), type: PageTransitionType.rightToLeft);
             case '/auth/phone':
               return PageTransition(child: PhoneAuthPage(), type: PageTransitionType.rightToLeft);
-            case '/profile':
-              return PageTransition(child: ProfilePage(), type: PageTransitionType.leftToRight);
             case '/dashboard/add_portfolio':
               return PageTransition(child: AddPortfolioPage(), type: PageTransitionType.rightToLeft);
             case '/dashboard/add_operation':

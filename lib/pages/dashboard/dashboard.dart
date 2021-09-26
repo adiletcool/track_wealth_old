@@ -2,14 +2,13 @@ import 'package:cross_connectivity/cross_connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/models/portfolio_asset.dart';
 import 'package:track_wealth/common/services/portfolio.dart';
 import 'package:track_wealth/common/static/app_color.dart';
-import 'package:track_wealth/page_wrapper/page_wrapper.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
+import 'package:track_wealth/home_page_wrapper/page_wrapper.dart';
 import 'package:track_wealth/pages/dashboard/header/subheader.dart';
 import 'package:track_wealth/pages/shimmers/shimmers.dart';
 
@@ -76,10 +75,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
               return PageWrapper(
                 scaffoldKey: scaffoldKey,
-                body: DashboardScreen(
-                  selectedPortfolio: selectedPortfolio,
-                  scaffoldKey: scaffoldKey,
-                ),
+                selectedPortfolio: selectedPortfolio,
               );
             }
           }
@@ -109,7 +105,7 @@ class DashboardScreen extends StatelessWidget {
     Color bgColor = AppColor.themeBasedColor(context, Colors.black, AppColor.white);
 
     return Container(
-      margin: EdgeInsets.only(top: AppResponsive.isMobile(context) ? 0 : 10),
+      margin: EdgeInsets.only(top: 0),
       color: bgColor,
       child: RefreshIndicator(
         color: Theme.of(context).iconTheme.color,

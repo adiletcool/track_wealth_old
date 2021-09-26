@@ -1,17 +1,17 @@
 class ColumnFilter {
   late Map<String, bool> filter;
-  final bool isMobile;
+  final bool isPortrait;
 
-  ColumnFilter({required this.isMobile})
+  ColumnFilter({required this.isPortrait})
       : filter = {
           'Тикер': false,
-          'Количество': !isMobile,
-          'Ср. Цена, ₽': !isMobile,
-          'Тек. Цена, ₽': !isMobile,
+          'Количество': !isPortrait,
+          'Ср. Цена, ₽': !isPortrait,
+          'Тек. Цена, ₽': !isPortrait,
           'Изм. сегодня, %': false,
-          'Прибыль, ₽': isMobile,
-          'Прибыль, %': !isMobile,
-          'Доля, %': !isMobile
+          'Прибыль, ₽': isPortrait,
+          'Прибыль, %': !isPortrait,
+          'Доля, %': !isPortrait
         };
 
   static List<Map<String, dynamic>> getAllColumns() {

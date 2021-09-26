@@ -1,7 +1,7 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:track_wealth/common/app_responsive.dart';
+import 'package:track_wealth/common/orientation.dart';
 import 'package:track_wealth/common/models/column_filter.dart';
 import 'package:track_wealth/common/models/portfolio_asset.dart';
 import 'package:track_wealth/common/models/portfolio_currency.dart';
@@ -41,7 +41,7 @@ class _PortfolioTableState extends State<PortfolioTable> {
   @override
   Widget build(BuildContext context) {
     tableState = context.watch<TableState>();
-    colFilter = AppResponsive.isMobile(context) ? tableState.mobileColumnFilter : tableState.columnFilter;
+    colFilter = AppOrientation.isPortrait(context) ? tableState.mobileColumnFilter : tableState.columnFilter;
 
     myColumns = getFilteredColumns();
     sortedColumn = tableState.sortedColumn;
@@ -82,7 +82,7 @@ class _PortfolioTableState extends State<PortfolioTable> {
       rows: getRows(),
       minWidth: myColumns.length * 800 / 7,
       columnSpacing: 10,
-      horizontalMargin: AppResponsive.isMobile(context) ? 5 : null,
+      horizontalMargin: AppOrientation.isPortrait(context) ? 5 : null,
       showBottomBorder: true,
     );
   }

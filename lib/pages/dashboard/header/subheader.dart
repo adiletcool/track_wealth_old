@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:track_wealth/common/app_responsive.dart';
+import 'package:track_wealth/common/orientation.dart';
 import 'package:track_wealth/common/static/app_color.dart';
 import 'package:track_wealth/common/static/formatters.dart';
 import 'package:track_wealth/common/static/portfolio_helpers.dart';
@@ -90,7 +90,7 @@ class _SubHeaderState extends State<SubHeader> {
           mainAxisSize: MainAxisSize.min,
           children: [
             changeCardColumn('Cегодня: ', todayChange, todayChangePercent, textColor: textColor),
-            SizedBox(width: AppResponsive.isMobile(context) ? 20 : 85),
+            SizedBox(width: AppOrientation.isPortrait(context) ? 20 : 85),
             changeCardColumn('За все время: ', allTimeChange, allTimeChangePercent, textColor: textColor),
           ],
         ),

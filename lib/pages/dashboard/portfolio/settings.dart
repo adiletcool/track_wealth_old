@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/services/portfolio.dart';
 import 'package:provider/provider.dart';
@@ -35,7 +34,6 @@ class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
     portfolio = context.read<PortfolioState>().portfolios.firstWhere((p) => p.name == widget.name);
 
@@ -151,34 +149,45 @@ class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
           ]),
       backgroundColor: bgColor,
       body: SafeArea(
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: Container(
-            width: AppResponsive.isDesktop(context) ? 600 : null,
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                getTitle(),
-                SizedBox(height: 20),
-                getEditableSettings(),
-                SizedBox(height: 10),
-                getCreationDate(),
-                SizedBox(height: 10),
-                Spacer(),
-                Container(
-                  decoration: roundedBoxDecoration.copyWith(color: Color(0xffE00019)),
-                  child: SizedBox(
-                    height: 45,
-                    child: TextButton(
-                      child: Text('Удалить', style: TextStyle(fontSize: 17, color: Colors.white)),
-                      onPressed: deletePortfolioDialog,
-                    ),
-                  ),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          child: CustomScrollView(
+            shrinkWrap: true,
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    getTitle(),
+                    SizedBox(height: 10),
+                    getEditableSettings(),
+                    SizedBox(height: 10),
+                    getCreationDate(),
+                    SizedBox(height: 10),
+                  ],
                 ),
-                SizedBox(height: 10),
-              ],
-            ),
+              ),
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      decoration: roundedBoxDecoration.copyWith(color: Color(0xffE00019)),
+                      child: SizedBox(
+                        height: 45,
+                        child: TextButton(
+                          child: Text('Удалить', style: TextStyle(fontSize: 17, color: Colors.white)),
+                          onPressed: deletePortfolioDialog,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

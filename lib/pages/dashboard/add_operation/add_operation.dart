@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
-import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/models/search_asset_model.dart';
@@ -130,7 +129,6 @@ class _AddOperationPageState extends State<AddOperationPage> {
         child: Align(
           alignment: Alignment.topCenter,
           child: Container(
-            width: AppResponsive.isDesktop(context) ? 600 : null,
             child: SingleChildScrollView(
               controller: dialogScrollController,
               child: Column(

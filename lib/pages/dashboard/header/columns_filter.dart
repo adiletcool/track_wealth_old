@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:track_wealth/common/app_responsive.dart';
+import 'package:track_wealth/common/orientation.dart';
 import 'package:track_wealth/common/services/portfolio.dart';
 import 'package:track_wealth/common/static/app_color.dart';
 
@@ -14,7 +14,7 @@ class _ColumnFilterButtonState extends State<ColumnFilterButton> {
 
   @override
   Widget build(BuildContext context) {
-    colFilter = AppResponsive.isMobile(context) ? context.read<TableState>().mobileColumnFilter : context.read<TableState>().columnFilter;
+    colFilter = AppOrientation.isPortrait(context) ? context.read<TableState>().mobileColumnFilter : context.read<TableState>().columnFilter;
 
     return PopupMenuButton(
       icon: Icon(Icons.view_week_rounded),
@@ -28,7 +28,7 @@ class _ColumnFilterButtonState extends State<ColumnFilterButton> {
 
   void filterColumn(String columnName, bool newValue, Function _setState) {
     print('Filter column $columnName: $newValue');
-    context.read<TableState>().updateFilter(columnName, newValue, AppResponsive.isMobile(context));
+    context.read<TableState>().updateFilter(columnName, newValue, AppOrientation.isPortrait(context));
     _setState(() {});
   }
 

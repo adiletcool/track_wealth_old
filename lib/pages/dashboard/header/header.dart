@@ -1,6 +1,6 @@
 import 'package:auto_size_text_pk/auto_size_text_pk.dart';
 import 'package:flutter/material.dart';
-import 'package:track_wealth/common/app_responsive.dart';
+import 'package:track_wealth/common/orientation.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/services/portfolio.dart';
 import 'package:track_wealth/common/static/formatters.dart';
@@ -33,7 +33,7 @@ class _HeaderState extends State<Header> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          if (!AppResponsive.isDesktop(context)) drawerIcon(),
+          drawerIcon(),
           Expanded(child: AmountRow()),
           Operations(),
         ],
@@ -86,7 +86,7 @@ class _AmountRowState extends State<AmountRow> {
               message: tooltips['totalWorth']!,
               showDuration: const Duration(seconds: 6),
               child: AutoSizeText(
-                "${!AppResponsive.isMobile(context) ? 'Стоимость портфеля:    ' : ''}" + "${MyFormatter.numFormat(total)} $symbol",
+                "${!AppOrientation.isPortrait(context) ? 'Стоимость портфеля:    ' : ''}" + "${MyFormatter.numFormat(total)} $symbol",
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 200),
                 maxLines: 1,
                 maxFontSize: 23,

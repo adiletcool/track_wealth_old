@@ -1,7 +1,6 @@
 import 'package:cross_connectivity/cross_connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/services/portfolio.dart';
 import 'package:provider/provider.dart';
@@ -70,7 +69,6 @@ class _AddPortfolioPageState extends State<AddPortfolioPage> {
         child: Align(
           alignment: Alignment.topCenter,
           child: Container(
-            width: AppResponsive.isDesktop(context) ? 600 : null,
             padding: const EdgeInsets.all(10),
             child: ListView(
               controller: scrollController,

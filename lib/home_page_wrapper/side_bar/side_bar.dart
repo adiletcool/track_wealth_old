@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:track_wealth/common/app_responsive.dart';
 import 'package:track_wealth/common/static/app_color.dart';
 import 'package:track_wealth/common/static/auth_helpers.dart';
 
@@ -10,13 +9,11 @@ class SideBar extends StatefulWidget {
 
 class _SideBarState extends State<SideBar> {
   void changePage(String route) {
-    if (!AppResponsive.isDesktop(context)) Navigator.pop(context);
-
+    Navigator.pop(context); // pop sidebar
     Navigator.pushNamed(context, route);
   }
 
   List<Map<String, dynamic>> drawerItems = [
-    {'routeName': 'Профиль', 'icon': Icons.person_rounded, 'route': '/profile'},
     {'routeName': "Анализ", 'icon': Icons.assessment, 'route': '/analysis'},
     {'routeName': "Сделки", 'icon': Icons.history, 'route': '/trades'},
     {'routeName': "Календарь", 'icon': Icons.event, 'route': '/calendar'},
