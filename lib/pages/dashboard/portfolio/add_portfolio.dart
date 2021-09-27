@@ -9,21 +9,28 @@ import 'package:track_wealth/common/static/auth_helpers.dart';
 import 'package:track_wealth/common/static/decorations.dart';
 import 'package:track_wealth/common/static/portfolio_helpers.dart';
 
-class AddPortfolioPage extends StatefulWidget {
+class AddPortfolioArgs {
   final String title;
-  final bool isSeparatePage;
+  final bool isInitial;
 
-  const AddPortfolioPage({this.title = 'Создание нового портфеля', this.isSeparatePage = true});
+  const AddPortfolioArgs({required this.title, required this.isInitial});
+}
+
+class AddPortfolioPage extends StatefulWidget {
+  final AddPortfolioArgs args;
+
+  const AddPortfolioPage(this.args);
+
   @override
-  _AddPortfolioPageState createState() => _AddPortfolioPageState(title);
+  _AddPortfolioPageState createState() => _AddPortfolioPageState();
 }
 
 class _AddPortfolioPageState extends State<AddPortfolioPage> {
   String broker = 'Не выбран';
+  bool marginTrading = false;
+
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descController = TextEditingController();
-
-  final String title;
 
   final nameFormKey = GlobalKey<FormState>();
   ScrollController scrollController = ScrollController();
@@ -37,11 +44,9 @@ class _AddPortfolioPageState extends State<AddPortfolioPage> {
     'EUR_RUB__TOM': 'Евро',
   };
 
-  _AddPortfolioPageState(this.title);
-
   @override
   Widget build(BuildContext context) {
-    Color bgColor = AppColor.themeBasedColor(context, Colors.black, AppColor.white);
+    Color bgColor = AppColor.themeBasedColor(context, AppColor.darkBlue, AppColor.white);
 
     return Scaffold(
       key: scaffoldKey,
@@ -49,7 +54,7 @@ class _AddPortfolioPageState extends State<AddPortfolioPage> {
       appBar: AppBar(
         backgroundColor: bgColor,
         elevation: 0,
-        leading: widget.isSeparatePage // Если не новый пользователь
+        leading: widget.args.isInitial // Если не новый пользователь
             ? IconButton(
                 icon: Icon(Icons.arrow_back, color: Theme.of(context).iconTheme.color),
                 onPressed: () => Navigator.popUntil(context, ModalRoute.withName('/dashboard')),
@@ -73,13 +78,13 @@ class _AddPortfolioPageState extends State<AddPortfolioPage> {
             child: ListView(
               controller: scrollController,
               children: [
-                Center(child: Lottie.asset('assets/animations/add_portfolio.json', height: MediaQuery.of(context).size.height * .25, reverse: true)),
+                Center(child: Lottie.asset('assets/animations/add_portfolio.json', height: MediaQuery.of(context).size.height * .20, reverse: true)),
                 Text(
-                  title,
-                  style: TextStyle(fontSize: 25),
+                  widget.args.title,
+                  style: TextStyle(fontSize: 22),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                Divider(height: 40),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -110,13 +115,14 @@ class _AddPortfolioPageState extends State<AddPortfolioPage> {
                       decoration: myInputDecoration.copyWith(hintText: 'Расскажите об этом портфеле', counterText: ''),
                       style: TextStyle(fontSize: 18),
                       maxLength: 400,
-                      maxLines: 7,
+                      maxLines: 5,
                       minLines: 1,
                     ),
                   ],
                 ),
                 SizedBox(height: 10),
                 brokerDropdown(),
+                marginTradingSettings(),
               ],
             ),
           ),
@@ -133,6 +139,7 @@ class _AddPortfolioPageState extends State<AddPortfolioPage> {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: roundedBoxDecoration.copyWith(border: Border.all(width: 1, color: AppColor.darkGrey)),
         child: DropdownButton<String>(
+          dropdownColor: AppColor.themeBasedColor(context, AppColor.lightBlue, AppColor.grey),
           hint: const Text('Брокер', style: TextStyle(fontSize: 20)),
           underline: Container(),
           isExpanded: true,
@@ -144,6 +151,18 @@ class _AddPortfolioPageState extends State<AddPortfolioPage> {
     ]);
   }
 
+  Widget marginTradingSettings() {
+    return SwitchListTile(
+      title: Text('Маржинальная торговля'),
+      value: marginTrading,
+      onChanged: (v) => setState(() => marginTrading = v),
+      activeColor: AppColor.selected,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+      isThreeLine: true,
+      subtitle: Text('\u2022 Короткие позиции (шорт)\n' + '\u2022 Маржинальное плечо'),
+    );
+  }
+
   Future<void> createPortfolio() async {
     bool hasConnection = await Connectivity().checkConnection();
     final snackBar = SnackBar(content: Text('Нет соединения с интернетом'));
@@ -153,9 +172,12 @@ class _AddPortfolioPageState extends State<AddPortfolioPage> {
       String name = nameController.text != '' ? nameController.text.trim() : 'Основной портфель';
       String? decription = descController.text.isEmpty ? null : descController.text;
 
-      String currency = currencies.entries.firstWhere((e) => e.value == selectedCurrency).key;
-
-      await context.read<PortfolioState>().addUserPortfolio(name: name, broker: broker, currency: currency, desc: decription);
+      await context.read<PortfolioState>().addUserPortfolio(
+            name: name,
+            broker: broker,
+            desc: decription,
+            marginTrading: marginTrading,
+          );
       context.read<PortfolioState>().reloadData();
       Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
     }

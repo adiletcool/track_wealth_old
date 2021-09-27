@@ -13,13 +13,10 @@ import 'common/services/portfolio.dart';
 
 import 'pages/auth/auth.dart';
 import 'pages/auth/phone_auth.dart';
-import 'pages/profile/profile.dart';
 import 'pages/dashboard/dashboard.dart';
 import 'pages/dashboard/portfolio/add_portfolio.dart';
 import 'pages/dashboard/add_operation/add_operation.dart';
 import 'pages/dashboard/portfolio/settings.dart';
-import 'pages/analysis/analysis.dart';
-import 'pages/trades/trades.dart';
 import 'pages/calendar/calendar.dart';
 import 'pages/trends/trends.dart';
 import 'pages/settings/settings.dart';
@@ -76,16 +73,11 @@ class MyApp extends StatelessWidget {
             case '/auth/phone':
               return PageTransition(child: PhoneAuthPage(), type: PageTransitionType.rightToLeft);
             case '/dashboard/add_portfolio':
-              return PageTransition(child: AddPortfolioPage(), type: PageTransitionType.rightToLeft);
+              return PageTransition(child: AddPortfolioPage(settings.arguments as AddPortfolioArgs), type: PageTransitionType.rightToLeft);
             case '/dashboard/add_operation':
               return PageTransition(child: AddOperationPage(), type: PageTransitionType.rightToLeft);
             case '/dashboard/settings':
-              final args = settings.arguments as PortfolioSettingsAgrs;
-              return PageTransition(child: PortfolioSettingsPage(name: args.name), type: PageTransitionType.rightToLeft);
-            case '/analysis':
-              return PageTransition(child: AnalysisPage(), type: PageTransitionType.leftToRight);
-            case '/trades':
-              return PageTransition(child: TradesPage(), type: PageTransitionType.leftToRight);
+              return PageTransition(child: PortfolioSettingsPage(settings.arguments as PortfolioSettingsAgrs), type: PageTransitionType.rightToLeft);
             case '/calendar':
               return PageTransition(child: CalendarPage(), type: PageTransitionType.leftToRight);
             case '/trends':

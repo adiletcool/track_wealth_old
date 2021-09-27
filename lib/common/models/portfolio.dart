@@ -6,25 +6,24 @@ import 'package:track_wealth/common/models/portfolio_currency.dart';
 import 'package:collection/collection.dart';
 import 'package:track_wealth/common/models/search_asset_model.dart';
 
-enum OperationType {
-  sell,
-  buy,
-}
-
 enum ResultType {
   ok,
   notEnoughAssets,
-  notImplemented,
+  notEnoughRubles,
 }
 
 class AddOperationResult {
   late ResultType type;
+  // buy operation data
+  num? rublesAvailable;
+  num? purchaseAmount;
+
+  // sell operation
   int? assetsAvailable;
-  String? notImplementedError;
 
   Map<String, dynamic>? get data => getResultData(type);
 
-  AddOperationResult(this.type, {this.assetsAvailable, this.notImplementedError});
+  AddOperationResult(this.type, {this.assetsAvailable, this.rublesAvailable, this.purchaseAmount});
 
   Map<String, dynamic>? getResultData(ResultType type) {
     switch (type) {
@@ -32,6 +31,8 @@ class AddOperationResult {
         return {};
       case ResultType.notEnoughAssets:
         return {'assetsAvailable': assetsAvailable};
+      case ResultType.notEnoughRubles:
+        return {'rublesAvailable': rublesAvailable, 'purchaseAmount': purchaseAmount};
       default:
         return {};
     }
@@ -39,12 +40,14 @@ class AddOperationResult {
 }
 
 class Portfolio {
-  String name;
+  final String name;
   String? broker;
-  String currency; // Валюта, в которой считается total worth по assets
   String? description;
-  final Timestamp openDate; // не изм
   bool isSelected;
+  bool marginTrading;
+
+  final Timestamp openDate; // не изм
+
   List<PortfolioAsset>? assets; // Акции, торгующиеся только на МосБирже
   List<PortfolioCurrency>? currencies;
 
@@ -55,10 +58,10 @@ class Portfolio {
   Portfolio({
     required this.name,
     required this.broker,
-    required this.currency,
     required this.description,
     required this.isSelected,
     required this.openDate,
+    required this.marginTrading,
     this.assets,
     this.currencies,
   });
@@ -70,10 +73,10 @@ class Portfolio {
   Portfolio.fromJson(Map<String, dynamic> json)
       : name = json['name'],
         broker = json['broker'],
-        currency = json['currency'],
         description = json['description'],
         isSelected = json['isSelected'],
-        openDate = json['openDate'];
+        openDate = json['openDate'],
+        marginTrading = json['marginTrading'];
 
   static List<Portfolio> fromList(List<Map<String, dynamic>> portfolios) {
     return portfolios.map((p) => Portfolio.fromJson(p)).toList();
@@ -83,56 +86,75 @@ class Portfolio {
     return {
       'name': name,
       'description': description,
-      'currency': currency,
       'broker': broker,
       'isSelected': isSelected,
       'openDate': openDate,
+      'marginTrading': marginTrading,
     };
   }
 
-  void updateSettings(String? newDesc, String? newBroker) {
+  void updateSettings(String? newDesc, String? newBroker, bool newMarginTrading) {
     description = newDesc;
     broker = newBroker;
+    marginTrading = newMarginTrading;
   }
 
-  AddOperationResult addOperation(OperationType type, SearchAsset asset, num price, int quantity, num fee) {
+  void setAssetsSharePercent() {
+    num totalWorth = assets!.map((asset) => asset.worth!).sum;
+    assets!.forEach((asset) => asset.setSharePercent(totalWorth));
+  }
+
+  AddOperationResult buyOperation(SearchAsset asset, num price, int quantity, num fee) {
     //* поскольку в поиске можно найти только акции, торгующиеся на мосбирже, то купить их можно только за рубли, поэтому проверяем, хватает ли рублей
 
     PortfolioAsset? found = assets!.firstWhereOrNull((a) => a.secId == asset.secId); // смотрим, есть ли эти акции в портфеле
 
-    switch (type) {
-      case OperationType.buy:
-        // проверяем, есть ли asset в портфеле. Если есть, то меняем количество и среднюю цену.
-        // Если акции когда-то были, но сейчас их нет (0), то устанавливается новая средняя цену
-        // проверка на достаточность денег уже сделана в confirmOperation
-        if (found != null) {
-          found.addTrade(type, price, quantity, fee);
-        } else {
-          PortfolioAsset newAsset = PortfolioAsset(
-            boardId: asset.primaryBoardId,
-            secId: asset.secId,
-            shortName: asset.shortName,
-            quantity: quantity,
-            meanPrice: price,
-            realizedPnl: 0,
-          );
-          assets!.add(newAsset);
-        }
-        // добавить в trades, обновить assets
+    // Проверяем, хватает ли денег для покупки
+    // Если хватает, проверяем, есть ли asset в портфеле. Если есть, то меняем количество и среднюю цену.
+    // * Если акции когда-то были, но сейчас их нет (0), то устанавливается новая средняя цену
+
+    num purchaseAmount = price * quantity + fee;
+    num rubAvailable = currencies!.firstWhere((c) => c.code == 'RUB').value;
+    print(currencies); // отнимаем сумму покупки из денег
+
+    if (purchaseAmount > rubAvailable) {
+      return AddOperationResult(ResultType.notEnoughRubles, rublesAvailable: rubAvailable, purchaseAmount: purchaseAmount);
+    } else {
+      if (found != null) {
+        found.addBuy(price, quantity, fee); // добавляем акции и пересчитываем meanPrice
+      } else {
+        PortfolioAsset newAsset = PortfolioAsset(
+          boardId: asset.primaryBoardId,
+          secId: asset.secId,
+          shortName: asset.shortName,
+          quantity: quantity,
+          meanPrice: price,
+          realizedPnl: 0,
+        );
+        assets!.add(newAsset); // добавляем акции
+      }
+      // добавить в trades, reload assets
+      return AddOperationResult(ResultType.ok);
+    }
+  }
+
+  AddOperationResult sellOperation(SearchAsset asset, num price, int quantity, num fee) {
+    PortfolioAsset? found = assets!.firstWhereOrNull((a) => a.secId == asset.secId); // смотрим, есть ли эти акции в портфеле
+
+    // проверяем, есть ли asset в портфеле. Если есть, то проверяем, хватает ли для продажи (шт)
+    // Если хватает, меняем количество и realizedPnl. Добавляем в трейды
+
+    if (found == null) {
+      return AddOperationResult(ResultType.notEnoughAssets, assetsAvailable: 0);
+    } else {
+      if (found.quantity < quantity) {
+        return AddOperationResult(ResultType.notEnoughAssets, assetsAvailable: found.quantity);
+      } else {
+        found.addSell(price, quantity, fee);
+
+        // добавить в trades, reload assets
         return AddOperationResult(ResultType.ok);
-
-      case OperationType.sell:
-        //* проверяем, есть ли эти акции и хватает ли имеющегося количества для продажи
-        if (found == null || found.quantity < quantity) {
-          return AddOperationResult(ResultType.notEnoughAssets, assetsAvailable: found?.quantity ?? 0);
-        } else {
-          //TODO если хватает акций, то продать, посчитать и добавить tradesProfit
-
-          // добавить в trades, обновить assets
-          return AddOperationResult(ResultType.ok);
-        }
-      default:
-        return AddOperationResult(ResultType.notImplemented, notImplementedError: 'Unknown operation type $type');
+      }
     }
   }
 
@@ -150,11 +172,6 @@ class Portfolio {
 
     assets!.sort((a1, a2) => a2.worth!.compareTo(a1.worth!)); // сортируем по рыночной стоимости
     assets = assets!.where((asset) => asset.quantity != 0).toList(); // фильтруем qunatity != 0
-  }
-
-  void setAssetsSharePercent() {
-    num totalWorth = assets!.map((asset) => asset.worth!).sum;
-    assets!.forEach((asset) => asset.setSharePercent(totalWorth));
   }
 
   Future<Iterable<PortfolioAsset>> _getAssetsMarketData({required Iterable<PortfolioAsset> assets, isForeign = false}) async {

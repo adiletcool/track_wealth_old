@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:track_wealth/common/constants.dart';
+import 'package:track_wealth/common/static/app_color.dart';
 
 class TradesPage extends StatefulWidget {
   @override
@@ -9,9 +9,8 @@ class TradesPage extends StatefulWidget {
 class _TradesPageState extends State<TradesPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: simpleAppBar(context),
-      body: Text('Trades'),
-    );
+    Color bgColor = AppColor.themeBasedColor(context, AppColor.darkBlue, AppColor.white);
+
+    return Container(color: bgColor, child: Center(child: Text('Trades')));
   }
 }

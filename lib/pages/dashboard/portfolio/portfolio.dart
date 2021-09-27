@@ -1,5 +1,6 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/orientation.dart';
 import 'package:track_wealth/common/models/column_filter.dart';
@@ -55,7 +56,7 @@ class _PortfolioTableState extends State<PortfolioTable> {
       sortedColumnIndex = null;
     }
 
-    Color bgColor = AppColor.themeBasedColor(context, AppColor.bgDark, AppColor.grey);
+    Color bgColor = AppColor.themeBasedColor(context, AppColor.lightBlue, AppColor.lightGrey);
 
     return Container(
       margin: const EdgeInsets.all(10),
@@ -155,15 +156,17 @@ class _PortfolioTableState extends State<PortfolioTable> {
 
   Widget emptyPortfolioInfo() {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        SizedBox(height: 5),
-        Text('В портфеле нет акций', style: TextStyle(fontSize: 20)),
+        Center(child: Lottie.asset('assets/animations/search-empty.json', height: MediaQuery.of(context).size.height * .25, reverse: true)),
+        Divider(indent: 40, endIndent: 40, height: 40),
+        Text('У вас в портфеле нет акций', style: TextStyle(fontSize: 20)),
         SizedBox(height: 40),
         InkWell(
           child: Container(
             padding: const EdgeInsets.all(10),
             decoration: roundedBoxDecoration.copyWith(
-              color: Color(0xff008a86),
+              color: AppColor.selected,
             ),
             child: Text(
               'Добавить сделку',
@@ -172,7 +175,7 @@ class _PortfolioTableState extends State<PortfolioTable> {
           ),
           onTap: () => Navigator.pushNamed(context, '/dashboard/add_operation'),
         ),
-        SizedBox(height: 40),
+        SizedBox(height: 20),
       ],
     );
   }

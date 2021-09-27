@@ -1,5 +1,3 @@
-import 'package:track_wealth/common/models/portfolio.dart';
-
 class PortfolioAsset {
   final String boardId; // TQBR (см search_asset_model)
   final String secId; // тикер (AFLT)
@@ -80,20 +78,16 @@ class PortfolioAsset {
     };
   }
 
-  void addTrade(OperationType type, num oPrice, int oQuantity, num oFee) {
-    switch (type) {
-      case OperationType.sell:
-        num oTradeProfit = (oPrice - meanPrice) * oQuantity;
-        this.realizedPnl += oTradeProfit;
-        break;
-      case OperationType.buy:
-        // считаем средневзвешенную цену покупок
-        this.meanPrice = (meanPrice * quantity + oPrice * oQuantity - oFee) / (quantity + oQuantity);
-        this.quantity = quantity + oQuantity;
-        break;
-      default:
-        break;
-    }
+  void addBuy(num oPrice, int oQuantity, num oFee) {
+    // считаем средневзвешенную цену покупок
+    this.meanPrice = (meanPrice * quantity + oPrice * oQuantity - oFee) / (quantity + oQuantity);
+    this.quantity += oQuantity;
+  }
+
+  void addSell(num oPrice, int oQuantity, num oFee) {
+    num oTradeProfit = (oPrice - meanPrice) * oQuantity - oFee;
+    this.realizedPnl += oTradeProfit;
+    this.quantity -= oQuantity;
   }
 
   void addDividend(num totalRub) {

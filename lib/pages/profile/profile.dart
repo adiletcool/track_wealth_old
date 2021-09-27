@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:track_wealth/common/constants.dart';
+import 'package:track_wealth/common/static/app_color.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -30,9 +30,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: simpleAppBar(context),
-      body: Center(
+    Color bgColor = AppColor.themeBasedColor(context, AppColor.darkBlue, AppColor.white);
+
+    return Container(
+      color: bgColor,
+      child: Center(
         child: Text(userName),
       ),
     );

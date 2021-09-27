@@ -14,8 +14,6 @@ class _SideBarState extends State<SideBar> {
   }
 
   List<Map<String, dynamic>> drawerItems = [
-    {'routeName': "Анализ", 'icon': Icons.assessment, 'route': '/analysis'},
-    {'routeName': "Сделки", 'icon': Icons.history, 'route': '/trades'},
     {'routeName': "Календарь", 'icon': Icons.event, 'route': '/calendar'},
     {'routeName': "Тренды", 'icon': Icons.explore, 'route': '/trends'},
     {'routeName': "Настройки", 'icon': Icons.settings, 'route': '/settings'},

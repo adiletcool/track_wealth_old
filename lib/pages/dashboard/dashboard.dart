@@ -69,7 +69,12 @@ class _DashboardPageState extends State<DashboardPage> {
             setOrientationMode(canLandscape: portfolios.length != 0);
 
             if (portfolios.length == 0) {
-              return AddPortfolioPage(title: 'Добавьте свой первый портфель', isSeparatePage: false);
+              Future.microtask(() => Navigator.pushNamed(
+                    context,
+                    '/dashboard/add_portfolio',
+                    arguments: AddPortfolioArgs(title: 'Добавьте свой первый портфель', isInitial: false),
+                  )); // Перенаправляем после выполнения build
+              return Container();
             } else {
               selectedPortfolio = dashboardState.selectedPortfolio;
 
@@ -102,7 +107,7 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color bgColor = AppColor.themeBasedColor(context, Colors.black, AppColor.white);
+    Color bgColor = AppColor.themeBasedColor(context, AppColor.darkBlue, AppColor.white);
 
     return Container(
       margin: EdgeInsets.only(top: 0),

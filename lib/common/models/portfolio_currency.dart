@@ -1,7 +1,12 @@
 class PortfolioCurrency {
-  final String code; // 'RUB' 'USD000UTSTOM' 'EUR_RUB__TOM'
-  final String name;
-  final num value;
+  final String _code; // 'RUB' 'USD000UTSTOM' 'EUR_RUB__TOM'
+  final String _name;
+  final num _value;
+
+  String get code => _code;
+  String get name => _name;
+  num get value => _value;
+
   final String locale;
   final String symbol;
   num? exchangeRate;
@@ -9,19 +14,21 @@ class PortfolioCurrency {
   num? get totalRub => code == 'RUB' ? value : value * exchangeRate!;
 
   PortfolioCurrency({
-    required this.code,
-    required this.name,
-    required this.value,
+    required code,
+    required name,
+    required value,
     required this.locale,
     required this.symbol,
     this.exchangeRate,
-  });
+  })  : _code = code,
+        _name = name,
+        _value = value;
 
   // Named constructor
   PortfolioCurrency.fromJson(Map<String, dynamic> json)
-      : code = json['code'],
-        name = json['name'],
-        value = json['value'],
+      : _code = json['code'],
+        _name = json['name'],
+        _value = json['value'],
         locale = json['locale'],
         symbol = json['symbol'];
 
@@ -41,6 +48,6 @@ class PortfolioCurrency {
 
   @override
   String toString() {
-    return '$code: {exchangeRate: $exchangeRate, value: $value, totalRub: $totalRub}';
+    return '\n$code: {exchangeRate: $exchangeRate, value: $value, totalRub: $totalRub}';
   }
 }

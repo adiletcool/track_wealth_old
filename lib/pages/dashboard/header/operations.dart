@@ -25,8 +25,7 @@ class _OperationsState extends State<Operations> {
 
   @override
   Widget build(BuildContext context) {
-    Color bgColor = AppColor.themeBasedColor(context, AppColor.bgDark, AppColor.grey);
-    Color popupBgColor = AppColor.themeBasedColor(context, Color(0xff292929), AppColor.grey);
+    Color bgColor = AppColor.themeBasedColor(context, AppColor.lightBlue, AppColor.lightGrey);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -39,7 +38,6 @@ class _OperationsState extends State<Operations> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           InkWell(
-            // radius: ,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
               child: Icon(Icons.add_circle_rounded, size: 26),
@@ -47,23 +45,32 @@ class _OperationsState extends State<Operations> {
             onTap: () => Navigator.pushNamed(context, '/dashboard/add_operation'),
           ),
           SizedBox(width: 10),
-          PopupMenuButton(
-            color: popupBgColor,
-            tooltip: 'Выбрать портфель',
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            offset: Offset(0, 35),
+          // PopupMenuButton(
+          //   color: popupBgColor,
+          //   tooltip: 'Выбрать портфель',
+          //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          //   padding: const EdgeInsets.symmetric(horizontal: 4),
+          //   offset: Offset(0, 35),
+          //   child: Container(
+          //     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+          //     child: Icon(Icons.cases_rounded, size: 26),
+          //   ),
+          //   itemBuilder: (context) => getPortfolioNames(portfolioNames),
+          // ),
+          // SizedBox(width: 10),
+          InkWell(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
-              child: Icon(Icons.cases_rounded, size: 26),
+              child: Icon(Icons.settings, size: 26),
             ),
-            itemBuilder: (context) => getPortfolioNames(portfolioNames),
+            onTap: () => Navigator.pushNamed(context, '/dashboard/settings', arguments: PortfolioSettingsAgrs(selectedPortfolio.name)),
           ),
         ],
       ),
     );
   }
 
+  /*
   List<PopupMenuEntry> getPortfolioNames(Iterable<String> names) {
     Color _color = Color(0xff4093f2);
     List<PopupMenuEntry> nameItems = [];
@@ -81,12 +88,6 @@ class _OperationsState extends State<Operations> {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(color: name == selectedPortfolio.name ? _color : null),
             ),
-            trailing: name != selectedPortfolio.name
-                ? null
-                : IconButton(
-                    icon: Icon(Icons.settings),
-                    onPressed: () => Navigator.pushNamed(context, '/dashboard/settings', arguments: PortfolioSettingsAgrs(name)),
-                  ),
             onTap: () {
               context.read<PortfolioState>().changeSelectedPortfolio(name);
               Navigator.pop(context);
@@ -115,5 +116,5 @@ class _OperationsState extends State<Operations> {
     );
 
     return nameItems;
-  }
+  } */
 }

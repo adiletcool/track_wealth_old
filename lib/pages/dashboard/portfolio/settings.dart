@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/services/portfolio.dart';
@@ -9,15 +8,16 @@ import 'package:track_wealth/common/static/decorations.dart';
 import 'package:track_wealth/common/static/portfolio_helpers.dart';
 
 class PortfolioSettingsAgrs {
-  final name;
+  final portfolioName;
 
-  PortfolioSettingsAgrs(this.name);
+  const PortfolioSettingsAgrs(this.portfolioName);
 }
 
 class PortfolioSettingsPage extends StatefulWidget {
-  final String name;
+  final PortfolioSettingsAgrs args;
 
-  const PortfolioSettingsPage({Key? key, required this.name}) : super(key: key);
+  const PortfolioSettingsPage(this.args);
+
   @override
   _PortfolioSettingsPageState createState() => _PortfolioSettingsPageState();
 }
@@ -25,25 +25,27 @@ class PortfolioSettingsPage extends StatefulWidget {
 class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
   late Portfolio portfolio;
   late String openDate;
-  final descController = TextEditingController();
+  late bool marginTrading;
   String? broker;
 
-  // bool initialized = false;
+  final descController = TextEditingController();
+  late final String portfolioName;
   late Color settingsNameColor;
 
   @override
   void initState() {
     super.initState();
-
-    portfolio = context.read<PortfolioState>().portfolios.firstWhere((p) => p.name == widget.name);
+    portfolioName = widget.args.portfolioName;
+    portfolio = context.read<PortfolioState>().portfolios.firstWhere((p) => p.name == portfolioName);
 
     descController.text = portfolio.description ?? '';
-    openDate = DateFormat('d MMM y H:m', 'ru_RU').format(portfolio.openDate.toDate());
+    openDate = DateFormat('d MMM y в H:m', 'ru_RU').format(portfolio.openDate.toDate());
     broker = portfolio.broker;
+    marginTrading = portfolio.marginTrading;
   }
 
   Widget myRoundedContainer({required Widget child, Color? color}) {
-    color ??= AppColor.themeBasedColor(context, Color(0xff21212B), Color(0xffF9F9FB));
+    color ??= AppColor.themeBasedColor(context, AppColor.lightBlue, AppColor.lightGrey);
     return Container(
       decoration: roundedBoxDecoration.copyWith(color: color),
       padding: const EdgeInsets.all(10),
@@ -84,6 +86,8 @@ class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
           ),
           SizedBox(height: 20),
           getBrokerDropdown(),
+          SizedBox(height: 10),
+          marginTradingSettings(),
         ],
       ),
     );
@@ -111,11 +115,23 @@ class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
     );
   }
 
+  Widget marginTradingSettings() {
+    return SwitchListTile(
+      title: Text('Маржинальная торговля'),
+      value: marginTrading,
+      onChanged: (v) => setState(() => marginTrading = v),
+      activeColor: AppColor.selected,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+      isThreeLine: true,
+      subtitle: Text('\u2022 Короткие позиции (шорт)\n' + '\u2022 Маржинальное плечо'),
+    );
+  }
+
   Widget getCreationDate() {
     return myRoundedContainer(
-      color: AppColor.themeBasedColor(context, Color(0xff272732), Color(0xffF7F7FC)),
+      color: AppColor.themeBasedColor(context, AppColor.lightBlue, AppColor.lightGrey),
       child: Text(
-        'Cоздан: $openDate',
+        'Создан: $openDate',
         textAlign: TextAlign.center,
         style: TextStyle(fontSize: 16),
       ),
@@ -124,9 +140,9 @@ class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    Color bgColor = AppColor.themeBasedColor(context, Color(0xff181820), AppColor.white);
+    Color bgColor = AppColor.themeBasedColor(context, AppColor.darkBlue, AppColor.white);
     Color textColor = AppColor.themeBasedColor(context, Colors.white, Colors.black);
-    settingsNameColor = AppColor.themeBasedColor(context, Color(0xffA3A3A3), Color(0xff64668A));
+    settingsNameColor = AppColor.themeBasedColor(context, AppColor.greyTitle, AppColor.indigo);
 
     return Scaffold(
       appBar: AppBar(
@@ -174,7 +190,7 @@ class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Container(
-                      decoration: roundedBoxDecoration.copyWith(color: Color(0xffE00019)),
+                      decoration: roundedBoxDecoration.copyWith(color: AppColor.redBlood),
                       child: SizedBox(
                         height: 45,
                         child: TextButton(
@@ -198,6 +214,7 @@ class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
     return ![
       descController.text == (portfolio.description ?? ''),
       broker == portfolio.broker,
+      marginTrading == portfolio.marginTrading,
     ].every((hasChanged) => hasChanged);
   }
 
@@ -207,6 +224,7 @@ class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
             portfolio.name,
             newDesc: descController.text,
             newBroker: broker,
+            newMarginTrading: marginTrading,
           );
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Изменения сохранены')));
       Navigator.popUntil(context, ModalRoute.withName('/dashboard'));

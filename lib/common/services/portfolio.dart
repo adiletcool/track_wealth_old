@@ -80,11 +80,25 @@ class PortfolioState extends ChangeNotifier {
   }
 
   /// Adding user portfolio document and new subcollection with assets = [], currencies = newUserCurrencies, portfolioName = name
-  Future<void> addUserPortfolio({required String name, String? broker, required String currency, String? desc}) async {
+  Future<void> addUserPortfolio({
+    required String name,
+    required String? broker,
+    required String? desc,
+    required bool marginTrading,
+  }) async {
     portfolios.forEach((portfolio) => portfolio.isSelected = false);
 
     // добавляем портфель в список
-    portfolios.add(Portfolio(name: name, description: desc, currency: currency, broker: broker, isSelected: true, openDate: Timestamp.now()));
+    portfolios.add(
+      Portfolio(
+        name: name,
+        description: desc,
+        broker: broker,
+        isSelected: true,
+        openDate: Timestamp.now(),
+        marginTrading: marginTrading,
+      ),
+    );
 
     // форматируем список с портфелями в Json
     List<Map<String, dynamic>> updatedPortfolios = portfolios.map((portfolio) => portfolio.toJson()).toList();
@@ -96,12 +110,6 @@ class PortfolioState extends ChangeNotifier {
 
     // добавляем коллекцию с пустым списком сделок
     // userData!.collection('tradeHistory').doc(name)
-  }
-
-  // TODO
-  Future<void> addOperation() async {
-    // апдейтить список с акциями выбранного портфеля _updatePortfolioAssets
-    // апдейтить список с трейдами выбранного портфеля
   }
 
   Future<void> changeSelectedPortfolio(String portfolioName) async {
@@ -147,8 +155,8 @@ class PortfolioState extends ChangeNotifier {
     reloadData();
   }
 
-  Future<void> changePortfolioSettings(String portfolioName, {required String? newDesc, required String? newBroker}) async {
-    portfolios.firstWhere((p) => p.name == portfolioName).updateSettings(newDesc, newBroker);
+  Future<void> changePortfolioSettings(String portfolioName, {required String? newDesc, required String? newBroker, required bool newMarginTrading}) async {
+    portfolios.firstWhere((p) => p.name == portfolioName).updateSettings(newDesc, newBroker, newMarginTrading);
 
     // изменяет поля дока
     await _updatePortfolios();

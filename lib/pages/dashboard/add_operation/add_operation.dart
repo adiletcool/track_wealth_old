@@ -53,6 +53,8 @@ class _AddOperationPageState extends State<AddOperationPage> {
   TextEditingController quantityController = TextEditingController();
   TextEditingController feeController = TextEditingController(); // text: '0.00'
 
+  String quantityLabel = "Количество, шт";
+
   // acttionType == 'Деньги'
   GlobalKey<FormState> moneyFormKey = GlobalKey<FormState>();
   TextEditingController moneyController = TextEditingController();
@@ -69,7 +71,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
 
     actionType = actions.keys.first; // Акции / Деньги
     selectedActions = actions[actionType]!; // ['Купить', 'Продать', 'Дивиденд'] / ["Внести", "Вывести", "Доход", "Расход"]
-    action = selectedActions.first;
+    action = selectedActions.first; // 'Купить' / 'Продать' / 'Дивиденд' / "Внести" / "Вывести" / "Доход" / "Расход"
 
     selectedCurrency = newUserCurrencies.first;
   }
@@ -104,17 +106,69 @@ class _AddOperationPageState extends State<AddOperationPage> {
     if (selectedCurrency['code'] != code) {}
   }
 
+  onPriceQuantityChanged() {
+    // рассчитываем доступное для покупки / продажи количество акций
+    // num? price = num.tryParse(priceController.text);
+    // int? quantity = int.tryParse(quantityController.text);
+  }
+
+  Widget getOperationSummary() {
+    num operationTotal;
+    List<Widget> children = [
+      ListTile(
+        title: Text('Доступно:'),
+        trailing: Text('${MyFormatter.numFormat(rubAvailable)} ₽'),
+        contentPadding: const EdgeInsets.all(0),
+        minVerticalPadding: 0,
+        visualDensity: VisualDensity(horizontal: 0, vertical: -4),
+      )
+    ];
+    switch (action) {
+      case 'Купить':
+      case 'Продать':
+        num? price = num.tryParse(priceController.text);
+        int? quantity = int.tryParse(quantityController.text);
+        num? fee = num.tryParse(feeController.text);
+
+        if (price != null && quantity != null) {
+          fee ??= 0;
+          operationTotal = price * quantity + fee * (action == 'Купить' ? 1 : -1);
+          children.insert(
+            0,
+            ListTile(
+              title: Text('Итого:'),
+              trailing: Text('${MyFormatter.numFormat(operationTotal)} ₽'),
+              contentPadding: const EdgeInsets.all(0),
+              minVerticalPadding: 0,
+              visualDensity: VisualDensity(horizontal: 0, vertical: -4),
+            ),
+          );
+        }
+        break;
+      default:
+        break;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 25),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    Color bgColor = AppColor.themeBasedColor(context, Colors.black, AppColor.white);
+    Color bgColor = AppColor.themeBasedColor(context, AppColor.darkBlue, AppColor.white);
     Color textColor = AppColor.themeBasedColor(context, Colors.white, AppColor.black);
+    String pageTitle = 'Добавить ' + (actionType == 'Акции' ? 'трейд' : 'операцию');
 
     return Scaffold(
       backgroundColor: bgColor,
       appBar: simpleAppBar(
         context,
         title: Text(
-          'Добавить операцию',
+          pageTitle,
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: textColor),
         ),
         centerTitle: true,
@@ -126,32 +180,28 @@ class _AddOperationPageState extends State<AddOperationPage> {
         ],
       ),
       body: SafeArea(
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: Container(
-            child: SingleChildScrollView(
-              controller: dialogScrollController,
-              child: Column(
-                children: [
-                  SizedBox(height: 5),
-                  buttonsRow(buttons: actions.keys, selectedValue: actionType, onTap: changeActionType),
-                  SizedBox(height: 20),
-                  buttonsRow(buttons: selectedActions, selectedValue: action, onTap: changeAction),
-                  SizedBox(height: 20),
-                  getOperationPreset(), // пресет операций
-                  SizedBox(height: 20),
-                  Wrap(
-                    spacing: 20,
-                    runSpacing: 20,
-                    alignment: WrapAlignment.center,
-                    children: [datePicker(), timePicker()],
-                  ),
-                  SizedBox(height: 20),
-                  noteTextField(),
-                ],
-              ),
+        child: ListView(
+          physics: AlwaysScrollableScrollPhysics(),
+          controller: dialogScrollController,
+          children: [
+            SizedBox(height: 5),
+            buttonsRow(buttons: actions.keys, selectedValue: actionType, onTap: changeActionType),
+            SizedBox(height: 20),
+            buttonsRow(buttons: selectedActions, selectedValue: action, onTap: changeAction),
+            Divider(height: 40, indent: 40, endIndent: 40),
+            getOperationFields(), // пресет операций
+            SizedBox(height: 20),
+            Wrap(
+              spacing: 20,
+              runSpacing: 20,
+              alignment: WrapAlignment.center,
+              children: [datePicker(), timePicker()],
             ),
-          ),
+            SizedBox(height: 20),
+            noteTextField(),
+            SizedBox(height: 20),
+            getOperationSummary(),
+          ],
         ),
       ),
     );
@@ -187,16 +237,16 @@ class _AddOperationPageState extends State<AddOperationPage> {
   }
 
   Future<void> confirmOperation() async {
-    // TODO: добавить функционал в addOperation для акций -> проверять:
     // хватает ли денег (при покупке)
     // если продажа, хватает ли акций
     // сохранять в tradeHistory
     // менять assets (quantity, meanPrice), все остальное пересчитывается тут
     switch (actionType) {
       case 'Акции':
+        String snackBarText;
+
         switch (action) {
           case 'Купить':
-          case 'Продать':
             bool searchOk = searchFormKey.currentState!.validate();
             bool priceOk = priceFormKey.currentState!.validate();
             bool quantityOk = quantityFormKey.currentState!.validate();
@@ -206,32 +256,49 @@ class _AddOperationPageState extends State<AddOperationPage> {
               int quantity = int.parse(quantityController.text) * ((action == 'Продать') ? -1 : 1);
               num fee = feeController.text == '' ? 0 : num.parse(feeController.text);
 
-              num purchaseAmount = price * quantity;
-
-              String snackBarText;
-
-              //* смотрим, хватает ли денег для покупки
-              if (purchaseAmount > rubAvailable) {
-                snackBarText = 'Недостаточно денежных средств.\n'
-                    'Сумма сделки: ${purchaseAmount.toStringAsFixed(2)}. Доступно: ${rubAvailable.toStringAsFixed(2)}';
-              } else {
-                OperationType _type = action == 'Купить' ? OperationType.buy : OperationType.sell;
-                AddOperationResult result = portfolio.addOperation(_type, selectedAsset!, price, quantity, fee);
-
-                switch (result.type) {
-                  case ResultType.notEnoughAssets:
-                    Map<String, dynamic>? resData = result.data;
-                    int assetsAvailable = resData!['assetsAvailable'];
-                    snackBarText = 'У вас недостаточно акций. \n'
-                        'Количество на продажу: $quantity. Доступно: $assetsAvailable шт.';
-                    break;
-                  case ResultType.ok:
-                    snackBarText = (action == 'Купить' ? 'Куплено' : 'Продано') + ' ${selectedAsset!.secId}: $quantity шт. по $price руб.\nИтого: ';
-                    break;
-                  default:
-                    throw 'Unknow result type ${result.type}';
-                }
+              AddOperationResult result = portfolio.buyOperation(selectedAsset!, price, quantity, fee);
+              switch (result.type) {
+                case ResultType.ok:
+                  snackBarText = 'Куплено ${selectedAsset!.secId}: $quantity шт. по $price руб.\nИтого: ';
+                  break;
+                case ResultType.notEnoughRubles:
+                  num purchaseAmount = result.data!['purchaseAmount'];
+                  snackBarText = 'Недостаточно денежных средств.\n'
+                      'Сумма сделки: ${purchaseAmount.toStringAsFixed(2)}. Доступно: ${rubAvailable.toStringAsFixed(2)}';
+                  break;
+                default:
+                  throw 'Unknow result type ${result.type}';
               }
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(snackBarText)));
+            }
+
+            break;
+          case 'Продать':
+            bool searchOk = searchFormKey.currentState!.validate();
+            bool priceOk = priceFormKey.currentState!.validate();
+            bool quantityOk = quantityFormKey.currentState!.validate();
+
+            if (searchOk && priceOk && quantityOk) {
+              num price = num.parse(priceController.text);
+              int quantity = int.parse(quantityController.text);
+              num fee = feeController.text == '' ? 0 : num.parse(feeController.text);
+
+              AddOperationResult result = portfolio.sellOperation(selectedAsset!, price, quantity, fee);
+
+              switch (result.type) {
+                case ResultType.ok:
+                  snackBarText = 'Продано ${selectedAsset!.secId}: $quantity шт. по $price руб.\nИтого: ';
+                  break;
+                case ResultType.notEnoughAssets:
+                  int assetsAvailable = result.data!['assetsAvailable'];
+
+                  snackBarText = 'У вас недостаточно акций. \n'
+                      'Количество на продажу: $quantity. Доступно: $assetsAvailable шт.';
+                  break;
+                default:
+                  throw 'Unknow result type ${result.type}';
+              }
+
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(snackBarText)));
             }
             break;
@@ -254,7 +321,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
     }
   }
 
-  Widget getOperationPreset() {
+  Widget getOperationFields() {
     switch (actionType) {
       case 'Акции':
         switch (action) {
@@ -272,22 +339,20 @@ class _AddOperationPageState extends State<AddOperationPage> {
                   suffixText: '₽',
                   onlyInteger: selectedAsset?.priceDecimals == 0 ? true : false,
                   decimalRange: selectedAsset?.priceDecimals ?? 6,
+                  onChanged: (v) => setState(() {}),
+                  onTap: () => delayedScrollDown(dialogScrollController),
                 ),
                 SizedBox(height: 20),
-                Tooltip(
-                  message: tooltips['Количество']!,
-                  textStyle: TextStyle(color: Colors.black87),
-                  padding: const EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColor.grey),
-                  child: myTextField(
-                    formKey: quantityFormKey,
-                    controller: quantityController,
-                    validate: validateQuantity,
-                    label: "Количество, шт",
-                    suffixText: 'шт',
-                    onlyInteger: true,
-                    counterText: selectedAsset == null ? '' : getQuantityCounterText(),
-                  ),
+                myTextField(
+                  formKey: quantityFormKey,
+                  controller: quantityController,
+                  validate: validateQuantity,
+                  label: quantityLabel,
+                  suffixText: 'шт',
+                  onlyInteger: true,
+                  counterText: selectedAsset == null ? '' : getQuantityCounterText(),
+                  onChanged: (v) => setState(() {}),
+                  onTap: () => delayedScrollDown(dialogScrollController),
                 ),
                 SizedBox(height: 20),
                 myTextField(
@@ -295,6 +360,8 @@ class _AddOperationPageState extends State<AddOperationPage> {
                   controller: feeController,
                   label: "Комиссия",
                   suffixText: '₽',
+                  onChanged: (v) => setState(() {}),
+                  onTap: () => delayedScrollDown(dialogScrollController),
                 ),
               ],
             );
@@ -320,7 +387,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
   Widget buttonsRow({required Iterable<String> buttons, required String selectedValue, required Function(String value) onTap}) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(width: 1, color: Color(0xff255980)),
+        border: Border.all(width: 1, color: AppColor.lightBlue),
         borderRadius: BorderRadius.circular(11.0),
         color: Colors.white,
       ),
@@ -341,7 +408,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
                       ),
                       child: Text(
                         e,
-                        style: TextStyle(color: e == selectedValue ? AppColor.white : Color(0xff255980)),
+                        style: TextStyle(color: e == selectedValue ? AppColor.white : AppColor.lightBlue),
                       ),
                     ),
                     onTap: () => onTap(e),
@@ -363,6 +430,8 @@ class _AddOperationPageState extends State<AddOperationPage> {
     String suffixText: '',
     String counterText = '',
     int decimalRange = 2,
+    void Function(String)? onChanged,
+    void Function()? onTap,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 15),
@@ -382,6 +451,8 @@ class _AddOperationPageState extends State<AddOperationPage> {
           inputFormatters: [
             onlyInteger ? FilteringTextInputFormatter.digitsOnly : DecimalTextInputFormatter(decimalRange: decimalRange),
           ],
+          onChanged: onChanged,
+          onTap: onTap,
         ),
       ),
     );
@@ -440,9 +511,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
       child: TextField(
         controller: noteController,
         onTap: () => delayedScrollDown(dialogScrollController),
-        maxLines: 5,
         maxLength: 500,
-        minLines: 1,
         decoration: myInputDecoration.copyWith(counterText: '', labelText: 'Заметка'),
       ),
     );
