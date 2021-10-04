@@ -74,7 +74,7 @@ class PortfolioAsset {
       'shortName': shortName,
       'quantity': quantity,
       'meanPrice': meanPrice,
-      'tradesProfit': realizedPnl,
+      'realizedPnl': realizedPnl,
     };
   }
 

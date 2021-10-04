@@ -44,9 +44,27 @@ List<Map<String, dynamic>> sampleUserAssets = [
 */
 
 List<Map<String, dynamic>> newUserCurrencies = [
-  {'code': 'RUB', 'name': 'Рубли', 'value': 0, 'locale': 'ru', 'symbol': '₽'},
-  {'code': 'USD000UTSTOM', 'name': 'Доллары', 'value': 0, 'locale': 'en_US', 'symbol': '\$'},
-  {'code': 'EUR_RUB__TOM', 'name': 'Евро', 'value': 0, 'locale': 'eu', 'symbol': '€'},
+  {
+    'code': 'RUB',
+    'name': 'Рубли',
+    'value': 0,
+    'locale': 'ru',
+    'symbol': '₽',
+  },
+  {
+    'code': 'USD000UTSTOM',
+    'name': 'Доллары',
+    'value': 0,
+    'locale': 'en_US',
+    'symbol': '\$',
+  },
+  {
+    'code': 'EUR_RUB__TOM',
+    'name': 'Евро',
+    'value': 0,
+    'locale': 'eu',
+    'symbol': '€',
+  },
 ];
 
 String? validatePortfolioName(BuildContext context, String? name, {String? exceptName}) {

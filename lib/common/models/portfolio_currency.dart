@@ -1,7 +1,7 @@
 class PortfolioCurrency {
   final String _code; // 'RUB' 'USD000UTSTOM' 'EUR_RUB__TOM'
   final String _name;
-  final num _value;
+  num _value;
 
   String get code => _code;
   String get name => _name;
@@ -49,5 +49,21 @@ class PortfolioCurrency {
   @override
   String toString() {
     return '\n$code: {exchangeRate: $exchangeRate, value: $value, totalRub: $totalRub}';
+  }
+
+  void addDeposit(num amount) {
+    _value += amount;
+  }
+
+  void addWithdrawal(num amount) {
+    _value -= amount;
+  }
+
+  void addExpense(num amount) {
+    _value -= amount;
+  }
+
+  void addRevenue(num amount) {
+    _value += amount;
   }
 }

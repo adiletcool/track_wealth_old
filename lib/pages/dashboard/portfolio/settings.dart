@@ -220,12 +220,12 @@ class _PortfolioSettingsPageState extends State<PortfolioSettingsPage> {
 
   Future<void> saveChanges() async {
     if (hasSettingsChanged()) {
-      await context.read<PortfolioState>().changePortfolioSettings(
-            portfolio.name,
-            newDesc: descController.text,
-            newBroker: broker,
-            newMarginTrading: marginTrading,
-          );
+      await portfolio.updateSettings(
+        context,
+        newDesc: descController.text,
+        newBroker: broker,
+        newMarginTrading: marginTrading,
+      );
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Изменения сохранены')));
       Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
     } else {

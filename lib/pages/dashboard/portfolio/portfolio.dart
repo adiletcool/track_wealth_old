@@ -42,6 +42,7 @@ class _PortfolioTableState extends State<PortfolioTable> {
   @override
   Widget build(BuildContext context) {
     tableState = context.watch<TableState>();
+
     colFilter = AppOrientation.isPortrait(context) ? tableState.mobileColumnFilter : tableState.columnFilter;
 
     myColumns = getFilteredColumns();
@@ -68,7 +69,11 @@ class _PortfolioTableState extends State<PortfolioTable> {
       child: Column(
         children: [
           portfolioAssets.length != 0 ? buildTable() : emptyPortfolioInfo(),
-          if (currencies.length > 0) ...getCurrencyRows(),
+          Divider(
+            thickness: 1,
+            color: AppColor.greyTitle,
+          ),
+          ...getCurrencyRows()
         ],
       ),
     );
@@ -84,7 +89,6 @@ class _PortfolioTableState extends State<PortfolioTable> {
       minWidth: myColumns.length * 800 / 7,
       columnSpacing: 10,
       horizontalMargin: AppOrientation.isPortrait(context) ? 5 : null,
-      showBottomBorder: true,
     );
   }
 

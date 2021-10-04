@@ -55,7 +55,7 @@ void userLogout(context) {
               // trigger to reload DashboardState
               context.read<PortfolioState>().loadDataState = null;
 
-              // не popUnti, т.к. home закрылся после popAndPushNamed(context, '/dashboard'))
+              // не popUntil, т.к. home закрылся после popAndPushNamed(context, '/dashboard'))
               Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
               Navigator.popAndPushNamed(context, '/');
             },

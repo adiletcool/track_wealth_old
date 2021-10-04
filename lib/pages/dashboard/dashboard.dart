@@ -141,7 +141,7 @@ class DashboardScreen extends StatelessWidget {
             SliverToBoxAdapter(
               child: PortfolioTable(
                 portfolioAssets: selectedPortfolio.assets!,
-                currencies: selectedPortfolio.currencies!.where((c) => c.value != 0).toList(),
+                currencies: selectedPortfolio.currencies!, //.where((c) => c.value != 0).toList(),
               ),
             ),
           ],

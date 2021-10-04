@@ -7,7 +7,8 @@ class MyFormatter {
   static NumberFormat numFormatter = NumberFormat('#,##0.00');
   static NumberFormat intFormatter = NumberFormat('#,###');
 
-  static String numFormat(num number) {
+  static String numFormat(num number, {int? decimals}) {
+    if (decimals != null) number = num.parse(number.toStringAsFixed(decimals));
     return numFormatter.format(number).replaceAll(',', ' ');
   }
 
