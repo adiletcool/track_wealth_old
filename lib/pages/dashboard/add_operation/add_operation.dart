@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/models/portfolio_currency.dart';
+import 'package:track_wealth/common/models/portfolio_trade.dart';
 import 'package:track_wealth/common/models/search_asset_model.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/services/portfolio.dart';
@@ -281,32 +282,6 @@ class _AddOperationPageState extends State<AddOperationPage> {
 
         switch (action) {
           case 'Купить':
-            bool searchOk = searchFormKey.currentState!.validate();
-            bool priceOk = priceFormKey.currentState!.validate();
-            bool quantityOk = quantityFormKey.currentState!.validate();
-
-            if (searchOk && priceOk && quantityOk) {
-              num price = num.parse(priceController.text);
-              int quantity = int.parse(quantityController.text) * ((action == 'Продать') ? -1 : 1);
-              num fee = feeController.text == '' ? 0 : num.parse(feeController.text);
-
-              AddOperationResult result = await portfolio.buyOperation(context, selectedAsset!, price, quantity, fee);
-
-              if (result.type == ResultType.ok) {
-                snackBarText = 'Куплено ${selectedAsset!.secId}: $quantity шт. по $price руб.\n'
-                    'Итого: ${MyFormatter.numFormat(operationTotal!)}';
-                canPop = true;
-              } else if (result.type == ResultType.notEnoughCash) {
-                snackBarText = 'Недостаточно денежных средств.\n'
-                    'Сумма сделки: ${MyFormatter.numFormat(result.opeartionTotal!, decimals: 2)}.\n'
-                    'Доступно: ${MyFormatter.numFormat(result.cashAvailable!, decimals: 2)}';
-              } else
-                snackBarText = 'Что-то пошло не так...';
-
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(snackBarText)));
-              if (canPop) Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
-            }
-            break;
           case 'Продать':
             bool searchOk = searchFormKey.currentState!.validate();
             bool priceOk = priceFormKey.currentState!.validate();
@@ -317,18 +292,48 @@ class _AddOperationPageState extends State<AddOperationPage> {
               int quantity = int.parse(quantityController.text);
               num fee = feeController.text == '' ? 0 : num.parse(feeController.text);
 
-              AddOperationResult result = await portfolio.sellOperation(context, selectedAsset!, price, quantity, fee);
+              AssetTrade trade = AssetTrade(
+                date: DateTime.now().toString(),
+                action: action,
+                currencyCode: 'RUB',
+                note: noteController.text,
+                secId: selectedAsset!.secId,
+                shortName: selectedAsset!.shortName,
+                boardId: selectedAsset!.primaryBoardId,
+                price: price,
+                quantity: quantity,
+                fee: fee,
+              );
 
-              if (result.type == ResultType.ok) {
-                snackBarText = 'Продано ${selectedAsset!.secId}: $quantity шт. по $price руб.\nИтого: $operationTotal';
-                canPop = true;
-              } else if (result.type == ResultType.notEnoughAssets) {
-                int assetsAvailable = result.assetsAvailable!;
-                snackBarText = 'У вас недостаточно акций.\n'
-                    'Количество на продажу: ${MyFormatter.intFormat(quantity)}.\n'
-                    'Доступно: ${MyFormatter.intFormat(assetsAvailable)} шт.';
+              if (action == 'Купить') {
+                AddOperationResult result = await portfolio.buyOperation(context, trade);
+
+                if (result.type == ResultType.ok) {
+                  snackBarText = 'Куплено ${selectedAsset!.secId}: $quantity шт. по $price руб.\n'
+                      'Итого: ${MyFormatter.numFormat(operationTotal!)}';
+                  canPop = true;
+                } else if (result.type == ResultType.notEnoughCash) {
+                  snackBarText = 'Недостаточно денежных средств.\n'
+                      'Сумма сделки: ${MyFormatter.numFormat(result.opeartionTotal!, decimals: 2)}.\n'
+                      'Доступно: ${MyFormatter.numFormat(result.cashAvailable!, decimals: 2)}';
+                } else
+                  snackBarText = 'Что-то пошло не так...';
+              } else if (action == 'Продать') {
+                AddOperationResult result = await portfolio.sellOperation(context, trade);
+
+                if (result.type == ResultType.ok) {
+                  snackBarText = 'Продано ${selectedAsset!.secId}: $quantity шт. по $price руб.\n'
+                      'Итого: $operationTotal';
+                  canPop = true;
+                } else if (result.type == ResultType.notEnoughAssets) {
+                  int assetsAvailable = result.assetsAvailable!;
+                  snackBarText = 'У вас недостаточно акций.\n'
+                      'Количество на продажу: ${MyFormatter.intFormat(quantity)}.\n'
+                      'Доступно: ${MyFormatter.intFormat(assetsAvailable)} шт.';
+                } else
+                  snackBarText = 'Что-то пошло не так...';
               } else
-                snackBarText = 'Что-то пошло не так...';
+                throw 'Unknown action $action of actionType $actionType';
 
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(snackBarText)));
               if (canPop) Navigator.popUntil(context, ModalRoute.withName('/dashboard'));

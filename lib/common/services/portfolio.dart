@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:track_wealth/common/models/column_filter.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/models/portfolio_currency.dart';
+import 'package:track_wealth/common/models/portfolio_trade.dart';
 import 'package:track_wealth/common/static/portfolio_helpers.dart';
 
 import '../models/portfolio_asset.dart';
@@ -12,6 +13,7 @@ class PortfolioState extends ChangeNotifier {
   late List<Portfolio> portfolios;
   late Portfolio selectedPortfolio;
   DocumentReference? userData;
+  DocumentReference? selectedPortfolioData;
 
   Future<String>? loadDataState;
 
@@ -48,9 +50,9 @@ class PortfolioState extends ChangeNotifier {
 
       return null;
     } else {
-      Map<String, List<dynamic>> portfolioData = Map<String, List<dynamic>>.from(data.data() as Map<String, dynamic>);
+      Map<String, List<dynamic>> portfoliosMap = Map<String, List<dynamic>>.from(data.data() as Map<String, dynamic>);
 
-      portfolios = Portfolio.fromList(List<Map<String, dynamic>>.from(portfolioData['portfolios']!)); // список портфелей (без акций)
+      portfolios = Portfolio.fromList(List<Map<String, dynamic>>.from(portfoliosMap['portfolios']!)); // список портфелей (без акций)
 
       // т.к. при удалении последнего портфеля сохраняется док с portfolios = []
       if (portfolios.length != 0)
@@ -62,9 +64,9 @@ class PortfolioState extends ChangeNotifier {
 
   /// Добавление полей assets и currencies у selectedPortfolio
   Future<void> loadSelectedPortfolio() async {
-    DocumentReference<Map<String, dynamic>> portfolioDoc = userData!.collection('portfolioData').doc(selectedPortfolio.name);
-    print(selectedPortfolio.name);
-    Map<String, dynamic> data = (await portfolioDoc.get()).data() as Map<String, dynamic>;
+    selectedPortfolioData = userData!.collection('portfolioData').doc(selectedPortfolio.name);
+
+    Map<String, dynamic> data = (await selectedPortfolioData!.get()).data() as Map<String, dynamic>;
 
     List<Map<String, dynamic>> assets = List<Map<String, dynamic>>.from(data['assets']);
     List<Map<String, dynamic>> currencies = List<Map<String, dynamic>>.from(data['currencies']);
@@ -151,17 +153,38 @@ class PortfolioState extends ChangeNotifier {
     await _updatePortfolios(); // изменяет поля дока
   }
 
-  // TODO
-  Future<void> updateAssets() async {
+  Future<void> updatePortfolioData() async {
+    /// Updates assets and currencies in portfolio and reloads state
     List<Map<String, dynamic>> newAssets = selectedPortfolio.assets!.map((a) => a.toJson()).toList();
-    await userData!.collection('portfolioData').doc(selectedPortfolio.name).update({'assets': newAssets});
+    List<Map<String, dynamic>> newCurrencies = selectedPortfolio.currencies!.map((c) => c.toJson()).toList();
+
+    await selectedPortfolioData!.update({
+      'assets': newAssets,
+      'currencies': newCurrencies,
+    });
     reloadData();
   }
 
-  // TODO
   Future<void> updateCurrencies() async {
+    /// updates only currencies without reloading
     List<Map<String, dynamic>> newCurrencies = selectedPortfolio.currencies!.map((c) => c.toJson()).toList();
-    await userData!.collection('portfolioData').doc(selectedPortfolio.name).update({'currencies': newCurrencies});
+    await selectedPortfolioData!.update({'currencies': newCurrencies});
+  }
+
+  Future<void> addTrade(Trade trade) async {
+    switch (trade.actionType) {
+      case 'Акции':
+        if (trade.actionType == 'Дивиденды')
+          selectedPortfolioData!.collection('trades').doc(trade.date).set((trade as DividendsTrade).toJson());
+        else
+          selectedPortfolioData!.collection('trades').doc(trade.date).set((trade as AssetTrade).toJson());
+        break;
+      case 'Деньги':
+        selectedPortfolioData!.collection('trades').doc(trade.date).set((trade as MoneyTrade).toJson());
+        break;
+      default:
+        throw 'Unknow actionType ${trade.actionType}';
+    }
   }
 
   Future<void> _deleteDocumentFromCollection(String collection, String portfolioName) async {

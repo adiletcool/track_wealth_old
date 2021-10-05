@@ -1,17 +1,18 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/widgets.dart';
 
 abstract class Trade {
-  final String type;
-  final String operation;
-  final Timestamp date;
+  final String actionType; // Акции / Деньги
+  final String action; // Купить / Продать / Дивиденды / Внести ...
+  final String date; // 2021-10-05 03:39:22.652
   final String currencyCode;
+  num get operationTotal;
+
   final String? note;
 
   Trade({
-    required this.type,
+    required this.actionType,
+    required this.action,
     required this.date,
-    required this.operation,
     required this.currencyCode,
     required this.note,
   });
@@ -20,7 +21,7 @@ abstract class Trade {
 
   Widget build() {
     return Container(
-      child: Text(this.type),
+      child: Text(this.actionType),
     );
   }
 }
@@ -31,15 +32,16 @@ List<Map<String, dynamic>> trades = [...{}, ...{}];
 
 апкастим до Trade
 List<Trade> portfolioTrades = trades.map<Trade>((t) {
-  switch (t['type']) {
-    case 'assets':
-      return AssetTrade.fromJson(t);
-    case 'money':
+  switch (t['actionType']) {
+    case 'Акции':
+      if (t['action'] == 'Дивиденды')
+        return DividendsTrade.fromJson(t);
+      else 
+        return AssetTrade.fromJson(t);
+    case 'Деньги':
       return MoneyTrade.fromJson(t);
-    case 'dividends':
-      return DividendsTrade.fromJson(t);
     default:
-      throw 'Unknown trade type: ${t['type']}';
+      throw 'Unknown trade actionType: ${t['actionType']}';
   }
 }).toList();
 
@@ -50,27 +52,29 @@ void a() {
 
 class AssetTrade extends Trade {
   final String secId;
-  final bool isForeign;
+  final String boardId;
   final String shortName;
   final num price;
   final int quantity;
   final num fee;
 
+  num get operationTotal => price * quantity + fee * (action == 'Купить' ? 1 : -1);
+
   AssetTrade({
-    required Timestamp date,
-    required String operation,
+    required String date,
+    required String action,
     required String currencyCode,
     required String? note,
     required this.secId,
-    required this.isForeign,
     required this.shortName,
+    required this.boardId,
     required this.price,
     required this.quantity,
     required this.fee,
   }) : super(
-          type: 'assets',
+          actionType: 'Акции',
+          action: action, // покупка / продажа
           date: date,
-          operation: operation, // покупка / продажа
           currencyCode: currencyCode,
           note: note,
         );
@@ -78,12 +82,12 @@ class AssetTrade extends Trade {
   // Redirecting named constructor
   AssetTrade.fromJson(Map<String, dynamic> json)
       : this(
+          action: json['action'],
           date: json['date'],
-          operation: json['operation'],
           currencyCode: json['currencyCode'],
           note: json['note'],
           secId: json['secId'],
-          isForeign: json['isForeign'],
+          boardId: json['boardId'],
           shortName: json['shortName'],
           price: json['price'],
           quantity: json['quantity'],
@@ -94,13 +98,13 @@ class AssetTrade extends Trade {
   Map<String, dynamic> toJson() {
     return {
       // * Передаем ключ type, чтобы определять наследника
-      'type': type,
+      'actionType': actionType,
+      'action': action,
       'date': date,
-      'operation': operation,
       'currencyCode': currencyCode,
       'note': note,
       'secId': secId,
-      'isForeign': isForeign,
+      'boardId': boardId,
       'shortName': shortName,
       'price': price,
       'quantity': quantity,
@@ -110,63 +114,66 @@ class AssetTrade extends Trade {
 }
 
 class MoneyTrade extends Trade {
-  final num quantity;
+  final num operationTotal;
+  // num get operationTotal => _operationTotal;
 
   MoneyTrade({
-    required Timestamp date,
-    required String operation,
+    required String date,
+    required String action,
     required String currencyCode,
+    required num operationTotal,
     required String? note,
-    required this.quantity,
-  }) : super(
-          type: 'money',
+  })  : operationTotal = operationTotal,
+        super(
+          actionType: 'Деньги',
+          action: action, // Внесение / вывод / доход / расход
           date: date,
-          operation: operation, // Внесение / вывод / доход / расход
           currencyCode: currencyCode,
           note: note,
         );
 
   MoneyTrade.fromJson(Map<String, dynamic> json)
       : this(
+          action: json['action'],
           date: json['date'],
-          operation: json['operation'],
           currencyCode: json['currencyCode'],
+          operationTotal: json['operationTotal'],
           note: json['note'],
-          quantity: json['quantity'],
         );
 
   @override
   Map<String, dynamic> toJson() {
     return {
-      'type': type, // ! Передаем параметр, через который потом будем определять, какой класс создавать
+      'actionType': actionType, // ! Передаем параметр, через который потом будем определять, какой класс создавать
+      'action': action,
       'date': date,
-      'operation': operation,
       'currencyCode': currencyCode,
+      'operationTotal': operationTotal,
       'note': note,
-      'quantity': quantity,
     };
   }
 }
 
 class DividendsTrade extends Trade {
   final String secId;
-  final bool isForeign;
-  final String divPerShare;
+  final String boardId;
+  final num divPerShare;
   final int numShares;
 
+  num get operationTotal => divPerShare * numShares;
+
   DividendsTrade({
-    required Timestamp date,
+    required String date,
     required String currencyCode,
     required String? note,
-    required String operation,
     required this.secId,
-    required this.isForeign,
+    required this.boardId,
     required this.divPerShare,
     required this.numShares,
   }) : super(
-          type: 'dividends',
+          actionType: 'Акции',
+          action: 'Дивиденды',
           date: date,
-          operation: operation,
           currencyCode: currencyCode,
           note: note,
         );
@@ -174,24 +181,24 @@ class DividendsTrade extends Trade {
   DividendsTrade.fromJson(Map<String, dynamic> json)
       : this(
           date: json['date'],
-          operation: json['operation'],
           currencyCode: json['currencyCode'],
-          note: json['note'],
           secId: json['secId'],
-          isForeign: json['isForeign'],
+          boardId: json['boardId'],
           divPerShare: json['divPerShare'],
           numShares: json['numShares'],
+          note: json['note'],
         );
 
   @override
   Map<String, dynamic> toJson() {
     return {
-      'type': type, // ! Передаем параметр, через который потом будем определять, какой класс создавать
+      'actionType': actionType,
+      'action': action, // ! Передаем параметр, через который потом будем определять, какой класс создавать
       'date': date,
       'currencyCode': currencyCode,
       'note': note,
       'secId': secId,
-      'isForeign': isForeign,
+      'boardId': boardId,
       'divPerShare': divPerShare,
       'numShares': numShares,
     };

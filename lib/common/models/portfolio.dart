@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:track_wealth/common/models/portfolio_asset.dart';
 import 'package:track_wealth/common/models/portfolio_currency.dart';
 import 'package:collection/collection.dart';
-import 'package:track_wealth/common/models/search_asset_model.dart';
+import 'package:track_wealth/common/models/portfolio_trade.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/services/portfolio.dart';
 
@@ -54,7 +54,6 @@ class Portfolio {
     this.currencies,
   });
   // TODO: добавить поле trades. В service будут загружаться первые n трейдов.
-  // TODO:
   // * На странице с трейдами добавить кнопку для загрузки большего количества трейдов
 
   @override
@@ -195,49 +194,47 @@ class Portfolio {
     );
   }
 
-  Future<AddOperationResult> buyOperation(BuildContext context, SearchAsset asset, num price, int quantity, num fee) async {
+  Future<AddOperationResult> buyOperation(BuildContext context, AssetTrade trade) async {
     //* поскольку в поиске можно найти только акции, торгующиеся на мосбирже, то купить их можно только за рубли, поэтому проверяем, хватает ли рублей
 
-    PortfolioAsset? found = assets!.firstWhereOrNull((a) => a.secId == asset.secId); // смотрим, есть ли эти акции в портфеле
+    PortfolioAsset? found = assets!.firstWhereOrNull((a) => a.secId == trade.secId); // смотрим, есть ли эти акции в портфеле
 
     // Проверяем, хватает ли денег для покупки
     // Если хватает, проверяем, есть ли asset в портфеле. Если есть, то меняем количество и среднюю цену.
     // * Если акции когда-то были, но сейчас их нет (0), то устанавливается новая средняя цену
 
-    num purchaseAmount = price * quantity + fee;
     num rubAvailable = currencies!.firstWhere((c) => c.code == 'RUB').value;
-    print(currencies); // отнимаем сумму покупки из денег
 
-    if (purchaseAmount > rubAvailable) {
-      return AddOperationResult(ResultType.notEnoughCash, cashAvailable: rubAvailable, opeartionTotal: purchaseAmount);
+    if (trade.operationTotal > rubAvailable) {
+      return AddOperationResult(ResultType.notEnoughCash, cashAvailable: rubAvailable, opeartionTotal: trade.operationTotal);
     } else {
       if (found != null) {
-        found.addBuy(price, quantity, fee); // добавляем акции и пересчитываем meanPrice
+        found.addBuy(trade.price, trade.quantity, trade.fee); // добавляем акции и пересчитываем meanPrice
       } else {
         PortfolioAsset newAsset = PortfolioAsset(
-          boardId: asset.primaryBoardId,
-          secId: asset.secId,
-          shortName: asset.shortName,
-          quantity: quantity,
-          meanPrice: price,
+          boardId: trade.boardId,
+          secId: trade.secId,
+          shortName: trade.shortName,
+          quantity: trade.quantity,
+          meanPrice: trade.price,
           realizedPnl: 0,
         );
         assets!.add(newAsset); // добавляем акции
       }
 
-      currencies!.firstWhere((c) => c.code == 'RUB').addExpense(purchaseAmount); // снимаем purchaseAmount
+      currencies!.firstWhere((c) => c.code == 'RUB').addExpense(trade.operationTotal); // снимаем purchaseAmount
 
-      //TODO: добавить в trades, reload assets
-      await context.read<PortfolioState>().updateAssets();
-      await context.read<PortfolioState>().updateCurrencies();
+      await Future.wait([
+        context.read<PortfolioState>().updatePortfolioData(),
+        context.read<PortfolioState>().addTrade(trade),
+      ]);
 
       return AddOperationResult(ResultType.ok);
     }
   }
 
-  Future<AddOperationResult> sellOperation(BuildContext context, SearchAsset asset, num price, int quantity, num fee) async {
-    PortfolioAsset? found = assets!.firstWhereOrNull((a) => a.secId == asset.secId); // смотрим, есть ли эти акции в портфеле
-    num purchaseAmount = price * quantity - fee;
+  Future<AddOperationResult> sellOperation(BuildContext context, AssetTrade trade) async {
+    PortfolioAsset? found = assets!.firstWhereOrNull((a) => a.secId == trade.secId); // смотрим, есть ли эти акции в портфеле
 
     // проверяем, есть ли asset в портфеле. Если есть, то проверяем, хватает ли для продажи (шт)
     // Если хватает, меняем количество и realizedPnl. Добавляем в трейды
@@ -245,16 +242,16 @@ class Portfolio {
     if (found == null) {
       return AddOperationResult(ResultType.notEnoughAssets, assetsAvailable: 0);
     } else {
-      if (found.quantity < quantity) {
+      if (found.quantity < trade.quantity) {
         return AddOperationResult(ResultType.notEnoughAssets, assetsAvailable: found.quantity);
       } else {
-        found.addSell(price, quantity, fee);
+        found.addSell(trade.price, trade.quantity, trade.fee);
+        currencies!.firstWhere((c) => c.code == 'RUB').addRevenue(trade.operationTotal);
+        await Future.wait([
+          context.read<PortfolioState>().updatePortfolioData(),
+          context.read<PortfolioState>().addTrade(trade),
+        ]);
 
-        // добавить в trades, reload assets
-
-        currencies!.firstWhere((c) => c.code == 'RUB').addRevenue(purchaseAmount);
-        await context.read<PortfolioState>().updateAssets();
-        await context.read<PortfolioState>().updateCurrencies();
         return AddOperationResult(ResultType.ok);
       }
     }
