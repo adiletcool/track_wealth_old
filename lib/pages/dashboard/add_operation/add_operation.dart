@@ -30,15 +30,26 @@ class _AddOperationPageState extends State<AddOperationPage> {
   late Color textColor;
 
   final Map<String, List<String>> actions = {
-    'Акции': ['Купить', 'Продать', 'Дивиденды'],
-    'Деньги': ["Внести", "Вывести", "Доход", "Расход"],
+    'stocks': ['buy', 'sell', 'dividends'],
+    'money': ["deposit", "withdraw", "revenue", "expense"],
   };
 
-  final Map<String, String> appBarTitle = {'Купить': "Покупка", "Продать": "Продажа"};
+  // TODO: локализовать
+  final Map<String, String> actionTitle = {
+    "stocks": "Акции",
+    "money": "Деньги",
+    'buy': "Покупка",
+    "sell": "Продажа",
+    "dividends": "Дивиденды",
+    "deposit": "Внести",
+    "withdraw": "Вывести",
+    "revenue": "Доход",
+    "expense": "Расход",
+  };
 
-  late String actionType; // Акции / Деньги
-  late List<String> selectedActions; // ['Купить', 'Продать', 'Дивиденд'] / ["Внести", "Вывести", "Доход", "Расход"]
-  late String action; // Купить / Внести / ...
+  late String actionType; // stocks / money
+  late List<String> selectedActions; // ['buy', 'sell', 'dividends'] / ["deposit", "withdraw", "revenue", "expense"]
+  late String action; // buy / sell / ...
 
   SearchAsset? selectedAsset; // Н-р, Asset("sber:moex", Сбербанк)
   int selectedAssetInPortfolio = 0; // количество (шт) выбранных через поиск акций в портфеле, получаю через getQuantityCounterText
@@ -52,7 +63,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
 
   late num? operationTotal;
 
-  //* acttionType == 'Акции', action == 'Купить' | 'Продать'
+  //* acttionType == 'stocks', action == 'buy' | 'sell'
   GlobalKey<FormState> searchFormKey = GlobalKey<FormState>();
 
   GlobalKey<FormState> priceFormKey = GlobalKey<FormState>();
@@ -65,7 +76,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
 
   String quantityLabel = "Количество, шт";
 
-  //* acttionType == 'Деньги'
+  //* acttionType == 'money'
   GlobalKey<FormState> moneyFormKey = GlobalKey<FormState>();
   TextEditingController moneyController = TextEditingController();
   late PortfolioCurrency selectedCurrency;
@@ -82,9 +93,9 @@ class _AddOperationPageState extends State<AddOperationPage> {
     usdAvailable = portfolio.currencies!.firstWhere((c) => c.code == 'USD000UTSTOM').value;
     eurAvailable = portfolio.currencies!.firstWhere((c) => c.code == 'EUR_RUB__TOM').value;
 
-    actionType = actions.keys.first; // Акции / Деньги
-    selectedActions = actions[actionType]!; // ['Купить', 'Продать', 'Дивиденд'] / ["Внести", "Вывести", "Доход", "Расход"]
-    action = selectedActions.first; // 'Купить' / 'Продать' / 'Дивиденд' / "Внести" / "Вывести" / "Доход" / "Расход"
+    actionType = actions.keys.first; // stocks / money
+    selectedActions = actions[actionType]!; // ['buy', 'sell', 'dividends'] / ["deposit", "withdraw", "revenue", "expense"]
+    action = selectedActions.first; // 'buy' / 'sell' / 'dividends' / "deposit" / "withdraw" / "revenue" / "expense"
 
     selectedCurrency = portfolio.currencies!.first;
   }
@@ -129,16 +140,16 @@ class _AddOperationPageState extends State<AddOperationPage> {
     List<Widget> children = [];
 
     switch (actionType) {
-      case 'Акции':
+      case 'stocks':
         switch (action) {
-          case 'Купить':
-          case 'Продать':
+          case 'buy':
+          case 'sell':
             num? price = num.tryParse(priceController.text);
             int? quantity = int.tryParse(quantityController.text);
             num? fee = num.tryParse(feeController.text);
             if (price != null && quantity != null) {
               fee ??= 0;
-              operationTotal = price * quantity + fee * (action == 'Купить' ? 1 : -1);
+              operationTotal = price * quantity + fee * (action == 'buy' ? 1 : -1);
             } else
               operationTotal = null;
 
@@ -151,7 +162,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
             break;
         }
         break;
-      case 'Деньги':
+      case 'money':
         num? operationTotal = num.tryParse(moneyController.text);
 
         children.addAll([
@@ -186,7 +197,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
   Widget build(BuildContext context) {
     bgColor = AppColor.themeBasedColor(context, AppColor.darkBlue, AppColor.white);
     textColor = AppColor.themeBasedColor(context, Colors.white, AppColor.black);
-    String pageTitle = appBarTitle[action] ?? action;
+    String pageTitle = actionTitle[action] ?? action;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -262,7 +273,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
 
   String getQuantityCounterText() {
     /// Возвращет информацию о количестве акций в 1 лоте + количестве штук в портфеле, если есть
-    selectedAssetInPortfolio = portfolio.assets!.firstWhereOrNull((a) => a.shortName == selectedAsset!.shortName)?.quantity ?? 0;
+    selectedAssetInPortfolio = portfolio.stocks!.firstWhereOrNull((a) => a.shortName == selectedAsset!.shortName)?.quantity ?? 0;
     String counterText = '1 лот = ${selectedAsset?.lotSize} шт. ';
 
     counterText += "${selectedAssetInPortfolio == 0 ? '' : ' У вас $selectedAssetInPortfolio шт.'}";
@@ -274,15 +285,15 @@ class _AddOperationPageState extends State<AddOperationPage> {
     // хватает ли денег (при покупке)
     // если продажа, хватает ли акций
     // сохранять в tradeHistory
-    // менять assets (quantity, meanPrice), все остальное пересчитывается тут
+    // менять stocks (quantity, meanPrice), все остальное пересчитывается тут
     switch (actionType) {
-      case 'Акции':
+      case 'stocks':
         String snackBarText;
         bool canPop = false;
 
         switch (action) {
-          case 'Купить':
-          case 'Продать':
+          case 'buy':
+          case 'sell':
             bool searchOk = searchFormKey.currentState!.validate();
             bool priceOk = priceFormKey.currentState!.validate();
             bool quantityOk = quantityFormKey.currentState!.validate();
@@ -305,7 +316,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
                 fee: fee,
               );
 
-              if (action == 'Купить') {
+              if (action == 'buy') {
                 AddOperationResult result = await portfolio.buyOperation(context, trade);
 
                 if (result.type == ResultType.ok) {
@@ -318,18 +329,18 @@ class _AddOperationPageState extends State<AddOperationPage> {
                       'Доступно: ${MyFormatter.numFormat(result.cashAvailable!, decimals: 2)}';
                 } else
                   snackBarText = 'Что-то пошло не так...';
-              } else if (action == 'Продать') {
+              } else if (action == 'sell') {
                 AddOperationResult result = await portfolio.sellOperation(context, trade);
 
                 if (result.type == ResultType.ok) {
                   snackBarText = 'Продано ${selectedAsset!.secId}: $quantity шт. по $price руб.\n'
                       'Итого: $operationTotal';
                   canPop = true;
-                } else if (result.type == ResultType.notEnoughAssets) {
-                  int assetsAvailable = result.assetsAvailable!;
+                } else if (result.type == ResultType.notEnoughStocks) {
+                  int stocksAvailable = result.stocksAvailable!;
                   snackBarText = 'У вас недостаточно акций.\n'
                       'Количество на продажу: ${MyFormatter.intFormat(quantity)}.\n'
-                      'Доступно: ${MyFormatter.intFormat(assetsAvailable)} шт.';
+                      'Доступно: ${MyFormatter.intFormat(stocksAvailable)} шт.';
                 } else
                   snackBarText = 'Что-то пошло не так...';
               } else
@@ -339,13 +350,13 @@ class _AddOperationPageState extends State<AddOperationPage> {
               if (canPop) Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
             }
             break;
-          case 'Дивиденд':
+          case 'dividends':
             return;
           default:
             throw 'Unknown action $action';
         }
         break;
-      case 'Деньги':
+      case 'money':
         String snackBarText;
         bool canPop = false;
         bool moneyOk = moneyFormKey.currentState!.validate();
@@ -354,12 +365,12 @@ class _AddOperationPageState extends State<AddOperationPage> {
           num amount = num.parse(moneyController.text);
 
           switch (action) {
-            case 'Внести':
+            case 'deposit':
               await portfolio.depositOperation(context, selectedCurrency, amount);
               snackBarText = 'Внесено: ${MyFormatter.numFormat(amount)} ${selectedCurrency.symbol}';
               canPop = true;
               break;
-            case 'Вывести':
+            case 'withdraw':
               AddOperationResult result = await portfolio.withdrawalOperation(context, selectedCurrency, amount);
               if (result.type == ResultType.ok) {
                 snackBarText = 'Снято: ${MyFormatter.numFormat(amount)} ${selectedCurrency.symbol}';
@@ -385,13 +396,13 @@ class _AddOperationPageState extends State<AddOperationPage> {
 
   Widget getOperationFields() {
     switch (actionType) {
-      case 'Акции':
+      case 'stocks':
         switch (action) {
-          case 'Купить':
-          case 'Продать':
+          case 'buy':
+          case 'sell':
             return Column(
               children: [
-                AssetSearchField(selectedAssetCallback: changeSelectedAsset, preSelectedAsset: selectedAsset, formKey: searchFormKey, validate: validateSearch),
+                StockSearchField(selectedAssetCallback: changeSelectedAsset, preSelectedAsset: selectedAsset, formKey: searchFormKey, validate: validateSearch),
                 SizedBox(height: 20),
                 myTextField(
                   formKey: priceFormKey,
@@ -429,7 +440,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
           default:
             return Text('not implemented yet');
         }
-      case 'Деньги':
+      case 'money':
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -492,7 +503,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
                         color: e == selectedValue ? AppColor.selected : AppColor.white,
                       ),
                       child: Text(
-                        e,
+                        actionTitle[e]!,
                         style: TextStyle(color: e == selectedValue ? AppColor.white : AppColor.lightBlue),
                       ),
                     ),

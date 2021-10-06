@@ -44,7 +44,7 @@ class PortfolioState extends ChangeNotifier {
       portfolios = [];
 
       /* // Sample
-      addUserPortfolio(name: 'Основной портфель', currency: 'RUB', assets: sampleUserAssets);
+      addUserPortfolio(name: 'Основной портфель', currency: 'RUB', stocks: sampleUserStocks);
       return portfolios.firstWhere((portfolio) => portfolio.isSelected); // выбранный портфель (для него запрашиваем акции по имени)
       */
 
@@ -62,26 +62,40 @@ class PortfolioState extends ChangeNotifier {
     }
   }
 
-  /// Добавление полей assets и currencies у selectedPortfolio
+  /// Чтение полей stocks и currencies у selectedPortfolio
   Future<void> loadSelectedPortfolio() async {
     selectedPortfolioData = userData!.collection('portfolioData').doc(selectedPortfolio.name);
 
+    // var selectedPortfolioTrades = await selectedPortfolioData!.collection('trades').limit(10).get();
+
+    // List<Trade> trades = selectedPortfolioTrades.docs.map<Trade>((t) {
+    //   Map<String, dynamic> trade = t.data();
+    //   switch (t['actionType']) {
+    //     case 'stocks':
+    // if t['action'] == ''
+
+    //       break;
+    //     default:
+    //   }
+    // }).toList();
+    // print(selectedPortfolioTrades.docs[0].data());
+
     Map<String, dynamic> data = (await selectedPortfolioData!.get()).data() as Map<String, dynamic>;
 
-    List<Map<String, dynamic>> assets = List<Map<String, dynamic>>.from(data['assets']);
+    List<Map<String, dynamic>> stocks = List<Map<String, dynamic>>.from(data['stocks']);
     List<Map<String, dynamic>> currencies = List<Map<String, dynamic>>.from(data['currencies']);
 
-    selectedPortfolio.assets = PortfolioAsset.fromJsonsList(assets);
+    selectedPortfolio.stocks = PortfolioStock.fromJsonsList(stocks);
     selectedPortfolio.currencies = PortfolioCurrency.fromJsonsList(currencies);
 
-    // дожидаемся параллельно выполняющися загрузок данных по акциям и валютам
+    // дожидаемся параллельно выполняющися загрузок данных по акциям и валютам  (цены и курсы валют)
     await Future.wait([
-      selectedPortfolio.loadAssetsData(),
+      selectedPortfolio.loadStocksData(),
       selectedPortfolio.loadCurrenciesData(),
     ]);
   }
 
-  /// Adding user portfolio document and new subcollection with assets = [], currencies = newUserCurrencies, portfolioName = name
+  /// Adding user portfolio document and new subcollection with stocks = [], currencies = newUserCurrencies, portfolioName = name
   Future<void> addUserPortfolio({
     required String name,
     required String? broker,
@@ -108,7 +122,7 @@ class PortfolioState extends ChangeNotifier {
     userData!.set({'portfolios': updatedPortfolios}); // переписываем весь док, поскольку поменять поле у элемента списка нельзя
 
     // добавляем коллекцию с пустым списком акций, дефолтным списком валют
-    userData!.collection('portfolioData').doc(name).set({'assets': [], 'currencies': newUserCurrencies});
+    userData!.collection('portfolioData').doc(name).set({'stocks': [], 'currencies': newUserCurrencies});
 
     // userData!.collection('tradeHistory').doc(name).collection('trades').orderBy(field).limit(100).get();
   }
@@ -125,25 +139,24 @@ class PortfolioState extends ChangeNotifier {
 
   /// updating portfolios to Firestore
   Future<void> _updatePortfolios() async {
-    /// апдейтится только коллекция portfolios,  не assets!
+    /// апдейтится только коллекция portfolios,  не stocks!
     // форматируем список с портфелями в Json
     List<Map<String, dynamic>> updatedPortfolios = portfolios.map((portfolio) => portfolio.toJson()).toList();
 
     userData!.set({'portfolios': updatedPortfolios}); // переписываем док
   }
 
-  /// Удаляем портфель в документе portfolios, а также в документах (2) коллекций assets и tradeHistory
+  /// Удаляем портфель в документе portfolios, а также документ в portfolioData
   Future<void> deletePortfolio(String portfolioName) async {
     // Если удаляемый портфель был выбран, то меняем выбранный портфель на другой, если есть
     if (portfolios.firstWhere((p) => p.name == portfolioName).isSelected && (portfolios.length != 0)) portfolios.first.isSelected = true;
 
     portfolios.removeWhere((portfolio) => portfolio.name == portfolioName);
 
-    // параллельно обновляем доки коллекций portfolios, assets, tradeHistory
+    // параллельно обновляем доки коллекции portfolios и удаляем док в коллекции portfolioData
     await Future.wait([
       _updatePortfolios(),
       _deleteDocumentFromCollection('portfolioData', portfolioName),
-      // _deleteDocumentFromCollection('tradeHistory', portfolioName),
     ]);
 
     reloadData();
@@ -154,12 +167,12 @@ class PortfolioState extends ChangeNotifier {
   }
 
   Future<void> updatePortfolioData() async {
-    /// Updates assets and currencies in portfolio and reloads state
-    List<Map<String, dynamic>> newAssets = selectedPortfolio.assets!.map((a) => a.toJson()).toList();
+    /// Updates stocks and currencies in portfolio and reloads state
+    List<Map<String, dynamic>> newStocks = selectedPortfolio.stocks!.map((a) => a.toJson()).toList();
     List<Map<String, dynamic>> newCurrencies = selectedPortfolio.currencies!.map((c) => c.toJson()).toList();
 
     await selectedPortfolioData!.update({
-      'assets': newAssets,
+      'stocks': newStocks,
       'currencies': newCurrencies,
     });
     reloadData();
@@ -173,13 +186,13 @@ class PortfolioState extends ChangeNotifier {
 
   Future<void> addTrade(Trade trade) async {
     switch (trade.actionType) {
-      case 'Акции':
-        if (trade.actionType == 'Дивиденды')
+      case 'stocks':
+        if (trade.actionType == 'dividends')
           selectedPortfolioData!.collection('trades').doc(trade.date).set((trade as DividendsTrade).toJson());
         else
           selectedPortfolioData!.collection('trades').doc(trade.date).set((trade as AssetTrade).toJson());
         break;
-      case 'Деньги':
+      case 'money':
         selectedPortfolioData!.collection('trades').doc(trade.date).set((trade as MoneyTrade).toJson());
         break;
       default:
@@ -193,7 +206,7 @@ class PortfolioState extends ChangeNotifier {
 
   /// Сортировка портфеля по выбранному столбцу
   void sortPortfolio(int index, bool ascending, Map<String, bool> colFilter) {
-    selectedPortfolio.assets!.sort((asset1, asset2) {
+    selectedPortfolio.stocks!.sort((asset1, asset2) {
       return (ascending ? asset1 : asset2).getColumnValue(index, filter: colFilter).compareTo(
             (ascending ? asset2 : asset1).getColumnValue(index, filter: colFilter),
           );

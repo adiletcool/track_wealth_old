@@ -13,17 +13,17 @@ import 'package:track_wealth/common/static/formatters.dart';
 import 'package:track_wealth/common/static/portfolio_helpers.dart';
 
 class PortfolioTable extends StatefulWidget {
-  final List<PortfolioAsset> portfolioAssets;
+  final List<PortfolioStock> portfolioStocks;
   final List<PortfolioCurrency> currencies;
 
-  const PortfolioTable({required this.portfolioAssets, required this.currencies});
+  const PortfolioTable({required this.portfolioStocks, required this.currencies});
 
   @override
-  _PortfolioTableState createState() => _PortfolioTableState(portfolioAssets, currencies);
+  _PortfolioTableState createState() => _PortfolioTableState(portfolioStocks, currencies);
 }
 
 class _PortfolioTableState extends State<PortfolioTable> {
-  final List<PortfolioAsset> portfolioAssets;
+  final List<PortfolioStock> portfolioStocks;
   final List<PortfolioCurrency> currencies;
 
   late TableState tableState;
@@ -35,7 +35,7 @@ class _PortfolioTableState extends State<PortfolioTable> {
 
   ScrollController tableScrollController = ScrollController();
 
-  _PortfolioTableState(this.portfolioAssets, this.currencies);
+  _PortfolioTableState(this.portfolioStocks, this.currencies);
 
   final List<Map<String, dynamic>> allColumns = ColumnFilter.getAllColumns();
 
@@ -68,7 +68,7 @@ class _PortfolioTableState extends State<PortfolioTable> {
       ),
       child: Column(
         children: [
-          portfolioAssets.length != 0 ? buildTable() : emptyPortfolioInfo(),
+          portfolioStocks.length != 0 ? buildTable() : emptyPortfolioInfo(),
           Divider(
             thickness: 1,
             color: AppColor.greyTitle,
@@ -110,7 +110,7 @@ class _PortfolioTableState extends State<PortfolioTable> {
   }
 
   List<DataRow> getRows() {
-    return portfolioAssets.map((asset) {
+    return portfolioStocks.map((asset) {
       final cells = asset.getColumnValues(filter: colFilter);
       return DataRow2(
         cells: getCells(cells),

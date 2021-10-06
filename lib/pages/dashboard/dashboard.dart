@@ -101,9 +101,9 @@ class DashboardScreen extends StatelessWidget {
 
   DashboardScreen({required this.selectedPortfolio, required this.scaffoldKey});
 
-  num getPortfolioAllTimeChange(List<PortfolioAsset> data) => data.map((asset) => asset.unrealizedPnl!).sum;
+  num getPortfolioAllTimeChange(List<PortfolioStock> data) => data.map((asset) => asset.unrealizedPnl!).sum;
 
-  num getPortfolioTodayChange(List<PortfolioAsset> data) => data.map((asset) => asset.worth! - asset.worth! / (1 + asset.todayPriceChange! / 100)).sum;
+  num getPortfolioTodayChange(List<PortfolioStock> data) => data.map((asset) => asset.worth! - asset.worth! / (1 + asset.todayPriceChange! / 100)).sum;
 
   @override
   Widget build(BuildContext context) {
@@ -130,17 +130,17 @@ class DashboardScreen extends StatelessWidget {
               leading: Container(),
               flexibleSpace: Header(drawerKey: scaffoldKey),
             ),
-            if (selectedPortfolio.assets!.length > 0)
+            if (selectedPortfolio.stocks!.length > 0)
               SliverToBoxAdapter(
                 child: SubHeader(
-                  portfolioAssetsTotal: selectedPortfolio.assetsTotal!, // изменения считаются относительно стоимости активов без учета свободных денег
-                  portfolioTodayChange: getPortfolioTodayChange(selectedPortfolio.assets!),
-                  portfolioAllTimeChange: getPortfolioAllTimeChange(selectedPortfolio.assets!),
+                  portfolioStocksTotal: selectedPortfolio.stocksTotal!, // изменения считаются относительно стоимости активов без учета свободных денег
+                  portfolioTodayChange: getPortfolioTodayChange(selectedPortfolio.stocks!),
+                  portfolioAllTimeChange: getPortfolioAllTimeChange(selectedPortfolio.stocks!),
                 ),
               ),
             SliverToBoxAdapter(
               child: PortfolioTable(
-                portfolioAssets: selectedPortfolio.assets!,
+                portfolioStocks: selectedPortfolio.stocks!,
                 currencies: selectedPortfolio.currencies!, //.where((c) => c.value != 0).toList(),
               ),
             ),

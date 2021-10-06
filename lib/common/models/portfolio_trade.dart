@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 
 abstract class Trade {
-  final String actionType; // Акции / Деньги
-  final String action; // Купить / Продать / Дивиденды / Внести ...
+  final String actionType; // stocks / money
+  final String action; // buy / sell / dividends / deposit ...
   final String date; // 2021-10-05 03:39:22.652
   final String currencyCode;
   num get operationTotal;
@@ -33,12 +33,12 @@ List<Map<String, dynamic>> trades = [...{}, ...{}];
 апкастим до Trade
 List<Trade> portfolioTrades = trades.map<Trade>((t) {
   switch (t['actionType']) {
-    case 'Акции':
-      if (t['action'] == 'Дивиденды')
+    case 'stocks':
+      if (t['action'] == 'dividends')
         return DividendsTrade.fromJson(t);
       else 
         return AssetTrade.fromJson(t);
-    case 'Деньги':
+    case 'money':
       return MoneyTrade.fromJson(t);
     default:
       throw 'Unknown trade actionType: ${t['actionType']}';
@@ -58,7 +58,7 @@ class AssetTrade extends Trade {
   final int quantity;
   final num fee;
 
-  num get operationTotal => price * quantity + fee * (action == 'Купить' ? 1 : -1);
+  num get operationTotal => price * quantity + fee * (action == 'buy' ? 1 : -1);
 
   AssetTrade({
     required String date,
@@ -72,7 +72,7 @@ class AssetTrade extends Trade {
     required this.quantity,
     required this.fee,
   }) : super(
-          actionType: 'Акции',
+          actionType: 'stocks',
           action: action, // покупка / продажа
           date: date,
           currencyCode: currencyCode,
@@ -125,8 +125,8 @@ class MoneyTrade extends Trade {
     required String? note,
   })  : operationTotal = operationTotal,
         super(
-          actionType: 'Деньги',
-          action: action, // Внесение / вывод / доход / расход
+          actionType: 'money',
+          action: action, // deposit / withdraw / revenue / expense
           date: date,
           currencyCode: currencyCode,
           note: note,
@@ -171,8 +171,8 @@ class DividendsTrade extends Trade {
     required this.divPerShare,
     required this.numShares,
   }) : super(
-          actionType: 'Акции',
-          action: 'Дивиденды',
+          actionType: 'stocks',
+          action: 'dividends',
           date: date,
           currencyCode: currencyCode,
           note: note,

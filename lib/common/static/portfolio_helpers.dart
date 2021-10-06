@@ -18,8 +18,7 @@ Map<String, String> tooltips = {
   'totalWorth': 'Рыночная стоимость всех активов, а также денежные средства, конвертированные в рубли по текущему курсу.',
 };
 
-/*
-List<Map<String, dynamic>> sampleUserAssets = [
+List<Map<String, dynamic>> sampleUserStocks = [
   {"secId": "GMKN", "boardId": "TQBR", "shortName": "ГМКНорНик", "quantity": 15, "meanPrice": 22160.00},
   {"secId": "LKOH", "boardId": "TQBR", "shortName": "Лукойл", "quantity": 30, "meanPrice": 4751.5},
   {"secId": "SBER", "boardId": "TQBR", "shortName": "Сбербанк", "quantity": 610, "meanPrice": 191.37},
@@ -41,7 +40,6 @@ List<Map<String, dynamic>> sampleUserAssets = [
   {"secId": "MAIL", "boardId": "TQBR", "shortName": "MAIL-гдр", "quantity": 32, "meanPrice": 2042.40},
   {"secId": "RSTI", "boardId": "TQBR", "shortName": "Россети ао", "quantity": 45000, "meanPrice": 1.70},
 ];
-*/
 
 List<Map<String, dynamic>> newUserCurrencies = [
   {

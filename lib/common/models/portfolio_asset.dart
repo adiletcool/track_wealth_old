@@ -1,4 +1,4 @@
-class PortfolioAsset {
+class PortfolioStock {
   final String boardId; // TQBR (см search_asset_model)
   final String secId; // тикер (AFLT)
   final String shortName; // название компании (Аэрофлот)
@@ -17,7 +17,7 @@ class PortfolioAsset {
 
   void setSharePercent(totalWorth) => _sharePercent = worth! * 100 / totalWorth;
 
-  PortfolioAsset({
+  PortfolioStock({
     required this.boardId,
     required this.secId,
     required this.shortName,
@@ -29,7 +29,7 @@ class PortfolioAsset {
   });
 
   // Named constructor
-  PortfolioAsset.fromJson(Map<String, dynamic> json)
+  PortfolioStock.fromJson(Map<String, dynamic> json)
       : boardId = json['boardId'],
         secId = json['secId'],
         shortName = json['shortName'],
@@ -37,8 +37,8 @@ class PortfolioAsset {
         meanPrice = json['meanPrice'],
         realizedPnl = json['realizedPnl'];
 
-  static List<PortfolioAsset> fromJsonsList(List<Map<String, dynamic>> portfolioAssets) {
-    return portfolioAssets.map((a) => PortfolioAsset.fromJson(a)).toList();
+  static List<PortfolioStock> fromJsonsList(List<Map<String, dynamic>> portfolioStocks) {
+    return portfolioStocks.map((a) => PortfolioStock.fromJson(a)).toList();
   }
 
   dynamic getColumnValue(int index, {required Map<String, bool> filter}) {
@@ -90,7 +90,7 @@ class PortfolioAsset {
     this.quantity -= oQuantity;
   }
 
-  void addDividend(num totalRub) {
+  void addDividends(num totalRub) {
     this.realizedPnl += totalRub;
   }
 }

@@ -6,19 +6,19 @@ import "package:flutter_typeahead/flutter_typeahead.dart";
 import 'package:track_wealth/common/models/search_asset_model.dart';
 import 'package:track_wealth/common/static/decorations.dart';
 
-class AssetSearchField extends StatefulWidget {
+class StockSearchField extends StatefulWidget {
   final void Function(SearchAsset? selectedAsset) selectedAssetCallback;
   final SearchAsset? preSelectedAsset;
   final GlobalKey<FormState> formKey;
   final String? Function() validate;
 
-  AssetSearchField({required this.selectedAssetCallback, required this.formKey, required this.validate, this.preSelectedAsset});
+  StockSearchField({required this.selectedAssetCallback, required this.formKey, required this.validate, this.preSelectedAsset});
 
   @override
-  _AssetSearchFieldState createState() => _AssetSearchFieldState();
+  _StockSearchFieldState createState() => _StockSearchFieldState();
 }
 
-class _AssetSearchFieldState extends State<AssetSearchField> {
+class _StockSearchFieldState extends State<StockSearchField> {
   final TextEditingController typeAheadController = TextEditingController();
 
   @override

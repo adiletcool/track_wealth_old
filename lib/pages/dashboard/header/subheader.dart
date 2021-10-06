@@ -9,12 +9,12 @@ import 'columns_filter.dart';
 class SubHeader extends StatefulWidget {
   final num portfolioTodayChange;
   final num portfolioAllTimeChange;
-  final num portfolioAssetsTotal;
+  final num portfolioStocksTotal;
 
   const SubHeader({
     required this.portfolioTodayChange,
     required this.portfolioAllTimeChange,
-    required this.portfolioAssetsTotal,
+    required this.portfolioStocksTotal,
   });
 
   @override
@@ -22,7 +22,7 @@ class SubHeader extends StatefulWidget {
 }
 
 class _SubHeaderState extends State<SubHeader> {
-  late num portfolioAssetsTotal;
+  late num portfolioStocksTotal;
 
   // * Учитываются только изменения по акциям. Изменение иностранной валюты (если есть) не учитывается
   late num todayChange;
@@ -33,7 +33,7 @@ class _SubHeaderState extends State<SubHeader> {
   @override
   void initState() {
     super.initState();
-    portfolioAssetsTotal = widget.portfolioAssetsTotal;
+    portfolioStocksTotal = widget.portfolioStocksTotal;
 
     todayChange = widget.portfolioTodayChange;
     todayChangePercent = getTodayChangePercent();
@@ -43,13 +43,13 @@ class _SubHeaderState extends State<SubHeader> {
   }
 
   num getTodayChangePercent() {
-    num res = todayChange * 100 / (portfolioAssetsTotal - todayChange);
+    num res = todayChange * 100 / (portfolioStocksTotal - todayChange);
     if (res.isNaN) res = 0;
     return res;
   }
 
   num getAllTimeChangePercent() {
-    num res = allTimeChange * 100 / (portfolioAssetsTotal - allTimeChange);
+    num res = allTimeChange * 100 / (portfolioStocksTotal - allTimeChange);
     if (res.isNaN) res = 0;
     return res;
   }
