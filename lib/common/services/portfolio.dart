@@ -7,7 +7,7 @@ import 'package:track_wealth/common/models/portfolio_currency.dart';
 import 'package:track_wealth/common/models/portfolio_trade.dart';
 import 'package:track_wealth/common/static/portfolio_helpers.dart';
 
-import '../models/portfolio_asset.dart';
+import '../models/portfolio_stock.dart';
 
 class PortfolioState extends ChangeNotifier {
   late List<Portfolio> portfolios;
@@ -66,19 +66,27 @@ class PortfolioState extends ChangeNotifier {
   Future<void> loadSelectedPortfolio() async {
     selectedPortfolioData = userData!.collection('portfolioData').doc(selectedPortfolio.name);
 
-    // var selectedPortfolioTrades = await selectedPortfolioData!.collection('trades').limit(10).get();
+    var selectedPortfolioTrades = await selectedPortfolioData!.collection('trades').limit(10).get();
 
-    // List<Trade> trades = selectedPortfolioTrades.docs.map<Trade>((t) {
-    //   Map<String, dynamic> trade = t.data();
-    //   switch (t['actionType']) {
-    //     case 'stocks':
-    // if t['action'] == ''
-
-    //       break;
-    //     default:
-    //   }
-    // }).toList();
-    // print(selectedPortfolioTrades.docs[0].data());
+    if (selectedPortfolioTrades.docs.length > 0) {
+      // TODO: загружать первые 30-40 трейдов, добавить функцию для подгрузки еще трейдов с query where 'date' < selectedPortfolio.trades и limit 30-40
+      // в service эта функция должна принимать лишь dateFilter и nTrades, она вызывается из метода Portfolio
+      List<Trade> trades = selectedPortfolioTrades.docs.map<Trade>((t) {
+        Map<String, dynamic> trade = t.data();
+        switch (t['actionType']) {
+          case 'stocks':
+            if (t['action'] == 'dividends')
+              return DividendsTrade.fromJson(trade);
+            else
+              return StockTrade.fromJson(trade);
+          default:
+            throw 'Unknown actionType ${t['actionType']}';
+        }
+      }).toList();
+      print(selectedPortfolioTrades.docs[0].data());
+      print(trades);
+      // TODO эти трейдс потом идут в selectedPortfolio.trades
+    }
 
     Map<String, dynamic> data = (await selectedPortfolioData!.get()).data() as Map<String, dynamic>;
 
@@ -190,7 +198,7 @@ class PortfolioState extends ChangeNotifier {
         if (trade.actionType == 'dividends')
           selectedPortfolioData!.collection('trades').doc(trade.date).set((trade as DividendsTrade).toJson());
         else
-          selectedPortfolioData!.collection('trades').doc(trade.date).set((trade as AssetTrade).toJson());
+          selectedPortfolioData!.collection('trades').doc(trade.date).set((trade as StockTrade).toJson());
         break;
       case 'money':
         selectedPortfolioData!.collection('trades').doc(trade.date).set((trade as MoneyTrade).toJson());
@@ -206,9 +214,9 @@ class PortfolioState extends ChangeNotifier {
 
   /// Сортировка портфеля по выбранному столбцу
   void sortPortfolio(int index, bool ascending, Map<String, bool> colFilter) {
-    selectedPortfolio.stocks!.sort((asset1, asset2) {
-      return (ascending ? asset1 : asset2).getColumnValue(index, filter: colFilter).compareTo(
-            (ascending ? asset2 : asset1).getColumnValue(index, filter: colFilter),
+    selectedPortfolio.stocks!.sort((stock1, stock2) {
+      return (ascending ? stock1 : stock2).getColumnValue(index, filter: colFilter).compareTo(
+            (ascending ? stock2 : stock1).getColumnValue(index, filter: colFilter),
           );
     });
     // ХЗ почему, но работает без notifyListeners()  ^_^

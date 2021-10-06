@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:track_wealth/common/models/portfolio_asset.dart';
+import 'package:track_wealth/common/models/portfolio_stock.dart';
 import 'package:track_wealth/common/models/portfolio_currency.dart';
 import 'package:collection/collection.dart';
 import 'package:track_wealth/common/models/portfolio_trade.dart';
@@ -33,14 +33,14 @@ class Portfolio {
   String? description;
   bool isSelected;
   bool marginTrading;
-  List<Trade>? trades;
+  List<Trade>? trades; // TODO добавить метод loadMore для подгрузки еще трейдов с query where 'date' < selectedPortfolio.trades и limit 30-40
 
   final Timestamp openDate; // не изм
 
   List<PortfolioStock>? stocks; // Акции, торгующиеся только на МосБирже
   List<PortfolioCurrency>? currencies;
 
-  num? get stocksTotal => stocks?.map((asset) => asset.worth!).sum;
+  num? get stocksTotal => stocks?.map((stock) => stock.worth!).sum;
   num? get currenciesTotal => currencies?.map((currency) => currency.totalRub!).sum;
   num? get total => stocksTotal! + currenciesTotal!; // активы + кэш
 
@@ -99,15 +99,15 @@ class Portfolio {
   }
 
   void _setStocksSharePercent() {
-    num totalWorth = stocks!.map((asset) => asset.worth!).sum;
-    stocks!.forEach((asset) => asset.setSharePercent(totalWorth));
+    num totalWorth = stocks!.map((stock) => stock.worth!).sum;
+    stocks!.forEach((stock) => stock.setSharePercent(totalWorth));
   }
 
   /// Получаем рыночные данные по акциям:
   /// currentPrice, todayPriceChange, unrealizedPnl, unrealizedPnlPercent, worth, sharePercent
   Future<void> loadStocksData() async {
-    Iterable<PortfolioStock> russianStocks = stocks!.where((asset) => asset.boardId == 'TQBR');
-    Iterable<PortfolioStock> foreignStocks = stocks!.where((asset) => asset.boardId == 'FQBR');
+    Iterable<PortfolioStock> russianStocks = stocks!.where((stock) => stock.boardId == 'TQBR');
+    Iterable<PortfolioStock> foreignStocks = stocks!.where((stock) => stock.boardId == 'FQBR');
 
     russianStocks = await _getStocksMarketData(stocks: russianStocks);
     foreignStocks = await _getStocksMarketData(stocks: foreignStocks, isForeign: true);
@@ -116,7 +116,7 @@ class Portfolio {
     _setStocksSharePercent();
 
     stocks!.sort((a1, a2) => a2.worth!.compareTo(a1.worth!)); // сортируем по рыночной стоимости
-    stocks = stocks!.where((asset) => asset.quantity != 0).toList(); // фильтруем qunatity != 0
+    stocks = stocks!.where((stock) => stock.quantity != 0).toList(); // фильтруем qunatity != 0
   }
 
   Future<Iterable<PortfolioStock>> _getStocksMarketData({required Iterable<PortfolioStock> stocks, isForeign = false}) async {
@@ -127,14 +127,14 @@ class Portfolio {
       String url = "https://iss.moex.com/iss/engines/stock/markets/${isForeign ? 'foreign' : ''}shares/securities.jsonp";
       List<Map<String, dynamic>> marketDataMaps = await _getMoexMarketData(url, securities);
 
-      stocks.forEach((asset) {
-        Map<String, dynamic>? foundAsset = marketDataMaps.firstWhere(
-          (found) => found['SECID'] == asset.secId,
+      stocks.forEach((stock) {
+        Map<String, dynamic>? foundStock = marketDataMaps.firstWhere(
+          (found) => found['SECID'] == stock.secId,
           orElse: () => {'LAST': 0, 'LASTTOPREVPRICE': 0},
         );
 
-        asset.currentPrice = foundAsset['LAST'] ?? foundAsset['MARKETPRICE'];
-        asset.todayPriceChange = foundAsset['LASTTOPREVPRICE'];
+        stock.currentPrice = foundStock['LAST'] ?? foundStock['MARKETPRICE'];
+        stock.todayPriceChange = foundStock['LASTTOPREVPRICE'];
       });
     }
     return stocks;
@@ -196,13 +196,13 @@ class Portfolio {
     );
   }
 
-  Future<AddOperationResult> buyOperation(BuildContext context, AssetTrade trade) async {
+  Future<AddOperationResult> buyOperation(BuildContext context, StockTrade trade) async {
     //* поскольку в поиске можно найти только акции, торгующиеся на мосбирже, то купить их можно только за рубли, поэтому проверяем, хватает ли рублей
 
     PortfolioStock? found = stocks!.firstWhereOrNull((a) => a.secId == trade.secId); // смотрим, есть ли эти акции в портфеле
 
     // Проверяем, хватает ли денег для покупки
-    // Если хватает, проверяем, есть ли asset в портфеле. Если есть, то меняем количество и среднюю цену.
+    // Если хватает, проверяем, есть ли stocks в портфеле. Если есть, то меняем количество и среднюю цену.
     // * Если акции когда-то были, но сейчас их нет (0), то устанавливается новая средняя цену
 
     num rubAvailable = currencies!.firstWhere((c) => c.code == 'RUB').value;
@@ -213,7 +213,7 @@ class Portfolio {
       if (found != null) {
         found.addBuy(trade.price, trade.quantity, trade.fee); // добавляем акции и пересчитываем meanPrice
       } else {
-        PortfolioStock newAsset = PortfolioStock(
+        PortfolioStock newStock = PortfolioStock(
           boardId: trade.boardId,
           secId: trade.secId,
           shortName: trade.shortName,
@@ -221,7 +221,7 @@ class Portfolio {
           meanPrice: trade.price,
           realizedPnl: 0,
         );
-        stocks!.add(newAsset); // добавляем акции
+        stocks!.add(newStock); // добавляем акции
       }
 
       currencies!.firstWhere((c) => c.code == 'RUB').addExpense(trade.operationTotal); // снимаем purchaseAmount
@@ -235,10 +235,10 @@ class Portfolio {
     }
   }
 
-  Future<AddOperationResult> sellOperation(BuildContext context, AssetTrade trade) async {
+  Future<AddOperationResult> sellOperation(BuildContext context, StockTrade trade) async {
     PortfolioStock? found = stocks!.firstWhereOrNull((a) => a.secId == trade.secId); // смотрим, есть ли эти акции в портфеле
 
-    // проверяем, есть ли asset в портфеле. Если есть, то проверяем, хватает ли для продажи (шт)
+    // проверяем, есть ли stock в портфеле. Если есть, то проверяем, хватает ли для продажи (шт)
     // Если хватает, меняем количество и realizedPnl. Добавляем в трейды
 
     if (found == null) {
@@ -259,18 +259,25 @@ class Portfolio {
     }
   }
 
-  Future<void> depositOperation(BuildContext context, PortfolioCurrency currency, num amount) async {
-    currency.addDeposit(amount);
+  Future<void> revenueOperation(BuildContext context, PortfolioCurrency currency, MoneyTrade trade) async {
+    currency.addDeposit(trade.operationTotal);
     // add trade
-    await context.read<PortfolioState>().updateCurrencies();
+    await Future.wait([
+      context.read<PortfolioState>().updateCurrencies(),
+      context.read<PortfolioState>().addTrade(trade),
+    ]);
   }
 
-  Future<AddOperationResult> withdrawalOperation(BuildContext context, PortfolioCurrency currency, num amount) async {
-    if (currency.value < amount) {
+  Future<AddOperationResult> expenseOperation(BuildContext context, PortfolioCurrency currency, MoneyTrade trade) async {
+    if (currency.value < trade.operationTotal) {
       return AddOperationResult(ResultType.notEnoughCash);
     }
-    currency.addWithdrawal(amount);
-    await context.read<PortfolioState>().updateCurrencies();
+    currency.addWithdrawal(trade.operationTotal);
+
+    await Future.wait([
+      context.read<PortfolioState>().updateCurrencies(),
+      context.read<PortfolioState>().addTrade(trade),
+    ]);
 
     return AddOperationResult(ResultType.ok);
   }

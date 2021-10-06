@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
-import 'package:track_wealth/common/models/portfolio_asset.dart';
+import 'package:track_wealth/common/models/portfolio_stock.dart';
 import 'package:track_wealth/common/services/portfolio.dart';
 import 'package:track_wealth/common/static/app_color.dart';
 import 'package:provider/provider.dart';
@@ -101,9 +101,9 @@ class DashboardScreen extends StatelessWidget {
 
   DashboardScreen({required this.selectedPortfolio, required this.scaffoldKey});
 
-  num getPortfolioAllTimeChange(List<PortfolioStock> data) => data.map((asset) => asset.unrealizedPnl!).sum;
+  num getPortfolioAllTimeChange(List<PortfolioStock> data) => data.map((stock) => stock.unrealizedPnl!).sum;
 
-  num getPortfolioTodayChange(List<PortfolioStock> data) => data.map((asset) => asset.worth! - asset.worth! / (1 + asset.todayPriceChange! / 100)).sum;
+  num getPortfolioTodayChange(List<PortfolioStock> data) => data.map((stock) => stock.worth! - stock.worth! / (1 + stock.todayPriceChange! / 100)).sum;
 
   @override
   Widget build(BuildContext context) {

@@ -37,7 +37,7 @@ List<Trade> portfolioTrades = trades.map<Trade>((t) {
       if (t['action'] == 'dividends')
         return DividendsTrade.fromJson(t);
       else 
-        return AssetTrade.fromJson(t);
+        return StockTrade.fromJson(t);
     case 'money':
       return MoneyTrade.fromJson(t);
     default:
@@ -50,7 +50,7 @@ void a() {
 }
 */
 
-class AssetTrade extends Trade {
+class StockTrade extends Trade {
   final String secId;
   final String boardId;
   final String shortName;
@@ -60,7 +60,7 @@ class AssetTrade extends Trade {
 
   num get operationTotal => price * quantity + fee * (action == 'buy' ? 1 : -1);
 
-  AssetTrade({
+  StockTrade({
     required String date,
     required String action,
     required String currencyCode,
@@ -80,7 +80,7 @@ class AssetTrade extends Trade {
         );
 
   // Redirecting named constructor
-  AssetTrade.fromJson(Map<String, dynamic> json)
+  StockTrade.fromJson(Map<String, dynamic> json)
       : this(
           action: json['action'],
           date: json['date'],

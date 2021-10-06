@@ -4,7 +4,7 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/orientation.dart';
 import 'package:track_wealth/common/models/column_filter.dart';
-import 'package:track_wealth/common/models/portfolio_asset.dart';
+import 'package:track_wealth/common/models/portfolio_stock.dart';
 import 'package:track_wealth/common/models/portfolio_currency.dart';
 import 'package:track_wealth/common/services/portfolio.dart';
 import 'package:track_wealth/common/static/app_color.dart';
@@ -110,12 +110,12 @@ class _PortfolioTableState extends State<PortfolioTable> {
   }
 
   List<DataRow> getRows() {
-    return portfolioStocks.map((asset) {
-      final cells = asset.getColumnValues(filter: colFilter);
+    return portfolioStocks.map((stock) {
+      final cells = stock.getColumnValues(filter: colFilter);
       return DataRow2(
         cells: getCells(cells),
         onTap: () {
-          print(asset);
+          print(stock);
         },
       );
     }).toList();

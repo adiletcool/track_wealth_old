@@ -1,5 +1,5 @@
 class PortfolioStock {
-  final String boardId; // TQBR (см search_asset_model)
+  final String boardId; // TQBR (см search_stock_model)
   final String secId; // тикер (AFLT)
   final String shortName; // название компании (Аэрофлот)
   int quantity; // Количество штук (размер лота * количество лотов)
@@ -62,7 +62,7 @@ class PortfolioStock {
 
   @override
   String toString() {
-    return "PortfolioAsset($boardId, $secId, $shortName, $quantity, $meanPrice,"
+    return "PortfolioStock($boardId, $secId, $shortName, $quantity, $meanPrice,"
         "$currentPrice, $todayPriceChange, $unrealizedPnl, $unrealizedPnlPercent,"
         "$sharePercent, $worth)";
   }

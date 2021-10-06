@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 
-class SearchAsset {
+class SearchStock {
   final int id; // 2700
   final String secId; // "AFLT"  -- тикер
   final String shortName; // "Аэрофлот"
@@ -23,7 +23,7 @@ class SearchAsset {
   int? priceDecimals;
   int? lotSize;
 
-  SearchAsset({
+  SearchStock({
     required this.id,
     required this.secId,
     required this.shortName,
@@ -45,7 +45,7 @@ class SearchAsset {
     this.lotSize,
   });
 
-  SearchAsset.fromList(List<dynamic> list)
+  SearchStock.fromList(List<dynamic> list)
       : assert(list.length >= 16),
         id = list[0] ?? -1,
         secId = list[1] ?? "-1",
@@ -64,11 +64,11 @@ class SearchAsset {
         primaryBoardId = list[14] ?? "-1",
         marketPriceBoardId = list[15] ?? "-1";
 
-  static List<SearchAsset> fromListOfLists(List listOfLists) {
+  static List<SearchStock> fromListOfLists(List listOfLists) {
     var onlyStocks = listOfLists.where((e) {
       return ["stock_shares", "stock_dr"].contains(e[13]); // только акции или деп расписки
     }).toList();
-    return onlyStocks.map((item) => SearchAsset.fromList(item)).toList();
+    return onlyStocks.map((item) => SearchStock.fromList(item)).toList();
   }
 
   Future<void> getStockData() async {
@@ -98,10 +98,10 @@ class SearchAsset {
   }
 
   @override
-  String toString() => "Asset($name, $emitentTitle)";
+  String toString() => "Stock($name, $emitentTitle)";
 
   // @override
-  // bool operator ==(SearchAsset other) {
+  // bool operator ==(SearchStock other) {
   //   return false;
   // }
 }

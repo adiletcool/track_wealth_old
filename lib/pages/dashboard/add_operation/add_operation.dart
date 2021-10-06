@@ -6,13 +6,13 @@ import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/models/portfolio_currency.dart';
 import 'package:track_wealth/common/models/portfolio_trade.dart';
-import 'package:track_wealth/common/models/search_asset_model.dart';
+import 'package:track_wealth/common/models/search_stock_model.dart';
 import 'package:provider/provider.dart';
 import 'package:track_wealth/common/services/portfolio.dart';
 import 'package:track_wealth/common/static/app_color.dart';
 import 'package:track_wealth/common/static/decorations.dart';
 import 'package:track_wealth/common/static/formatters.dart';
-import 'asset_search/searchable_dropdown.dart';
+import 'stock_search/searchable_dropdown.dart';
 import 'package:collection/collection.dart';
 
 class AddOperationPage extends StatefulWidget {
@@ -51,8 +51,8 @@ class _AddOperationPageState extends State<AddOperationPage> {
   late List<String> selectedActions; // ['buy', 'sell', 'dividends'] / ["deposit", "withdraw", "revenue", "expense"]
   late String action; // buy / sell / ...
 
-  SearchAsset? selectedAsset; // Н-р, Asset("sber:moex", Сбербанк)
-  int selectedAssetInPortfolio = 0; // количество (шт) выбранных через поиск акций в портфеле, получаю через getQuantityCounterText
+  SearchStock? selectedStock; // Н-р, Stock("sber:moex", Сбербанк)
+  int selectedStockInPortfolio = 0; // количество (шт) выбранных через поиск акций в портфеле, получаю через getQuantityCounterText
 
   ScrollController dialogScrollController = ScrollController();
 
@@ -114,14 +114,14 @@ class _AddOperationPageState extends State<AddOperationPage> {
     }
   }
 
-  void changeSelectedAsset(SearchAsset? newSelectedAsset) {
-    if (selectedAsset != newSelectedAsset) {
-      print(selectedAsset);
-      print(newSelectedAsset);
-      print('newSelectedAsset: $newSelectedAsset');
+  void changeSelectedStock(SearchStock? newSelectedStock) {
+    if (selectedStock != newSelectedStock) {
+      print(selectedStock);
+      print(newSelectedStock);
+      print('newSelectedStock: $newSelectedStock');
       setState(() {
-        selectedAsset = newSelectedAsset;
-        priceController.text = selectedAsset?.price?.toString() ?? '';
+        selectedStock = newSelectedStock;
+        priceController.text = selectedStock?.price?.toString() ?? '';
       });
     }
   }
@@ -163,11 +163,11 @@ class _AddOperationPageState extends State<AddOperationPage> {
         }
         break;
       case 'money':
-        num? operationTotal = num.tryParse(moneyController.text);
+        operationTotal = num.tryParse(moneyController.text);
 
         children.addAll([
           footerListTile(selectedCurrency.value, title: 'Доступно:', symbol: selectedCurrency.symbol),
-          if (operationTotal != null) footerListTile(operationTotal, symbol: selectedCurrency.symbol),
+          if (operationTotal != null) footerListTile(operationTotal!, symbol: selectedCurrency.symbol),
         ]);
 
         break;
@@ -253,7 +253,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
   }
 
   String? validateSearch() {
-    if (selectedAsset == null) return 'Выберите акцию';
+    if (selectedStock == null) return 'Выберите акцию';
     return null;
   }
 
@@ -273,10 +273,10 @@ class _AddOperationPageState extends State<AddOperationPage> {
 
   String getQuantityCounterText() {
     /// Возвращет информацию о количестве акций в 1 лоте + количестве штук в портфеле, если есть
-    selectedAssetInPortfolio = portfolio.stocks!.firstWhereOrNull((a) => a.shortName == selectedAsset!.shortName)?.quantity ?? 0;
-    String counterText = '1 лот = ${selectedAsset?.lotSize} шт. ';
+    selectedStockInPortfolio = portfolio.stocks!.firstWhereOrNull((a) => a.shortName == selectedStock!.shortName)?.quantity ?? 0;
+    String counterText = '1 лот = ${selectedStock?.lotSize} шт. ';
 
-    counterText += "${selectedAssetInPortfolio == 0 ? '' : ' У вас $selectedAssetInPortfolio шт.'}";
+    counterText += "${selectedStockInPortfolio == 0 ? '' : ' У вас $selectedStockInPortfolio шт.'}";
 
     return counterText;
   }
@@ -303,14 +303,14 @@ class _AddOperationPageState extends State<AddOperationPage> {
               int quantity = int.parse(quantityController.text);
               num fee = feeController.text == '' ? 0 : num.parse(feeController.text);
 
-              AssetTrade trade = AssetTrade(
+              StockTrade trade = StockTrade(
                 date: DateTime.now().toString(),
                 action: action,
                 currencyCode: 'RUB',
                 note: noteController.text,
-                secId: selectedAsset!.secId,
-                shortName: selectedAsset!.shortName,
-                boardId: selectedAsset!.primaryBoardId,
+                secId: selectedStock!.secId,
+                shortName: selectedStock!.shortName,
+                boardId: selectedStock!.primaryBoardId,
                 price: price,
                 quantity: quantity,
                 fee: fee,
@@ -320,7 +320,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
                 AddOperationResult result = await portfolio.buyOperation(context, trade);
 
                 if (result.type == ResultType.ok) {
-                  snackBarText = 'Куплено ${selectedAsset!.secId}: $quantity шт. по $price руб.\n'
+                  snackBarText = 'Куплено ${selectedStock!.secId}: $quantity шт. по $price руб.\n'
                       'Итого: ${MyFormatter.numFormat(operationTotal!)}';
                   canPop = true;
                 } else if (result.type == ResultType.notEnoughCash) {
@@ -333,7 +333,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
                 AddOperationResult result = await portfolio.sellOperation(context, trade);
 
                 if (result.type == ResultType.ok) {
-                  snackBarText = 'Продано ${selectedAsset!.secId}: $quantity шт. по $price руб.\n'
+                  snackBarText = 'Продано ${selectedStock!.secId}: $quantity шт. по $price руб.\n'
                       'Итого: $operationTotal';
                   canPop = true;
                 } else if (result.type == ResultType.notEnoughStocks) {
@@ -350,8 +350,9 @@ class _AddOperationPageState extends State<AddOperationPage> {
               if (canPop) Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
             }
             break;
-          case 'dividends':
-            return;
+          // TODO add dividends trade
+          // case 'dividends':
+          //   return;
           default:
             throw 'Unknown action $action';
         }
@@ -362,23 +363,35 @@ class _AddOperationPageState extends State<AddOperationPage> {
         bool moneyOk = moneyFormKey.currentState!.validate();
 
         if (moneyOk) {
-          num amount = num.parse(moneyController.text);
+          MoneyTrade trade = MoneyTrade(
+            date: DateTime.now().toString(),
+            action: action,
+            currencyCode: selectedCurrency.code,
+            operationTotal: operationTotal!,
+            note: noteController.text,
+          );
 
           switch (action) {
             case 'deposit':
-              await portfolio.depositOperation(context, selectedCurrency, amount);
-              snackBarText = 'Внесено: ${MyFormatter.numFormat(amount)} ${selectedCurrency.symbol}';
+            case 'revenue':
+              String _snackT = action == 'deposit' ? 'Внесено: ' : 'Доход';
+              await portfolio.revenueOperation(context, selectedCurrency, trade);
+              snackBarText = _snackT + '${MyFormatter.numFormat(operationTotal!)} ${selectedCurrency.symbol}';
               canPop = true;
               break;
             case 'withdraw':
-              AddOperationResult result = await portfolio.withdrawalOperation(context, selectedCurrency, amount);
+            case 'expense':
+              String _snackT = action == 'withdraw' ? 'Вывод: ' : 'Расход: ';
+
+              AddOperationResult result = await portfolio.expenseOperation(context, selectedCurrency, trade);
               if (result.type == ResultType.ok) {
-                snackBarText = 'Снято: ${MyFormatter.numFormat(amount)} ${selectedCurrency.symbol}';
+                snackBarText = _snackT + '${MyFormatter.numFormat(operationTotal!)} ${selectedCurrency.symbol}';
                 canPop = true;
               } else if (result.type == ResultType.notEnoughCash) {
-                snackBarText = 'Недостаточно средств.\n'
-                    'Вывод: ${MyFormatter.numFormat(amount)} ${selectedCurrency.symbol}\n'
-                    'Доступно ${MyFormatter.numFormat(selectedCurrency.value)} ${selectedCurrency.symbol}';
+                snackBarText = 'Недостаточно средств.\n' +
+                    _snackT +
+                    '${MyFormatter.numFormat(operationTotal!)} ${selectedCurrency.symbol}\n'
+                        'Доступно ${MyFormatter.numFormat(selectedCurrency.value)} ${selectedCurrency.symbol}';
               } else
                 snackBarText = 'Что-то пошло не так...';
               break;
@@ -402,7 +415,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
           case 'sell':
             return Column(
               children: [
-                StockSearchField(selectedAssetCallback: changeSelectedAsset, preSelectedAsset: selectedAsset, formKey: searchFormKey, validate: validateSearch),
+                StockSearchField(onSelect: changeSelectedStock, preSelected: selectedStock, formKey: searchFormKey, validate: validateSearch),
                 SizedBox(height: 20),
                 myTextField(
                   formKey: priceFormKey,
@@ -410,8 +423,8 @@ class _AddOperationPageState extends State<AddOperationPage> {
                   validate: validateNum,
                   label: "Цена",
                   suffixText: '₽',
-                  onlyInteger: selectedAsset?.priceDecimals == 0 ? true : false,
-                  decimalRange: selectedAsset?.priceDecimals ?? 6,
+                  onlyInteger: selectedStock?.priceDecimals == 0 ? true : false,
+                  decimalRange: selectedStock?.priceDecimals ?? 6,
                   onChanged: (v) => setState(() {}),
                 ),
                 SizedBox(height: 20),
@@ -422,7 +435,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
                   label: quantityLabel,
                   suffixText: 'шт',
                   onlyInteger: true,
-                  counterText: selectedAsset == null ? '' : getQuantityCounterText(),
+                  counterText: selectedStock == null ? '' : getQuantityCounterText(),
                   onChanged: (v) => setState(() {}),
                   onTap: () => delayedScrollDown(dialogScrollController),
                 ),
