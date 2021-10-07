@@ -113,47 +113,6 @@ class StockTrade extends Trade {
   }
 }
 
-class MoneyTrade extends Trade {
-  final num operationTotal;
-  // num get operationTotal => _operationTotal;
-
-  MoneyTrade({
-    required String date,
-    required String action,
-    required String currencyCode,
-    required num operationTotal,
-    required String? note,
-  })  : operationTotal = operationTotal,
-        super(
-          actionType: 'money',
-          action: action, // deposit / withdraw / revenue / expense
-          date: date,
-          currencyCode: currencyCode,
-          note: note,
-        );
-
-  MoneyTrade.fromJson(Map<String, dynamic> json)
-      : this(
-          action: json['action'],
-          date: json['date'],
-          currencyCode: json['currencyCode'],
-          operationTotal: json['operationTotal'],
-          note: json['note'],
-        );
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'actionType': actionType, // ! Передаем параметр, через который потом будем определять, какой класс создавать
-      'action': action,
-      'date': date,
-      'currencyCode': currencyCode,
-      'operationTotal': operationTotal,
-      'note': note,
-    };
-  }
-}
-
 class DividendsTrade extends Trade {
   final String secId;
   final String boardId;
@@ -201,6 +160,47 @@ class DividendsTrade extends Trade {
       'boardId': boardId,
       'divPerShare': divPerShare,
       'numShares': numShares,
+    };
+  }
+}
+
+class MoneyTrade extends Trade {
+  final num operationTotal;
+  // num get operationTotal => _operationTotal;
+
+  MoneyTrade({
+    required String date,
+    required String action,
+    required String currencyCode,
+    required num operationTotal,
+    required String? note,
+  })  : operationTotal = operationTotal,
+        super(
+          actionType: 'money',
+          action: action, // deposit / withdraw / revenue / expense
+          date: date,
+          currencyCode: currencyCode,
+          note: note,
+        );
+
+  MoneyTrade.fromJson(Map<String, dynamic> json)
+      : this(
+          action: json['action'],
+          date: json['date'],
+          currencyCode: json['currencyCode'],
+          operationTotal: json['operationTotal'],
+          note: json['note'],
+        );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'actionType': actionType, // ! Передаем параметр, через который потом будем определять, какой класс создавать
+      'action': action,
+      'date': date,
+      'currencyCode': currencyCode,
+      'operationTotal': operationTotal,
+      'note': note,
     };
   }
 }

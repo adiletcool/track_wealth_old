@@ -120,6 +120,7 @@ class Portfolio {
   }
 
   Future<Iterable<PortfolioStock>> _getStocksMarketData({required Iterable<PortfolioStock> stocks, isForeign = false}) async {
+    // загружаем цены сразу на все акции
     if (stocks.length > 0) {
       Iterable<String> queries = stocks.map((a) => '${a.boardId}:${a.secId}');
       String securities = queries.reduce((a, b) => '$a,$b');

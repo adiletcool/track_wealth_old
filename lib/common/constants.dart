@@ -31,3 +31,16 @@ Future<void> delayedScrollDown(
     ),
   );
 }
+
+// TODO: локализовать
+final Map<String, String> actionsTitle = {
+  "stocks": "Акции",
+  "money": "Деньги",
+  'buy': "Покупка",
+  "sell": "Продажа",
+  "dividends": "Дивиденды",
+  "deposit": "Внесение",
+  "withdraw": "Вывод",
+  "revenue": "Доход",
+  "expense": "Расход",
+};

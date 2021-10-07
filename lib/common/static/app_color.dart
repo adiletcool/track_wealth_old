@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColor {
   static Color selected = Color(0xff01B1A5);
+  static Color green = Color(0xff0da574);
   static Color yellow = Color(0xffFFC222);
   static Color bgDark = Color(0xFF1A1A1A);
   static Color black = Colors.black;

@@ -79,6 +79,8 @@ class PortfolioState extends ChangeNotifier {
               return DividendsTrade.fromJson(trade);
             else
               return StockTrade.fromJson(trade);
+          case 'money':
+            return MoneyTrade.fromJson(trade);
           default:
             throw 'Unknown actionType ${t['actionType']}';
         }

@@ -34,19 +34,6 @@ class _AddOperationPageState extends State<AddOperationPage> {
     'money': ["deposit", "withdraw", "revenue", "expense"],
   };
 
-  // TODO: локализовать
-  final Map<String, String> actionTitle = {
-    "stocks": "Акции",
-    "money": "Деньги",
-    'buy': "Покупка",
-    "sell": "Продажа",
-    "dividends": "Дивиденды",
-    "deposit": "Внести",
-    "withdraw": "Вывести",
-    "revenue": "Доход",
-    "expense": "Расход",
-  };
-
   late String actionType; // stocks / money
   late List<String> selectedActions; // ['buy', 'sell', 'dividends'] / ["deposit", "withdraw", "revenue", "expense"]
   late String action; // buy / sell / ...
@@ -197,7 +184,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
   Widget build(BuildContext context) {
     bgColor = AppColor.themeBasedColor(context, AppColor.darkBlue, AppColor.white);
     textColor = AppColor.themeBasedColor(context, Colors.white, AppColor.black);
-    String pageTitle = actionTitle[action] ?? action;
+    String pageTitle = actionsTitle[action] ?? action;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -516,7 +503,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
                         color: e == selectedValue ? AppColor.selected : AppColor.white,
                       ),
                       child: Text(
-                        actionTitle[e]!,
+                        actionsTitle[e]!,
                         style: TextStyle(color: e == selectedValue ? AppColor.white : AppColor.lightBlue),
                       ),
                     ),

@@ -112,7 +112,7 @@ class _SubHeaderState extends State<SubHeader> {
 
   TextStyle changeTextStyle(num change) {
     return TextStyle(
-      color: change >= 0 ? AppColor.selected : AppColor.red,
+      color: change >= 0 ? AppColor.green : AppColor.red,
       fontSize: 17,
     );
   }

@@ -72,14 +72,16 @@ class SearchStock {
   }
 
   Future<void> getStockData() async {
+    // загружаем цену по одной конкретной акции
     String securityName = "${this.primaryBoardId}:${this.secId}";
 
-    String url = "https://iss.moex.com/iss/engines/stock/markets/shares/securities.jsonp";
+    String shares = primaryBoardId == "TQBR" ? "shares" : "foreignshares";
+    String url = "https://iss.moex.com/iss/engines/stock/markets/$shares/securities.jsonp";
     Map<String, String> params = {
       'iss.meta': 'off',
       'iss.only': 'securities,marketdata',
       'securities': securityName,
-      'lang': 'ru',
+      'lang': 'ru', // TODO: localize to en
     };
 
     var response = await Dio().get(url, queryParameters: params);
