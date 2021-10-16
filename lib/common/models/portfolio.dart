@@ -106,6 +106,7 @@ class Portfolio {
   /// Получаем рыночные данные по акциям:
   /// currentPrice, todayPriceChange, unrealizedPnl, unrealizedPnlPercent, worth, sharePercent
   Future<void> loadStocksData() async {
+    print('LOADING STOCKS MARKET DATA');
     Iterable<PortfolioStock> russianStocks = stocks!.where((stock) => stock.boardId == 'TQBR');
     Iterable<PortfolioStock> foreignStocks = stocks!.where((stock) => stock.boardId == 'FQBR');
 
@@ -143,6 +144,7 @@ class Portfolio {
 
   /// Получаем рыночные данные по валютам портфеля
   Future<void> loadCurrenciesData() async {
+    print('LOADING CURRENCIES MARKET DATA');
     currencies = (await _getCurrenciesMarketData(currencies: currencies!)).toList(); // получаем курсы валют
   }
 
@@ -197,6 +199,8 @@ class Portfolio {
     );
   }
 
+  // ! Trades
+
   Future<AddOperationResult> buyOperation(BuildContext context, StockTrade trade) async {
     //* поскольку в поиске можно найти только акции, торгующиеся на мосбирже, то купить их можно только за рубли, поэтому проверяем, хватает ли рублей
 
@@ -211,26 +215,20 @@ class Portfolio {
     if (trade.operationTotal > rubAvailable) {
       return AddOperationResult(ResultType.notEnoughCash, cashAvailable: rubAvailable, opeartionTotal: trade.operationTotal);
     } else {
-      if (found != null) {
-        found.addBuy(trade.price, trade.quantity, trade.fee); // добавляем акции и пересчитываем meanPrice
-      } else {
-        PortfolioStock newStock = PortfolioStock(
-          boardId: trade.boardId,
-          secId: trade.secId,
-          shortName: trade.shortName,
-          quantity: trade.quantity,
-          meanPrice: trade.price,
-          realizedPnl: 0,
-        );
-        stocks!.add(newStock); // добавляем акции
-      }
+      if (found != null)
+        found.addBuy(trade); // добавляем акции, которые уже были в портфеле и пересчитываем meanPrice
+      else
+        stocks!.add(PortfolioStock.fromStockTrade(trade)); // добавляем новую акцию
 
+      await updateDocsAndAddTrade(
+        context,
+        trade,
+        updatePortfolioData: true,
+        loadAssetsAndCurrencies: false,
+        loadStocksMarketData: true, // т.к. если новая акция, то нужны ее котировки
+        loadCurrenciesMarketData: false,
+      );
       currencies!.firstWhere((c) => c.code == 'RUB').addExpense(trade.operationTotal); // снимаем purchaseAmount
-
-      await Future.wait([
-        context.read<PortfolioState>().updatePortfolioData(),
-        context.read<PortfolioState>().addTrade(trade),
-      ]);
 
       return AddOperationResult(ResultType.ok);
     }
@@ -248,38 +246,75 @@ class Portfolio {
       if (found.quantity < trade.quantity) {
         return AddOperationResult(ResultType.notEnoughStocks, stocksAvailable: found.quantity);
       } else {
-        found.addSell(trade.price, trade.quantity, trade.fee);
+        found.addSell(trade);
         currencies!.firstWhere((c) => c.code == 'RUB').addRevenue(trade.operationTotal);
-        await Future.wait([
-          context.read<PortfolioState>().updatePortfolioData(),
-          context.read<PortfolioState>().addTrade(trade),
-        ]);
-
+        await updateDocsAndAddTrade(
+          context,
+          trade,
+          updatePortfolioData: true,
+          loadAssetsAndCurrencies: false,
+          loadStocksMarketData: true, // можно и false
+          loadCurrenciesMarketData: false,
+        );
         return AddOperationResult(ResultType.ok);
       }
     }
   }
 
   Future<void> revenueOperation(BuildContext context, PortfolioCurrency currency, MoneyTrade trade) async {
-    currency.addDeposit(trade.operationTotal);
-    // add trade
-    await Future.wait([
-      context.read<PortfolioState>().updateCurrencies(),
-      context.read<PortfolioState>().addTrade(trade),
-    ]);
+    currency.addRevenue(trade.operationTotal);
+
+    await updateDocsAndAddTrade(
+      context,
+      trade,
+      updateCurrencies: true,
+      loadAssetsAndCurrencies: false,
+      loadStocksMarketData: false,
+      loadCurrenciesMarketData: false,
+    );
   }
 
   Future<AddOperationResult> expenseOperation(BuildContext context, PortfolioCurrency currency, MoneyTrade trade) async {
-    if (currency.value < trade.operationTotal) {
-      return AddOperationResult(ResultType.notEnoughCash);
-    }
-    currency.addWithdrawal(trade.operationTotal);
+    if (currency.value < trade.operationTotal) return AddOperationResult(ResultType.notEnoughCash);
+
+    currency.addExpense(trade.operationTotal);
+
+    await updateDocsAndAddTrade(
+      context,
+      trade,
+      updateCurrencies: true,
+      loadAssetsAndCurrencies: false,
+      loadStocksMarketData: false,
+      loadCurrenciesMarketData: false,
+    );
+    return AddOperationResult(ResultType.ok);
+  }
+
+  Future<void> updateDocsAndAddTrade(
+    BuildContext context,
+    Trade trade, {
+    bool updatePortfolioData = false,
+    bool updateCurrencies = false,
+    required bool loadAssetsAndCurrencies,
+    required bool loadStocksMarketData,
+    required bool loadCurrenciesMarketData,
+  }) async {
+    trades!.add(trade);
 
     await Future.wait([
-      context.read<PortfolioState>().updateCurrencies(),
+      if (updatePortfolioData)
+        context.read<PortfolioState>().updatePortfolioData(
+              loadAssetsAndCurrencies: loadAssetsAndCurrencies,
+              loadStocksMarketData: loadStocksMarketData,
+              loadCurrenciesMarketData: loadCurrenciesMarketData,
+            ),
+      if (updateCurrencies)
+        context.read<PortfolioState>().updateCurrencies(
+              loadAssetsAndCurrencies: loadAssetsAndCurrencies,
+              loadStocksMarketData: loadStocksMarketData,
+              loadCurrenciesMarketData: loadCurrenciesMarketData,
+            ),
       context.read<PortfolioState>().addTrade(trade),
     ]);
-
-    return AddOperationResult(ResultType.ok);
   }
 }

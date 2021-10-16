@@ -18,24 +18,54 @@ class PortfolioState extends ChangeNotifier {
   Future<String>? loadDataState;
 
   /// LOADING DATA
-  Future<String> loadData() async {
-    print('LOADING DATA');
-    await getSelectedUserPortfolio().then((value) async {
-      if (value != null) {
-        selectedPortfolio = value;
-        await loadSelectedPortfolio();
+  Future<String> loadData({
+    required bool loadSelected,
+    required bool loadAssetsAndCurrencies,
+    required bool loadStocksMarketData,
+    required bool loadCurrenciesMarketData,
+    required bool loadTrades,
+  }) async {
+    if (loadSelected) {
+      var _portfolio = await getSelectedUserPortfolio();
+      if (_portfolio != null) {
+        selectedPortfolio = _portfolio;
+        await loadSelectedPortfolio(
+          loadAssetsAndCurrencies: loadAssetsAndCurrencies,
+          loadStocksMarketData: loadStocksMarketData,
+          loadCurrenciesMarketData: loadCurrenciesMarketData,
+          loadTrades: loadTrades,
+        );
       }
-    });
-
+    } else {
+      await loadSelectedPortfolio(
+        loadAssetsAndCurrencies: loadAssetsAndCurrencies,
+        loadStocksMarketData: loadStocksMarketData,
+        loadCurrenciesMarketData: loadCurrenciesMarketData,
+        loadTrades: loadTrades,
+      );
+    }
     return 'OK';
   }
 
-  Future<void> reloadData() async {
-    loadDataState = loadData(); // TODO await'ить?
+  Future<void> reloadData({
+    required bool loadSelected,
+    required bool loadAssetsAndCurrencies,
+    required bool loadStocksMarketData,
+    required bool loadCurrenciesMarketData,
+    required bool loadTrades,
+  }) async {
+    loadDataState = loadData(
+      loadSelected: loadSelected,
+      loadAssetsAndCurrencies: loadAssetsAndCurrencies,
+      loadStocksMarketData: loadStocksMarketData,
+      loadCurrenciesMarketData: loadCurrenciesMarketData,
+      loadTrades: loadTrades,
+    );
     notifyListeners();
   }
 
   Future<Portfolio?> getSelectedUserPortfolio() async {
+    print('LOADGING SELECTED PORTFOLIO');
     FirebaseAuth auth = FirebaseAuth.instance;
     userData = FirebaseFirestore.instance.collection('userData').doc(auth.currentUser!.uid);
     DocumentSnapshot<Object?> data = await userData!.get();
@@ -63,14 +93,41 @@ class PortfolioState extends ChangeNotifier {
   }
 
   /// Чтение полей stocks и currencies у selectedPortfolio
-  Future<void> loadSelectedPortfolio() async {
-    selectedPortfolioData = userData!.collection('portfolioData').doc(selectedPortfolio.name);
+  Future<void> loadSelectedPortfolio({
+    required bool loadAssetsAndCurrencies,
+    required bool loadStocksMarketData,
+    required bool loadCurrenciesMarketData,
+    required bool loadTrades,
+  }) async {
+    print('LOADING SELECTED PORTFOLIO DATA');
 
-    var selectedPortfolioTrades = await selectedPortfolioData!.collection('trades').limit(10).get();
+    if (loadAssetsAndCurrencies) {
+      print('LOADNIG ASSETS AND CURRENCIES');
+      selectedPortfolioData = userData!.collection('portfolioData').doc(selectedPortfolio.name);
+      Map<String, dynamic> data = (await selectedPortfolioData!.get()).data() as Map<String, dynamic>;
+      List<Map<String, dynamic>> stocks = List<Map<String, dynamic>>.from(data['stocks']);
+      List<Map<String, dynamic>> currencies = List<Map<String, dynamic>>.from(data['currencies']);
 
+      selectedPortfolio.stocks = PortfolioStock.fromJsonsList(stocks);
+      selectedPortfolio.currencies = PortfolioCurrency.fromJsonsList(currencies);
+    }
+
+    if (loadTrades) {
+      print('LOADING TRADES');
+      selectedPortfolio.trades = await getPortfolioTrades();
+    }
+
+    // дожидаемся параллельно выполняющися загрузок данных по акциям и валютам  (цены и курсы валют)
+    await Future.wait([
+      if (loadStocksMarketData) selectedPortfolio.loadStocksData(),
+      if (loadCurrenciesMarketData) selectedPortfolio.loadCurrenciesData(),
+    ]);
+  }
+
+  Future<List<Trade>> getPortfolioTrades() async {
+    var selectedPortfolioTrades = await selectedPortfolioData!.collection('trades').orderBy('date', descending: true).limit(10).get();
     if (selectedPortfolioTrades.docs.length > 0) {
       // TODO: загружать первые 30-40 трейдов, добавить функцию для подгрузки еще трейдов с query where 'date' < selectedPortfolio.trades и limit 30-40
-      // в service эта функция должна принимать лишь dateFilter и nTrades, она вызывается из метода Portfolio
       List<Trade> trades = selectedPortfolioTrades.docs.map<Trade>((t) {
         Map<String, dynamic> trade = t.data();
         switch (t['actionType']) {
@@ -85,24 +142,9 @@ class PortfolioState extends ChangeNotifier {
             throw 'Unknown actionType ${t['actionType']}';
         }
       }).toList();
-      print(selectedPortfolioTrades.docs[0].data());
-      print(trades);
       // TODO эти трейдс потом идут в selectedPortfolio.trades
     }
-
-    Map<String, dynamic> data = (await selectedPortfolioData!.get()).data() as Map<String, dynamic>;
-
-    List<Map<String, dynamic>> stocks = List<Map<String, dynamic>>.from(data['stocks']);
-    List<Map<String, dynamic>> currencies = List<Map<String, dynamic>>.from(data['currencies']);
-
-    selectedPortfolio.stocks = PortfolioStock.fromJsonsList(stocks);
-    selectedPortfolio.currencies = PortfolioCurrency.fromJsonsList(currencies);
-
-    // дожидаемся параллельно выполняющися загрузок данных по акциям и валютам  (цены и курсы валют)
-    await Future.wait([
-      selectedPortfolio.loadStocksData(),
-      selectedPortfolio.loadCurrenciesData(),
-    ]);
+    return [];
   }
 
   /// Adding user portfolio document and new subcollection with stocks = [], currencies = newUserCurrencies, portfolioName = name
@@ -132,10 +174,10 @@ class PortfolioState extends ChangeNotifier {
     userData!.set({'portfolios': updatedPortfolios}); // переписываем весь док, поскольку поменять поле у элемента списка нельзя
 
     // добавляем коллекцию с пустым списком акций, дефолтным списком валют
-    userData!.collection('portfolioData').doc(name).set({'stocks': [], 'currencies': newUserCurrencies});
-
-    // userData!.collection('tradeHistory').doc(name).collection('trades').orderBy(field).limit(100).get();
+    userData!.collection('portfolioData').doc(name).set({'stocks': [], 'currencies': availableCurrencies});
   }
+
+  Future<void> changePortfolioSettings() async => await _updatePortfolios(); // изменяет поля дока
 
   Future<void> changeSelectedPortfolio(String portfolioName) async {
     if (portfolioName != selectedPortfolio.name) {
@@ -143,7 +185,7 @@ class PortfolioState extends ChangeNotifier {
       portfolios.firstWhere((portfolio) => portfolio.name == portfolioName).isSelected = true; // isSelected = false у портфеля c указанным именем
 
       await _updatePortfolios();
-      reloadData();
+      reloadData(loadSelected: true, loadAssetsAndCurrencies: true, loadStocksMarketData: true, loadCurrenciesMarketData: true, loadTrades: true);
     }
   }
 
@@ -159,7 +201,8 @@ class PortfolioState extends ChangeNotifier {
   /// Удаляем портфель в документе portfolios, а также документ в portfolioData
   Future<void> deletePortfolio(String portfolioName) async {
     // Если удаляемый портфель был выбран, то меняем выбранный портфель на другой, если есть
-    if (portfolios.firstWhere((p) => p.name == portfolioName).isSelected && (portfolios.length != 0)) portfolios.first.isSelected = true;
+    if (portfolios.firstWhere((p) => p.name == portfolioName).isSelected && (portfolios.length != 1))
+      portfolios.firstWhere((p) => p.name != portfolioName).isSelected = true;
 
     portfolios.removeWhere((portfolio) => portfolio.name == portfolioName);
 
@@ -169,14 +212,10 @@ class PortfolioState extends ChangeNotifier {
       _deleteDocumentFromCollection('portfolioData', portfolioName),
     ]);
 
-    reloadData();
+    reloadData(loadSelected: true, loadTrades: true, loadAssetsAndCurrencies: true, loadStocksMarketData: true, loadCurrenciesMarketData: true);
   }
 
-  Future<void> changePortfolioSettings() async {
-    await _updatePortfolios(); // изменяет поля дока
-  }
-
-  Future<void> updatePortfolioData() async {
+  Future<void> updatePortfolioData({required bool loadAssetsAndCurrencies, required bool loadStocksMarketData, required bool loadCurrenciesMarketData}) async {
     /// Updates stocks and currencies in portfolio and reloads state
     List<Map<String, dynamic>> newStocks = selectedPortfolio.stocks!.map((a) => a.toJson()).toList();
     List<Map<String, dynamic>> newCurrencies = selectedPortfolio.currencies!.map((c) => c.toJson()).toList();
@@ -185,13 +224,30 @@ class PortfolioState extends ChangeNotifier {
       'stocks': newStocks,
       'currencies': newCurrencies,
     });
-    reloadData();
+    // не загужаем трейды, т.к. мы уже добавили трейд в Portfolio
+    // reloadData, т.к. если есть новая
+
+    reloadData(
+      loadSelected: false,
+      loadAssetsAndCurrencies: loadAssetsAndCurrencies,
+      loadStocksMarketData: loadStocksMarketData,
+      loadCurrenciesMarketData: loadCurrenciesMarketData,
+      loadTrades: false,
+    );
   }
 
-  Future<void> updateCurrencies() async {
+  Future<void> updateCurrencies({required bool loadAssetsAndCurrencies, required bool loadStocksMarketData, required bool loadCurrenciesMarketData}) async {
     /// updates only currencies without reloading
     List<Map<String, dynamic>> newCurrencies = selectedPortfolio.currencies!.map((c) => c.toJson()).toList();
     await selectedPortfolioData!.update({'currencies': newCurrencies});
+
+    reloadData(
+      loadSelected: false,
+      loadAssetsAndCurrencies: loadAssetsAndCurrencies,
+      loadStocksMarketData: loadStocksMarketData,
+      loadCurrenciesMarketData: loadCurrenciesMarketData,
+      loadTrades: false,
+    );
   }
 
   Future<void> addTrade(Trade trade) async {

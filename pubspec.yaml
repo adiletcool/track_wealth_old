@@ -20,10 +20,10 @@ dependencies:
 
   google_sign_in: ^5.0.5
   flutter_facebook_auth: ^3.5.0
-  flutter_login_vk: ^1.0.0
+  # flutter_login_vk: ^1.0.0
   
   cupertino_icons: ^1.0.3
-  provider: ^5.0.0
+  provider: ^6.0.1
   intl: ^0.17.0
   dio: ^4.0.0
   flutter_typeahead: ^3.2.0
@@ -35,6 +35,7 @@ dependencies:
   lottie: ^1.1.0
   cross_connectivity: ^3.0.3
   page_transition: ^2.0.2
+  font_awesome_flutter: ^9.1.0
   
 dev_dependencies:
   flutter_test:

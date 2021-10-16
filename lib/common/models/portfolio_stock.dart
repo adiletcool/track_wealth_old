@@ -1,9 +1,14 @@
+import 'package:track_wealth/common/models/portfolio_trade.dart';
+
 class PortfolioStock {
   final String boardId; // TQBR (см search_stock_model)
   final String secId; // тикер (AFLT)
   final String shortName; // название компании (Аэрофлот)
   int quantity; // Количество штук (размер лота * количество лотов)
   num meanPrice; // Средняя цена покупки
+
+  num get exposure => meanPrice * quantity;
+
   num realizedPnl; // реализованная прибыль
 
   num? currentPrice; // текущая цена за акцию
@@ -78,16 +83,35 @@ class PortfolioStock {
     };
   }
 
-  void addBuy(num oPrice, int oQuantity, num oFee) {
+  PortfolioStock.fromStockTrade(StockTrade trade)
+      : boardId = trade.boardId,
+        secId = trade.secId,
+        shortName = trade.shortName,
+        quantity = trade.quantity,
+        meanPrice = trade.operationTotal / trade.quantity,
+        realizedPnl = 0;
+
+  void addBuy(StockTrade trade) {
     // считаем средневзвешенную цену покупок
-    this.meanPrice = (meanPrice * quantity + oPrice * oQuantity - oFee) / (quantity + oQuantity);
-    this.quantity += oQuantity;
+    meanPrice = (exposure + trade.operationTotal) / (quantity + trade.quantity);
+    quantity += trade.quantity;
   }
 
-  void addSell(num oPrice, int oQuantity, num oFee) {
-    num oTradeProfit = (oPrice - meanPrice) * oQuantity - oFee;
-    this.realizedPnl += oTradeProfit;
-    this.quantity -= oQuantity;
+  void editBuy(StockTrade prevTrade, StockTrade newTrade) {
+    // чтобы пересчитать среднюю позицию, нужно знать, какой была средняя цена и количество перед трейдом, который нужно удалить, а потом добавить новый изм-ый
+    num quantityBeforePrevTrade = quantity - prevTrade.quantity;
+
+    num meanPriceBeforePrevTrade = (exposure - prevTrade.operationTotal) / (quantity - prevTrade.quantity);
+
+    num exposureBeforePrevTrade = quantityBeforePrevTrade * meanPriceBeforePrevTrade;
+
+    meanPrice = (exposureBeforePrevTrade + newTrade.operationTotal) / (quantityBeforePrevTrade + newTrade.quantity);
+  }
+
+  void addSell(StockTrade trade) {
+    num tradeProfit = (trade.price - meanPrice) * trade.quantity - trade.fee;
+    realizedPnl += tradeProfit;
+    quantity -= trade.quantity;
   }
 
   void addDividends(num totalRub) {

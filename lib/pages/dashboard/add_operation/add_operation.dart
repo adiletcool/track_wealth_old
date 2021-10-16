@@ -261,7 +261,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
   String getQuantityCounterText() {
     /// Возвращет информацию о количестве акций в 1 лоте + количестве штук в портфеле, если есть
     selectedStockInPortfolio = portfolio.stocks!.firstWhereOrNull((a) => a.shortName == selectedStock!.shortName)?.quantity ?? 0;
-    String counterText = '1 лот = ${selectedStock?.lotSize} шт. ';
+    String counterText = '1 лот = ${selectedStock?.lotSize} шт. '; // TODO int formatter
 
     counterText += "${selectedStockInPortfolio == 0 ? '' : ' У вас $selectedStockInPortfolio шт.'}";
 
@@ -366,6 +366,8 @@ class _AddOperationPageState extends State<AddOperationPage> {
               snackBarText = _snackT + '${MyFormatter.numFormat(operationTotal!)} ${selectedCurrency.symbol}';
               canPop = true;
               break;
+
+            // TODO: does not updates, try to listen to currencies // loadstate
             case 'withdraw':
             case 'expense':
               String _snackT = action == 'withdraw' ? 'Вывод: ' : 'Расход: ';

@@ -53,9 +53,9 @@
             </intent-filter> 
         </activity>
 
-        <activity android:name="com.vk.sdk.VKServiceActivity"
+        <!-- <activity android:name="com.vk.sdk.VKServiceActivity"
             android:label="ServiceActivity"
-            android:theme="@style/VK.Transparent" />
+            android:theme="@style/VK.Transparent" /> -->
 
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

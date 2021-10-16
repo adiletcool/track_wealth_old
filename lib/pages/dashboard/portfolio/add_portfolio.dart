@@ -9,11 +9,13 @@ import 'package:track_wealth/common/static/auth_helpers.dart';
 import 'package:track_wealth/common/static/decorations.dart';
 import 'package:track_wealth/common/static/portfolio_helpers.dart';
 
+//TODO: добавить попап с подтверждением сделки
+
 class AddPortfolioArgs {
   final String title;
-  final bool isInitial;
+  final bool isFirstPortfolio;
 
-  const AddPortfolioArgs({required this.title, required this.isInitial});
+  const AddPortfolioArgs({required this.title, required this.isFirstPortfolio});
 }
 
 class AddPortfolioPage extends StatefulWidget {
@@ -54,7 +56,7 @@ class _AddPortfolioPageState extends State<AddPortfolioPage> {
       appBar: AppBar(
         backgroundColor: bgColor,
         elevation: 0,
-        leading: widget.args.isInitial // Если не новый пользователь
+        leading: !widget.args.isFirstPortfolio // Если не новый пользователь
             ? IconButton(
                 icon: Icon(Icons.arrow_back, color: Theme.of(context).iconTheme.color),
                 onPressed: () => Navigator.popUntil(context, ModalRoute.withName('/dashboard')),
@@ -178,7 +180,13 @@ class _AddPortfolioPageState extends State<AddPortfolioPage> {
             desc: decription,
             marginTrading: marginTrading,
           );
-      context.read<PortfolioState>().reloadData();
+      context.read<PortfolioState>().reloadData(
+            loadSelected: true,
+            loadAssetsAndCurrencies: true,
+            loadStocksMarketData: false, // там нет stocks
+            loadCurrenciesMarketData: true, // там везде value = 0
+            loadTrades: false,
+          );
       Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
     }
   }

@@ -1,4 +1,10 @@
+import 'package:auto_size_text_pk/auto_size_text_pk.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:track_wealth/common/constants.dart';
+import 'package:track_wealth/common/static/app_color.dart';
+import 'package:track_wealth/common/static/formatters.dart';
+import 'package:track_wealth/common/static/portfolio_helpers.dart';
 
 abstract class Trade {
   final String actionType; // stocks / money
@@ -19,10 +25,11 @@ abstract class Trade {
 
   Map<String, dynamic> toJson();
 
-  Widget build() {
-    return Container(
-      child: Text(this.actionType),
-    );
+  Widget build(BuildContext context) => TradeCard(this);
+
+  @override
+  String toString() {
+    return 'Trade($actionType, $action, $operationTotal, $date, $currencyCode, )';
   }
 }
 
@@ -59,6 +66,7 @@ class StockTrade extends Trade {
   final num fee;
 
   num get operationTotal => price * quantity + fee * (action == 'buy' ? 1 : -1);
+  num get meanPrice => operationTotal / quantity;
 
   StockTrade({
     required String date,
@@ -202,5 +210,97 @@ class MoneyTrade extends Trade {
       'operationTotal': operationTotal,
       'note': note,
     };
+  }
+}
+
+class TradeCard extends StatelessWidget {
+  final Trade trade;
+  const TradeCard(this.trade);
+
+  @override
+  Widget build(BuildContext context) {
+    Color tradeColor = AppColor.themeBasedColor(context, AppColor.lightBlue, AppColor.lightGrey);
+    Color tradeTitleColor = AppColor.themeBasedColor(context, Colors.white, AppColor.black);
+    Color tradeSubtitleColor = AppColor.themeBasedColor(context, AppColor.greyTitle, AppColor.darkGrey);
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          height: 60,
+          decoration: BoxDecoration(
+            color: tradeColor,
+            border: Border(
+              left: BorderSide(color: AppColor.green, width: 10, style: BorderStyle.solid),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  AutoSizeText(
+                    getCardTitle(),
+                    maxFontSize: 15,
+                    style: TextStyle(color: tradeTitleColor),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    getCardSubTitle(),
+                    style: TextStyle(fontSize: 14, color: tradeSubtitleColor),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ), // TODO autosize
+                ],
+              ),
+              Row(
+                children: [
+                  Text(
+                    MyFormatter.numFormat(trade.operationTotal) + getCurrencySymbol(),
+                    maxLines: 1,
+                    style: TextStyle(fontSize: 16),
+                  ), // TODO: format to currency, autosize
+                  Icon(Icons.more_vert_outlined, size: 28, color: tradeSubtitleColor),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String getCurrencySymbol() {
+    String? symbol = availableCurrencies.firstWhere((c) => c['code'] == trade.currencyCode)['symbol'];
+    symbol ??= '';
+    return symbol;
+  }
+
+  String getCardTitle() {
+    switch (trade.actionType) {
+      case 'stocks':
+        StockTrade _trade = trade as StockTrade;
+        return '${_trade.action}: ${_trade.secId}';
+      case 'money':
+        return actionsTitle['money']!;
+      default:
+        return 'Unknown trade type ${trade.actionType}\n$trade';
+    }
+  }
+
+  String getCardSubTitle() {
+    switch (trade.actionType) {
+      case 'stocks':
+        StockTrade _trade = trade as StockTrade;
+        return '${_trade.quantity} шт. по ${_trade.price}';
+      case 'money':
+        return actionsTitle[trade.action]!;
+      default:
+        return 'Unknown trade type ${trade.actionType}\n$trade';
+    }
   }
 }

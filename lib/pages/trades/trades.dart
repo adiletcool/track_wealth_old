@@ -1,7 +1,8 @@
+import 'package:auto_size_text_pk/auto_size_text_pk.dart';
 import 'package:flutter/material.dart';
 import 'package:track_wealth/common/constants.dart';
 import 'package:track_wealth/common/static/app_color.dart';
-import 'package:track_wealth/common/static/decorations.dart';
+import 'package:track_wealth/common/static/formatters.dart';
 
 class TradesPage extends StatefulWidget {
   @override
@@ -19,7 +20,7 @@ class _TradesPageState extends State<TradesPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           TradeCard(actionsTitle['money']!, actionsTitle['deposit']!, 50000),
-          TradeCard(actionsTitle['buy']! + ': GAZP', '2000 шт. по 60 руб.', 120000),
+          TradeCard(actionsTitle['buy']! + ': GAZP', '200 шт. по 60 руб.', 1200),
         ],
       ),
     );
@@ -37,6 +38,7 @@ class TradeCard extends StatelessWidget {
     Color tradeColor = AppColor.themeBasedColor(context, AppColor.lightBlue, AppColor.lightGrey);
     Color tradeTitleColor = AppColor.themeBasedColor(context, Colors.white, AppColor.black);
     Color tradeSubtitleColor = AppColor.themeBasedColor(context, AppColor.greyTitle, AppColor.darkGrey);
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ClipRRect(
@@ -47,7 +49,7 @@ class TradeCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: tradeColor,
             border: Border(
-              left: BorderSide(color: AppColor.green, width: 11, style: BorderStyle.solid),
+              left: BorderSide(color: AppColor.green, width: 10, style: BorderStyle.solid),
             ),
           ),
           child: Row(
@@ -57,13 +59,28 @@ class TradeCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(title, style: TextStyle(fontSize: 16, color: tradeTitleColor)),
-                  Text(subtitle, style: TextStyle(fontSize: 15, color: tradeSubtitleColor)), // TODO autosize
+                  AutoSizeText(
+                    title,
+                    maxFontSize: 15,
+                    style: TextStyle(color: tradeTitleColor),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontSize: 14, color: tradeSubtitleColor),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ), // TODO autosize
                 ],
               ),
               Row(
                 children: [
-                  Text(operationTotal.toString(), style: TextStyle(fontSize: 14.5)), // TODO: format to currency, autosize
+                  Text(
+                    MyFormatter.numFormat(operationTotal) + '',
+                    maxLines: 1,
+                    style: TextStyle(fontSize: 16),
+                  ), // TODO: format to currency, autosize
                   Icon(Icons.more_vert_outlined, size: 28, color: tradeSubtitleColor),
                 ],
               ),

@@ -71,7 +71,7 @@ class _AmountRowState extends State<AmountRow> {
 
   @override
   Widget build(BuildContext context) {
-    symbol = newUserCurrencies.firstWhere((c) => c['code'] == currency)['symbol'];
+    symbol = availableCurrencies.firstWhere((c) => c['code'] == currency)['symbol'];
 
     return FutureBuilder(
       future: getConvertedTotal(currency),

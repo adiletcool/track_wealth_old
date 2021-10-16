@@ -48,15 +48,7 @@ class PortfolioCurrency {
 
   @override
   String toString() {
-    return '\n$code: {exchangeRate: $exchangeRate, value: $value, totalRub: $totalRub}';
-  }
-
-  void addDeposit(num amount) {
-    _value += amount;
-  }
-
-  void addWithdrawal(num amount) {
-    _value -= amount;
+    return '\n$code: {exchangeRate: $exchangeRate, value: $value}';
   }
 
   void addExpense(num amount) {

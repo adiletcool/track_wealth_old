@@ -1,9 +1,9 @@
 import 'package:cross_connectivity/cross_connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/models/portfolio_stock.dart';
+import 'package:track_wealth/common/orientation.dart';
 import 'package:track_wealth/common/services/portfolio.dart';
 import 'package:track_wealth/common/static/app_color.dart';
 import 'package:provider/provider.dart';
@@ -28,14 +28,6 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<String>? _loadData;
   late PortfolioState dashboardState;
 
-  void setOrientationMode({bool canLandscape = true}) {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      if (canLandscape) DeviceOrientation.landscapeRight,
-      if (canLandscape) DeviceOrientation.landscapeLeft,
-    ]);
-  }
-
   @override
   Widget build(BuildContext context) {
     print("Build DashboardPage");
@@ -53,9 +45,19 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget mainBody() {
     dashboardState = context.watch<PortfolioState>();
     // при reload ребилдится виджет, поэтому loadDataState снова загружать не нужно
-    dashboardState.loadDataState ??= dashboardState.loadData();
+
+    // ! initital load
+    dashboardState.loadDataState ??= dashboardState.loadData(
+      loadSelected: true,
+      loadAssetsAndCurrencies: true,
+      loadStocksMarketData: true,
+      loadCurrenciesMarketData: true,
+      loadTrades: true,
+    );
+
     _loadData = dashboardState.loadDataState;
 
+    // TODO handle timeout error
     return FutureBuilder(
       future: _loadData,
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
@@ -72,14 +74,15 @@ class _DashboardPageState extends State<DashboardPage> {
               Future.microtask(() => Navigator.pushNamed(
                     context,
                     '/dashboard/add_portfolio',
-                    arguments: AddPortfolioArgs(title: 'Добавьте свой первый портфель', isInitial: false),
-                  )); // Перенаправляем после выполнения build
+                    arguments: AddPortfolioArgs(title: 'Добавьте свой первый портфель', isFirstPortfolio: true),
+                  ).then((v) => setOrientationMode(canLandscape: true))); // Перенаправляем после выполнения build
               return Container();
             } else {
               selectedPortfolio = dashboardState.selectedPortfolio;
 
               return PageWrapper(
                 scaffoldKey: scaffoldKey,
+                portfolios: portfolios,
                 selectedPortfolio: selectedPortfolio,
               );
             }
@@ -116,7 +119,13 @@ class DashboardScreen extends StatelessWidget {
         color: Theme.of(context).iconTheme.color,
         edgeOffset: 45,
         displacement: 30,
-        onRefresh: context.read<PortfolioState>().reloadData,
+        onRefresh: () => context.read<PortfolioState>().reloadData(
+              loadSelected: false,
+              loadAssetsAndCurrencies: false,
+              loadStocksMarketData: true,
+              loadCurrenciesMarketData: true,
+              loadTrades: false,
+            ),
         child: CustomScrollView(
           controller: scrollController,
           physics: AlwaysScrollableScrollPhysics(),

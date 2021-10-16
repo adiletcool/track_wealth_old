@@ -67,7 +67,7 @@ class _StockSearchFieldState extends State<StockSearchField> {
     return ListTile(
       title: Text(asset.shortName),
       subtitle: Text(
-        "${asset.name})",
+        "${asset.name}",
         maxLines: 2,
         overflow: TextOverflow.fade,
       ),

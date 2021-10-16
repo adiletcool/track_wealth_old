@@ -10,9 +10,10 @@ import 'side_bar/side_bar.dart';
 
 class PageWrapper extends StatefulWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
+  final List<Portfolio> portfolios;
   final Portfolio selectedPortfolio;
 
-  PageWrapper({required this.scaffoldKey, required this.selectedPortfolio});
+  PageWrapper({required this.scaffoldKey, required this.portfolios, required this.selectedPortfolio});
 
   @override
   State<PageWrapper> createState() => _PageWrapperState();
@@ -33,20 +34,20 @@ class _PageWrapperState extends State<PageWrapper> with SingleTickerProviderStat
               ))
           .toList();
 
-  List<Widget> get _tabPages => [
+  List<Widget> getTabPages() => [
         DashboardScreen(
           selectedPortfolio: widget.selectedPortfolio,
           scaffoldKey: widget.scaffoldKey,
         ),
         TradesPage(),
         AnalysisPage(),
-        ProfilePage(),
+        ProfilePage(portfolios: widget.portfolios, tabController: _tabController),
       ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabPages.length, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -70,17 +71,10 @@ class _PageWrapperState extends State<PageWrapper> with SingleTickerProviderStat
           controller: _tabController,
         ),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   mini: true,
-      //   child: Icon(Icons.add),
-      //   backgroundColor: AppColor.selected,
-      //   onPressed: () => print(_tabController.index),
-      // ),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
       body: SafeArea(
         child: TabBarView(
           controller: _tabController,
-          children: _tabPages,
+          children: getTabPages(),
         ),
       ),
     );

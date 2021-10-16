@@ -41,7 +41,7 @@ List<Map<String, dynamic>> sampleUserStocks = [
   {"secId": "RSTI", "boardId": "TQBR", "shortName": "Россети ао", "quantity": 45000, "meanPrice": 1.70},
 ];
 
-List<Map<String, dynamic>> newUserCurrencies = [
+List<Map<String, dynamic>> availableCurrencies = [
   {
     'code': 'RUB',
     'name': 'Рубли',
