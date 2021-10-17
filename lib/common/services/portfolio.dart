@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:track_wealth/common/models/column_filter.dart';
 import 'package:track_wealth/common/models/portfolio.dart';
 import 'package:track_wealth/common/models/portfolio_currency.dart';
 import 'package:track_wealth/common/models/portfolio_trade.dart';
@@ -124,26 +123,26 @@ class PortfolioState extends ChangeNotifier {
     ]);
   }
 
-  Future<List<Trade>> getPortfolioTrades() async {
-    var selectedPortfolioTrades = await selectedPortfolioData!.collection('trades').orderBy('date', descending: true).limit(10).get();
-    if (selectedPortfolioTrades.docs.length > 0) {
-      // TODO: загружать первые 30-40 трейдов, добавить функцию для подгрузки еще трейдов с query where 'date' < selectedPortfolio.trades и limit 30-40
-      List<Trade> trades = selectedPortfolioTrades.docs.map<Trade>((t) {
-        Map<String, dynamic> trade = t.data();
-        switch (t['actionType']) {
-          case 'stocks':
-            if (t['action'] == 'dividends')
-              return DividendsTrade.fromJson(trade);
-            else
-              return StockTrade.fromJson(trade);
-          case 'money':
-            return MoneyTrade.fromJson(trade);
-          default:
-            throw 'Unknown actionType ${t['actionType']}';
-        }
-      }).toList();
-      // TODO эти трейдс потом идут в selectedPortfolio.trades
+  Future<List<Trade>> getPortfolioTrades({String? toDate}) async {
+    CollectionReference tradesRef = selectedPortfolioData!.collection('trades');
+    QuerySnapshot selectedPortfolioTrades;
+
+    if (toDate != null) {
+      Query tradesQuery = tradesRef.where('date', isLessThan: toDate);
+      selectedPortfolioTrades = await tradesQuery.orderBy('date', descending: true).limit(20).get();
+    } else {
+      selectedPortfolioTrades = await tradesRef.orderBy('date', descending: true).limit(20).get();
     }
+
+    if (selectedPortfolioTrades.docs.length > 0) {
+      List<Trade> trades = selectedPortfolioTrades.docs.map<Trade>((QueryDocumentSnapshot<Object?> t) => Trade.fromJson(t.data()!)).toList();
+      if (selectedPortfolio.trades != null)
+        print(selectedPortfolio.trades! + trades);
+      else
+        return trades;
+      selectedPortfolio.trades?.forEach(print);
+    } else
+      print('NO TRADES BEFORE $toDate');
     return [];
   }
 
@@ -278,30 +277,5 @@ class PortfolioState extends ChangeNotifier {
           );
     });
     // ХЗ почему, но работает без notifyListeners()  ^_^
-  }
-}
-
-class TableState extends ChangeNotifier {
-  Map<String, bool> columnFilter = ColumnFilter(isPortrait: false).filter;
-  Map<String, bool> mobileColumnFilter = ColumnFilter(isPortrait: true).filter;
-  Map<String, dynamic> sortedColumn = {'title': null, 'ascending': false};
-
-  // * FILTER
-  void updateFilter(String colName, bool newValue, bool isPortrait) {
-    (isPortrait ? mobileColumnFilter : columnFilter).update(colName, (value) => newValue);
-
-    if (sortedColumn['title'] != null) {
-      // * Случай, если убрали отсортированный столбик
-      if ((colName == sortedColumn['title']) && (newValue == false)) {
-        sortedColumn.update('title', (value) => null);
-      }
-    }
-    notifyListeners();
-  }
-
-  // * SORT
-  void updateSortedColumn(String columnName, bool isAscending) {
-    sortedColumn.update('title', (value) => columnName);
-    sortedColumn.update('ascending', (value) => isAscending);
   }
 }

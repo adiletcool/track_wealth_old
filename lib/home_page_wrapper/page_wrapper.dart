@@ -16,12 +16,17 @@ class PageWrapper extends StatefulWidget {
   PageWrapper({required this.scaffoldKey, required this.portfolios, required this.selectedPortfolio});
 
   @override
-  State<PageWrapper> createState() => _PageWrapperState();
+  State<PageWrapper> createState() => _PageWrapperState(scaffoldKey: scaffoldKey, selectedPortfolio: selectedPortfolio, portfolios: portfolios);
 }
 
 class _PageWrapperState extends State<PageWrapper> with SingleTickerProviderStateMixin {
+  final GlobalKey<ScaffoldState> scaffoldKey;
+  final Portfolio selectedPortfolio;
+  final List<Portfolio> portfolios;
   late final TabController _tabController;
   late Color tabColor;
+
+  _PageWrapperState({required this.selectedPortfolio, required this.portfolios, required this.scaffoldKey});
 
   List<Tab> getTabIcons() => [
         Icons.grid_view_rounded,
@@ -35,13 +40,10 @@ class _PageWrapperState extends State<PageWrapper> with SingleTickerProviderStat
           .toList();
 
   List<Widget> getTabPages() => [
-        DashboardScreen(
-          selectedPortfolio: widget.selectedPortfolio,
-          scaffoldKey: widget.scaffoldKey,
-        ),
-        TradesPage(),
+        DashboardScreen(selectedPortfolio: selectedPortfolio, scaffoldKey: scaffoldKey),
+        TradesPage(selectedPortfolio.trades),
         AnalysisPage(),
-        ProfilePage(portfolios: widget.portfolios, tabController: _tabController),
+        ProfilePage(portfolios: portfolios, tabController: _tabController),
       ];
 
   @override
@@ -61,7 +63,7 @@ class _PageWrapperState extends State<PageWrapper> with SingleTickerProviderStat
     tabColor = AppColor.themeBasedColor(context, Colors.white, Colors.black);
 
     return Scaffold(
-      key: widget.scaffoldKey,
+      key: scaffoldKey,
       drawer: SideBar(),
       bottomNavigationBar: Material(
         color: AppColor.themeBasedColor(context, AppColor.lightBlue, AppColor.lightGrey),

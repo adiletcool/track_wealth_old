@@ -1,93 +1,70 @@
-import 'package:auto_size_text_pk/auto_size_text_pk.dart';
 import 'package:flutter/material.dart';
-import 'package:track_wealth/common/constants.dart';
+import 'package:intl/intl.dart';
+import 'package:track_wealth/common/models/portfolio_trade.dart';
 import 'package:track_wealth/common/static/app_color.dart';
-import 'package:track_wealth/common/static/formatters.dart';
+import 'package:grouped_list/grouped_list.dart';
 
 class TradesPage extends StatefulWidget {
+  final List<Trade>? trades;
+
+  const TradesPage(this.trades);
   @override
-  _TradesPageState createState() => _TradesPageState();
+  _TradesPageState createState() => _TradesPageState(trades);
 }
 
-class _TradesPageState extends State<TradesPage> {
+class _TradesPageState extends State<TradesPage> with AutomaticKeepAliveClientMixin<TradesPage> {
+  final List<Trade>? trades;
+  late Color textColor;
+  late Color bgColor;
+
+  final ScrollController scrollController = ScrollController();
+  _TradesPageState(this.trades);
+
   @override
   Widget build(BuildContext context) {
-    Color bgColor = AppColor.themeBasedColor(context, AppColor.darkBlue, AppColor.white);
+    super.build(context);
+    bgColor = AppColor.themeBasedColor(context, AppColor.lightBlue, AppColor.white);
+    textColor = AppColor.themeBasedColor(context, Colors.white, Colors.black);
 
     return Container(
       color: bgColor,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          TradeCard(actionsTitle['money']!, actionsTitle['deposit']!, 50000),
-          TradeCard(actionsTitle['buy']! + ': GAZP', '200 шт. по 60 руб.', 1200),
+      child: CustomScrollView(
+        controller: scrollController,
+        physics: AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverAppBar(
+            toolbarHeight: 45,
+            expandedHeight: 45,
+            collapsedHeight: 45,
+            backgroundColor: bgColor,
+            pinned: true,
+            leading: Container(),
+            flexibleSpace: Text('FILtER'),
+          ),
+          SliverFillRemaining(
+            hasScrollBody: true,
+            child: GroupedListView<Trade, String>(
+              elements: trades ?? [],
+              groupBy: (t) => DateFormat.yMMMd('ru').format(DateTime.parse(t.date)),
+              useStickyGroupSeparators: true,
+              order: GroupedListOrder.DESC,
+              stickyHeaderBackgroundColor: AppColor.themeBasedColor(context, AppColor.darkBlue, AppColor.indigo),
+              groupSeparatorBuilder: (String groupByValue) => getDateHeader(groupByValue),
+              itemBuilder: (context, trade) => trade.build(context),
+            ),
+          ),
         ],
       ),
     );
   }
-}
 
-class TradeCard extends StatelessWidget {
-  final String title, subtitle;
-  final num operationTotal;
-
-  const TradeCard(this.title, this.subtitle, this.operationTotal);
-
-  @override
-  Widget build(BuildContext context) {
-    Color tradeColor = AppColor.themeBasedColor(context, AppColor.lightBlue, AppColor.lightGrey);
-    Color tradeTitleColor = AppColor.themeBasedColor(context, Colors.white, AppColor.black);
-    Color tradeSubtitleColor = AppColor.themeBasedColor(context, AppColor.greyTitle, AppColor.darkGrey);
-
+  Widget getDateHeader(String date) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          height: 60,
-          decoration: BoxDecoration(
-            color: tradeColor,
-            border: Border(
-              left: BorderSide(color: AppColor.green, width: 10, style: BorderStyle.solid),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  AutoSizeText(
-                    title,
-                    maxFontSize: 15,
-                    style: TextStyle(color: tradeTitleColor),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(fontSize: 14, color: tradeSubtitleColor),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ), // TODO autosize
-                ],
-              ),
-              Row(
-                children: [
-                  Text(
-                    MyFormatter.numFormat(operationTotal) + '',
-                    maxLines: 1,
-                    style: TextStyle(fontSize: 16),
-                  ), // TODO: format to currency, autosize
-                  Icon(Icons.more_vert_outlined, size: 28, color: tradeSubtitleColor),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+      child: Text(date, style: TextStyle(color: textColor, fontSize: 15)),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

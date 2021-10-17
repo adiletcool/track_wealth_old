@@ -73,7 +73,7 @@ class _SubHeaderState extends State<SubHeader> {
   }
 
   Widget amountChangedCard(BuildContext context) {
-    Color bgColor = AppColor.themeBasedColor(context, AppColor.bgDark, AppColor.grey);
+    Color bgColor = AppColor.themeBasedColor(context, AppColor.lightBlue, AppColor.lightGrey);
     Color textColor = AppColor.themeBasedColor(context, Colors.grey, AppColor.darkGrey);
 
     return Tooltip(

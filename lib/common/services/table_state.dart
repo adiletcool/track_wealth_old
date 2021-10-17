@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class ColumnFilter {
   late Map<String, bool> filter;
   final bool isPortrait;
@@ -27,5 +29,30 @@ class ColumnFilter {
       {'title': 'Доля, %', 'type': num},
       {'title': 'Стоимость, ₽', 'type': num},
     ];
+  }
+}
+
+class TableState extends ChangeNotifier {
+  Map<String, bool> columnFilter = ColumnFilter(isPortrait: false).filter;
+  Map<String, bool> mobileColumnFilter = ColumnFilter(isPortrait: true).filter;
+  Map<String, dynamic> sortedColumn = {'title': null, 'ascending': false};
+
+  // * FILTER
+  void updateFilter(String colName, bool newValue, bool isPortrait) {
+    (isPortrait ? mobileColumnFilter : columnFilter).update(colName, (value) => newValue);
+
+    if (sortedColumn['title'] != null) {
+      // * Случай, если убрали отсортированный столбик
+      if ((colName == sortedColumn['title']) && (newValue == false)) {
+        sortedColumn.update('title', (value) => null);
+      }
+    }
+    notifyListeners();
+  }
+
+  // * SORT
+  void updateSortedColumn(String columnName, bool isAscending) {
+    sortedColumn.update('title', (value) => columnName);
+    sortedColumn.update('ascending', (value) => isAscending);
   }
 }

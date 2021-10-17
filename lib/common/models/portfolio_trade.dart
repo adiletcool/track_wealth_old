@@ -31,6 +31,22 @@ abstract class Trade {
   String toString() {
     return 'Trade($actionType, $action, $operationTotal, $date, $currencyCode, )';
   }
+
+  factory Trade.fromJson(Object json) {
+    Map<String, dynamic> _trade = json as Map<String, dynamic>;
+
+    switch (_trade['actionType']) {
+      case 'stocks':
+        if (_trade['action'] == 'dividends')
+          return DividendsTrade.fromJson(_trade);
+        else
+          return StockTrade.fromJson(_trade);
+      case 'money':
+        return MoneyTrade.fromJson(_trade);
+      default:
+        throw 'Unknown actionType ${_trade['actionType']}';
+    }
+  }
 }
 
 /*
@@ -222,6 +238,7 @@ class TradeCard extends StatelessWidget {
     Color tradeColor = AppColor.themeBasedColor(context, AppColor.lightBlue, AppColor.lightGrey);
     Color tradeTitleColor = AppColor.themeBasedColor(context, Colors.white, AppColor.black);
     Color tradeSubtitleColor = AppColor.themeBasedColor(context, AppColor.greyTitle, AppColor.darkGrey);
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ClipRRect(
@@ -232,7 +249,11 @@ class TradeCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: tradeColor,
             border: Border(
-              left: BorderSide(color: AppColor.green, width: 10, style: BorderStyle.solid),
+              left: BorderSide(
+                color: getBorderColor(),
+                width: 10,
+                style: BorderStyle.solid,
+              ),
             ),
           ),
           child: Row(
@@ -259,10 +280,11 @@ class TradeCard extends StatelessWidget {
               ),
               Row(
                 children: [
-                  Text(
+                  AutoSizeText(
                     MyFormatter.numFormat(trade.operationTotal) + getCurrencySymbol(),
+                    maxFontSize: 15,
+                    overflow: TextOverflow.ellipsis,
                     maxLines: 1,
-                    style: TextStyle(fontSize: 16),
                   ), // TODO: format to currency, autosize
                   Icon(Icons.more_vert_outlined, size: 28, color: tradeSubtitleColor),
                 ],
@@ -272,6 +294,22 @@ class TradeCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Color getBorderColor() {
+    switch (trade.action) {
+      case 'buy':
+      case 'deposit':
+      case 'dividends':
+      case 'revenue':
+        return AppColor.green;
+      case 'sell':
+      case 'withdraw':
+      case 'expense':
+        return AppColor.redBlood;
+      default:
+        return Colors.indigo;
+    }
   }
 
   String getCurrencySymbol() {
@@ -284,7 +322,7 @@ class TradeCard extends StatelessWidget {
     switch (trade.actionType) {
       case 'stocks':
         StockTrade _trade = trade as StockTrade;
-        return '${_trade.action}: ${_trade.secId}';
+        return '${actionsTitle[_trade.action]}: ${_trade.secId}';
       case 'money':
         return actionsTitle['money']!;
       default:

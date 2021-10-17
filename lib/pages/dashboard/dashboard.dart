@@ -97,23 +97,32 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 }
 
-class DashboardScreen extends StatelessWidget {
-  final ScrollController scrollController = ScrollController();
+class DashboardScreen extends StatefulWidget {
   final Portfolio selectedPortfolio;
   final GlobalKey<ScaffoldState> scaffoldKey;
 
   DashboardScreen({required this.selectedPortfolio, required this.scaffoldKey});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAliveClientMixin<DashboardScreen> {
+  final ScrollController scrollController = ScrollController();
 
   num getPortfolioAllTimeChange(List<PortfolioStock> data) => data.map((stock) => stock.unrealizedPnl!).sum;
 
   num getPortfolioTodayChange(List<PortfolioStock> data) => data.map((stock) => stock.worth! - stock.worth! / (1 + stock.todayPriceChange! / 100)).sum;
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     Color bgColor = AppColor.themeBasedColor(context, AppColor.darkBlue, AppColor.white);
 
     return Container(
-      margin: EdgeInsets.only(top: 0),
       color: bgColor,
       child: RefreshIndicator(
         color: Theme.of(context).iconTheme.color,
@@ -137,20 +146,20 @@ class DashboardScreen extends StatelessWidget {
               backgroundColor: bgColor,
               pinned: true,
               leading: Container(),
-              flexibleSpace: Header(drawerKey: scaffoldKey),
+              flexibleSpace: Header(drawerKey: widget.scaffoldKey),
             ),
-            if (selectedPortfolio.stocks!.length > 0)
+            if (widget.selectedPortfolio.stocks!.length > 0)
               SliverToBoxAdapter(
                 child: SubHeader(
-                  portfolioStocksTotal: selectedPortfolio.stocksTotal!, // изменения считаются относительно стоимости активов без учета свободных денег
-                  portfolioTodayChange: getPortfolioTodayChange(selectedPortfolio.stocks!),
-                  portfolioAllTimeChange: getPortfolioAllTimeChange(selectedPortfolio.stocks!),
+                  portfolioStocksTotal: widget.selectedPortfolio.stocksTotal!, // изменения считаются относительно стоимости активов без учета свободных денег
+                  portfolioTodayChange: getPortfolioTodayChange(widget.selectedPortfolio.stocks!),
+                  portfolioAllTimeChange: getPortfolioAllTimeChange(widget.selectedPortfolio.stocks!),
                 ),
               ),
             SliverToBoxAdapter(
               child: PortfolioTable(
-                portfolioStocks: selectedPortfolio.stocks!,
-                currencies: selectedPortfolio.currencies!, //.where((c) => c.value != 0).toList(),
+                portfolioStocks: widget.selectedPortfolio.stocks!,
+                currencies: widget.selectedPortfolio.currencies!, //.where((c) => c.value != 0).toList(),
               ),
             ),
           ],
