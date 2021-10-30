@@ -11,6 +11,7 @@ import 'package:collection/collection.dart';
 import 'package:track_wealth/home_page_wrapper/page_wrapper.dart';
 import 'package:track_wealth/pages/dashboard/header/subheader.dart';
 import 'package:track_wealth/pages/shimmers/shimmers.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import 'header/header.dart';
 import 'portfolio/add_portfolio.dart';
@@ -109,6 +110,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAliveClientMixin<DashboardScreen> {
   final ScrollController scrollController = ScrollController();
+  RefreshController _refreshController = RefreshController(initialRefresh: false);
 
   num getPortfolioAllTimeChange(List<PortfolioStock> data) => data.map((stock) => stock.unrealizedPnl!).sum;
 
@@ -124,10 +126,9 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
 
     return Container(
       color: bgColor,
-      child: RefreshIndicator(
-        color: Theme.of(context).iconTheme.color,
-        edgeOffset: 45,
-        displacement: 30,
+      child: SmartRefresher(
+        controller: _refreshController,
+        header: WaterDropMaterialHeader(backgroundColor: AppColor.indigo),
         onRefresh: () => context.read<PortfolioState>().reloadData(
               loadSelected: false,
               loadAssetsAndCurrencies: false,
