@@ -114,6 +114,7 @@ class PortfolioState extends ChangeNotifier {
     if (loadTrades) {
       print('LOADING TRADES');
       selectedPortfolio.trades = await getPortfolioTrades();
+      selectedPortfolio.trades!.forEach(print);
     }
 
     // дожидаемся параллельно выполняющися загрузок данных по акциям и валютам  (цены и курсы валют)
@@ -123,7 +124,21 @@ class PortfolioState extends ChangeNotifier {
     ]);
   }
 
+  Future<bool> loadMoreTrades() async {
+    String? toDate;
+    if (selectedPortfolio.trades!.length != 0) {
+      toDate = selectedPortfolio.trades!.first.date;
+    }
+    List<Trade> moreTrades = await getPortfolioTrades(toDate: toDate);
+    selectedPortfolio.trades!.addAll(moreTrades);
+    if (moreTrades.length != 0)
+      return true;
+    else
+      return false;
+  }
+
   Future<List<Trade>> getPortfolioTrades({String? toDate}) async {
+    /// RETURNS LIST OF TRADE OBJECTS
     CollectionReference tradesRef = selectedPortfolioData!.collection('trades');
     QuerySnapshot selectedPortfolioTrades;
 
@@ -135,12 +150,13 @@ class PortfolioState extends ChangeNotifier {
     }
 
     if (selectedPortfolioTrades.docs.length > 0) {
-      List<Trade> trades = selectedPortfolioTrades.docs.map<Trade>((QueryDocumentSnapshot<Object?> t) => Trade.fromJson(t.data()!)).toList();
-      if (selectedPortfolio.trades != null)
-        print(selectedPortfolio.trades! + trades);
-      else
-        return trades;
-      selectedPortfolio.trades?.forEach(print);
+      List<Trade> trades = selectedPortfolioTrades.docs
+          .map<Trade>(
+            (QueryDocumentSnapshot<Object?> t) => Trade.fromJson(t.data()!),
+          )
+          .toList();
+
+      return trades;
     } else
       print('NO TRADES BEFORE $toDate');
     return [];

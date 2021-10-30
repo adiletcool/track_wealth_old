@@ -68,6 +68,7 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Text(snapshot.error.toString()),
             );
           } else {
+            // Push to add new portfolio page
             portfolios = dashboardState.portfolios;
             setOrientationMode(canLandscape: portfolios.length != 0);
 
@@ -89,6 +90,7 @@ class _DashboardPageState extends State<DashboardPage> {
             }
           }
         } else {
+          // Loading state
           return SafeArea(
             child: DashboardShimmer(),
           );
@@ -129,13 +131,24 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
       child: SmartRefresher(
         controller: _refreshController,
         header: WaterDropMaterialHeader(backgroundColor: AppColor.indigo),
-        onRefresh: () => context.read<PortfolioState>().reloadData(
-              loadSelected: false,
-              loadAssetsAndCurrencies: false,
-              loadStocksMarketData: true,
-              loadCurrenciesMarketData: true,
-              loadTrades: false,
-            ),
+        // onRefresh: () => context.read<PortfolioState>().reloadData(
+        //       loadSelected: false,
+        //       loadAssetsAndCurrencies: false,
+        //       loadStocksMarketData: true,
+        //       loadCurrenciesMarketData: true,
+        //       loadTrades: false,
+        //     ),
+        onRefresh: () async {
+          await context.read<PortfolioState>().loadData(
+                loadSelected: false,
+                loadAssetsAndCurrencies: false,
+                loadStocksMarketData: true,
+                loadCurrenciesMarketData: true,
+                loadTrades: false,
+              );
+          setState(() {}); // TODO: check if works without reloading with shimmer
+          _refreshController.refreshCompleted();
+        },
         child: CustomScrollView(
           controller: scrollController,
           physics: AlwaysScrollableScrollPhysics(),

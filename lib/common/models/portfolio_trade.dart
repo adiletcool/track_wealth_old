@@ -29,7 +29,7 @@ abstract class Trade {
 
   @override
   String toString() {
-    return 'Trade($actionType, $action, $operationTotal, $date, $currencyCode, )';
+    return 'Trade($actionType, $action, ${MyFormatter.numFormat(operationTotal)}, ${date.substring(0, 19)}, $currencyCode)';
   }
 
   factory Trade.fromJson(Object json) {
@@ -48,30 +48,6 @@ abstract class Trade {
     }
   }
 }
-
-/*
-* TODO: при получении списка trades создаем список объектов класса Trade:
-List<Map<String, dynamic>> trades = [...{}, ...{}];
-
-апкастим до Trade
-List<Trade> portfolioTrades = trades.map<Trade>((t) {
-  switch (t['actionType']) {
-    case 'stocks':
-      if (t['action'] == 'dividends')
-        return DividendsTrade.fromJson(t);
-      else 
-        return StockTrade.fromJson(t);
-    case 'money':
-      return MoneyTrade.fromJson(t);
-    default:
-      throw 'Unknown trade actionType: ${t['actionType']}';
-  }
-}).toList();
-
-void a() {
-  List<Widget> trades = portfolioTrades.map((trade) => trade.build()).toList();
-}
-*/
 
 class StockTrade extends Trade {
   final String secId;
@@ -102,6 +78,11 @@ class StockTrade extends Trade {
           currencyCode: currencyCode,
           note: note,
         );
+
+  @override
+  String toString() {
+    return 'Trade($actionType, $action, $secId, ${MyFormatter.numFormat(operationTotal)}, ${date.substring(0, 19)}, $currencyCode)';
+  }
 
   // Redirecting named constructor
   StockTrade.fromJson(Map<String, dynamic> json)
