@@ -8,21 +8,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cross_connectivity/cross_connectivity.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'common/services/auth.dart';
-import 'common/services/portfolio.dart';
-import 'common/services/table_state.dart';
-
-import 'pages/auth/auth.dart';
-import 'pages/auth/phone_auth.dart';
-import 'pages/dashboard/dashboard.dart';
-import 'pages/dashboard/portfolio/add_portfolio.dart';
-import 'pages/dashboard/add_operation/add_operation.dart';
-import 'pages/dashboard/portfolio/settings.dart';
-import 'pages/calendar/calendar.dart';
-import 'pages/trends/trends.dart';
-import 'pages/settings/settings.dart';
-
-import 'pages/shimmers/shimmers.dart';
+import 'core/widgets/shimmers.dart';
+import 'features/add_operation/add_operation.dart';
+import 'features/auth/service/auth.dart';
+import 'features/auth/ui/auth.dart';
+import 'features/auth/ui/phone_auth.dart';
+import 'features/calendar/calendar.dart';
+import 'features/dashboard/add_portfolio/add_portfolio.dart';
+import 'features/dashboard/dashboard.dart';
+import 'features/dashboard/portfolio/service/portfolio.dart';
+import 'features/dashboard/portfolio/service/table_state.dart';
+import 'features/dashboard/portfolio_settings/settings.dart';
+import 'features/settings/settings.dart';
+import 'features/trends/trends.dart';
 
 // TODO: добавить функционал в addOperation для денег ->
 // если type == spend, проверить, хватает ли средств
